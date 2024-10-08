@@ -142,7 +142,7 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                 'POWERED BY TUTYTECH',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.black,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
