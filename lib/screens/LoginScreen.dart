@@ -1,4 +1,4 @@
-import 'package:chitfunds/companycreation.dart';
+import 'package:chitfunds/screens/companycreation.dart';
 import 'package:flutter/material.dart';
 import 'registration.dart';
 
