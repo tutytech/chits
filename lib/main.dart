@@ -1,4 +1,5 @@
 import 'package:chitfunds/screens/LoginScreen.dart';
+import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/screens/createscheme.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      home: CreateScheme(),
+      home: CreateBranch(),
     );
   }
 }
