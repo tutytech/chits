@@ -9,9 +9,12 @@ class CreateBranch extends StatefulWidget {
 
 class _CreateBranchState extends State<CreateBranch> {
   final TextEditingController _branchNameController = TextEditingController();
-  final TextEditingController _fullBranchNameController = TextEditingController();
-  final TextEditingController _registerCompanyNameController = TextEditingController();
-  final TextEditingController _openingBalanceController = TextEditingController();
+  final TextEditingController _fullBranchNameController =
+      TextEditingController();
+  final TextEditingController _registerCompanyNameController =
+      TextEditingController();
+  final TextEditingController _openingBalanceController =
+      TextEditingController();
   final TextEditingController _openingDateController = TextEditingController();
 
   @override
@@ -73,39 +76,6 @@ class _CreateBranchState extends State<CreateBranch> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Full Branch Name field
-                  TextField(
-                    controller: _fullBranchNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Enter Full Branch Name',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Register Company Name field
-                  TextField(
-                    controller: _registerCompanyNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Enter Register Company Name',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Opening Balance field
                   TextField(
                     controller: _openingBalanceController,
                     decoration: InputDecoration(
@@ -148,7 +118,7 @@ class _CreateBranchState extends State<CreateBranch> {
                       child: const Text(
                         'Create Branch',
                         style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
+                            color: Colors.black, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),

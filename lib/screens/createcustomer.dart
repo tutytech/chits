@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CreateCustomer extends StatefulWidget {
   const CreateCustomer({Key? key}) : super(key: key);
@@ -37,90 +41,288 @@ class _CreateCustomerState extends State<CreateCustomer> {
   String selectedGasBillFileName = 'No file chosen';
   String selectedChequeLeafFileName = 'No file chosen';
   String selectedBondSheetFileName = 'No file chosen';
+  String selectedImagesFileName = 'No file chosen';
+  Uint8List? selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
-  void _pickFileForAadhaar() {
-    // Simulate file picking for Aadhaar
-    setState(() {
-      selectedAadhaarFileName = 'aadhaar_file.pdf'; // Example file name
-    });
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedImage =
+          await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedImage != null) {
+        final Uint8List imageBytes = await pickedImage.readAsBytes();
+        setState(() {
+          selectedImage = imageBytes; // Update selectedImage with bytes
+        });
+      }
+    } catch (e) {
+      print("Image pick error: $e");
+    }
   }
 
-  void _pickFileForVoterId() {
-    // Simulate file picking for Voter ID
-    setState(() {
-      selectedVoterIdFileName = 'voter_id_file.pdf'; // Example file name
-    });
+  void _pickFileForAadhaar() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedAadhaarFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedAadhaarFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForPAN() {
-    // Simulate file picking for Voter ID
-    setState(() {
-      selectedPanFileName = 'voter_id_file.pdf'; // Example file name
-    });
+  Future<void> _pickFileForVoterId() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedVoterIdFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedVoterIdFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForNomineeAdhaar() {
+  Future<void> _pickFileForPAN() async {
     // Simulate file picking for Voter ID
-    setState(() {
-      selectedNomineeAadharFileName = 'voter_id_file.pdf'; // Example file name
-    });
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedNomineePanFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedNomineePanFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForNomineeVoterId() {
+  Future<void> _pickFileForNomineeAdhaar() async {
     // Simulate file picking for Voter ID
-    setState(() {
-      selectNomineeVoterIdFileName = 'voter_id_file.pdf'; // Example file name
-    });
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedNomineeAadharFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedNomineeAadharFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForNomineePan() {
-    // Simulate file picking for Voter ID
-    setState(() {
-      selectedNomineePanFileName = 'voter_id_file.pdf'; // Example file name
-    });
+  Future<void> _pickFileForNomineeVoterId() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectNomineeVoterIdFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectNomineeVoterIdFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForRationCard() {
-    // Simulate file picking for Voter ID
-    setState(() {
-      selectedRationCardFileName = 'voter_id_file.pdf'; // Example file name
-    });
+  Future<void> _pickFileForNomineePan() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectNomineeVoterIdFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectNomineeVoterIdFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForPropertyTaxReceipt() {
-    // Simulate file picking for Voter ID
-    setState(() {
-      selectedpropertyTaxReceiptFileName =
-          'voter_id_file.pdf'; // Example file name
-    });
+  Future<void> _pickFileForRationCard() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedRationCardFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedRationCardFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForEBBill() {
-    // Simulate file picking for Voter ID
-    setState(() {
-      selectedEBBillFileName = 'voter_id_file.pdf'; // Example file name
-    });
+  Future<void> _pickFileForPropertyTaxReceipt() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedpropertyTaxReceiptFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedpropertyTaxReceiptFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForGasBill() {
-    // Simulate file picking for Voter ID
-    setState(() {
-      selectedGasBillFileName = 'voter_id_file.pdf'; // Example file name
-    });
+  Future<void> _pickFileForEBBill() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedEBBillFileName = result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedEBBillFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForChequeLeaf() {
-    // Simulate file picking for Voter ID
-    setState(() {
-      selectedChequeLeafFileName = 'voter_id_file.pdf'; // Example file name
-    });
+  Future<void> _pickFileForGasBill() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedGasBillFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedGasBillFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
-  void _pickFileForBondSheet() {
-    // Simulate file picking for Voter ID
-    setState(() {
-      selectedBondSheetFileName = 'voter_id_file.pdf'; // Example file name
-    });
+  Future<void> _pickFileForChequeLeaf() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedChequeLeafFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedChequeLeafFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
+  }
+
+  Future<void> _pickFileForBondSheet() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedBondSheetFileName =
+              result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedBondSheetFileName = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
   final List<String> branches = ['Branch 1', 'Branch 2', 'Branch 3'];
@@ -207,11 +409,44 @@ class _CreateCustomerState extends State<CreateCustomer> {
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.only(top: 100),
+                padding: const EdgeInsets.only(top: 30),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20),
+                    Center(
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 70,
+                            backgroundColor: Colors.grey[300],
+                            backgroundImage: selectedImage != null
+                                ? MemoryImage(selectedImage!)
+                                : null,
+                            child: selectedImage == null
+                                ? const Icon(Icons.person,
+                                    size: 40, color: Colors.grey)
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: InkWell(
+                              onTap: _pickImage,
+                              child: CircleAvatar(
+                                radius: 15,
+                                backgroundColor: Colors.blue,
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 40),
                     TextField(
                       controller: _branchNameController,
                       decoration: InputDecoration(
@@ -349,8 +584,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
                         });
                       },
                     ),
-                    const SizedBox(height: 20),
 
+                    const SizedBox(height: 20),
                     // Upload Aadhaar Field
                     Row(
                       children: [
@@ -372,7 +607,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedAadhaarFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -413,7 +648,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedVoterIdFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -454,7 +689,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedNomineePanFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -495,7 +730,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedNomineeAadharFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -536,7 +771,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectNomineeVoterIdFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -577,7 +812,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedAadhaarFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -618,7 +853,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedRationCardFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -659,7 +894,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedpropertyTaxReceiptFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -700,7 +935,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedEBBillFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -740,7 +975,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedGasBillFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -781,7 +1016,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedChequeLeafFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -822,7 +1057,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedFileName,
+                            hintText: selectedBondSheetFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
