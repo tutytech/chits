@@ -1,6 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:chitfunds/screens/LoginScreen.dart';
+import 'package:chitfunds/screens/createbranch.dart';
+import 'package:chitfunds/screens/createcenter.dart';
+import 'package:chitfunds/screens/createcustomer.dart';
+import 'package:chitfunds/screens/createscheme.dart';
+import 'package:chitfunds/screens/createstaff.dart';
 
-import 'LoginScreen.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      home: CreateCustomer(),
+      home: CreateStaff(),
     );
   }
 }
