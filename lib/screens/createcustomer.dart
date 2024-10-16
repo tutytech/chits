@@ -416,16 +416,30 @@ class _CreateCustomerState extends State<CreateCustomer> {
                     Center(
                       child: Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 70,
-                            backgroundColor: Colors.grey[300],
-                            backgroundImage: selectedImage != null
-                                ? MemoryImage(selectedImage!)
-                                : null,
-                            child: selectedImage == null
-                                ? const Icon(Icons.person,
-                                    size: 40, color: Colors.grey)
-                                : null,
+                          // CircleAvatar with border
+                          Container(
+                            width: 140, // Adjust width according to your needs
+                            height:
+                                140, // Adjust height according to your needs
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.grey
+                                    .withOpacity(0.5), // Mild grey border color
+                                width: 2, // Border width
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 70,
+                              backgroundColor: Colors.grey[300],
+                              backgroundImage: selectedImage != null
+                                  ? MemoryImage(selectedImage!)
+                                  : null,
+                              child: selectedImage == null
+                                  ? const Icon(Icons.person,
+                                      size: 40, color: Colors.grey)
+                                  : null,
+                            ),
                           ),
                           Positioned(
                             bottom: 0,
@@ -446,6 +460,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                         ],
                       ),
                     ),
+
                     const SizedBox(height: 40),
                     TextField(
                       controller: _branchNameController,
