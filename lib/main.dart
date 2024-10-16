@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'LoginScreen.dart';
 
 void main() {
-  runApp( MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -15,9 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-     
-      home:  LoginScreen(),
+      home: CreateCustomer(),
     );
   }
 }
-
