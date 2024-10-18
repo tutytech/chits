@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:chitfunds/wigets/customappbar.dart';
+import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -21,6 +23,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
   final TextEditingController _openingBalanceController =
       TextEditingController();
   final TextEditingController _openingDateController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String? selectedBranch;
   String? selectedDayOrder;
@@ -375,25 +378,14 @@ class _CreateCustomerState extends State<CreateCustomer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(218, 209, 209, 204),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            // Handle menu action here
-          },
-        ),
-        title: const Text("Create Customer"),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              // Handle logout action here
-            },
-          ),
-        ],
+      key: _scaffoldKey,
+      appBar: CustomAppBar(
+        title: 'Create Customer',
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+        },
       ),
+      drawer: CustomDrawer(),
       body: Stack(
         children: [
           Container(

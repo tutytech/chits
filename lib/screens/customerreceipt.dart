@@ -1,5 +1,8 @@
+import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import '../wigets/customappbar.dart';
 
 class Receipt extends StatefulWidget {
   const Receipt({Key? key}) : super(key: key);
@@ -9,6 +12,7 @@ class Receipt extends StatefulWidget {
 }
 
 class _ReceiptState extends State<Receipt> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _creditopeningbalController =
       TextEditingController();
   final TextEditingController _amountController = TextEditingController();
@@ -52,25 +56,14 @@ class _ReceiptState extends State<Receipt> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(218, 209, 209, 204),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            // Handle menu action here
-          },
-        ),
-        title: const Text("Receipt"),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              // Handle logout action here
-            },
-          ),
-        ],
+      key: _scaffoldKey,
+      appBar: CustomAppBar(
+        title: 'Create Receipt',
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+        },
       ),
+      drawer: CustomDrawer(),
       body: Stack(children: [
         // Background Gradient
         Container(

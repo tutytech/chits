@@ -1,3 +1,5 @@
+import 'package:chitfunds/wigets/customappbar.dart';
+import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 
 class CreateScheme extends StatefulWidget {
@@ -8,6 +10,7 @@ class CreateScheme extends StatefulWidget {
 }
 
 class _CreateSchemeState extends State<CreateScheme> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _schemeIdController = TextEditingController();
   final TextEditingController _schemeNameController = TextEditingController();
   final TextEditingController _loanAmountController = TextEditingController();
@@ -19,25 +22,14 @@ class _CreateSchemeState extends State<CreateScheme> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(218, 209, 209, 204),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            // Handle menu action here
-          },
-        ),
-        title: const Text("Create Scheme"),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              // Handle logout action here
-            },
-          ),
-        ],
+      key: _scaffoldKey,
+      appBar: CustomAppBar(
+        title: 'Create Scheme',
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+        },
       ),
+      drawer: CustomDrawer(),
       body: Stack(children: [
         // Background Gradient
         Container(

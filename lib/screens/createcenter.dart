@@ -1,3 +1,5 @@
+import 'package:chitfunds/wigets/customappbar.dart';
+import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 
 class CreateCenter extends StatefulWidget {
@@ -21,6 +23,7 @@ class _CreateBranchState extends State<CreateCenter> {
   String? selectedDayOrder;
   String? selectedTiming;
   String? selectedFieldOfficer;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Sample data for dropdowns
   final List<String> branches = ['Branch 1', 'Branch 2', 'Branch 3'];
@@ -31,25 +34,14 @@ class _CreateBranchState extends State<CreateCenter> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(218, 209, 209, 204),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            // Handle menu action here
-          },
-        ),
-        title: const Text("Create Center"),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              // Handle logout action here
-            },
-          ),
-        ],
+      key: _scaffoldKey, // Set the key here
+      appBar: CustomAppBar(
+        title: 'Create Center',
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+        },
       ),
+      drawer: CustomDrawer(),
       body: Stack(
         children: [
           // Background Gradient
