@@ -5,6 +5,7 @@ import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/screens/createscheme.dart';
 import 'package:chitfunds/screens/createstaff.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
+import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -144,11 +145,10 @@ class CustomDrawer extends StatelessWidget {
                 ListTile(
                   title: const Text('Edit Company Profile'),
                   onTap: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //       builder: (context) => EditCompanyProfilePage()),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EditCompany()),
+                    );
                   },
                 ),
                 ListTile(

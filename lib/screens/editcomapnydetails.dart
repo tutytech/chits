@@ -1,40 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class CompanyCreationScreen extends StatefulWidget {
-  const CompanyCreationScreen({Key? key}) : super(key: key);
+class EditCompany extends StatefulWidget {
+  const EditCompany({Key? key}) : super(key: key);
 
   @override
-  _CompanyCreationScreenState createState() => _CompanyCreationScreenState();
+  _EditCompanyState createState() => _EditCompanyState();
 }
 
-class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
+class _EditCompanyState extends State<EditCompany> {
   final TextEditingController _companyNameController = TextEditingController();
   final TextEditingController _gstinController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
 
-  // Method to save company data to SharedPreferences
+  @override
+  void initState() {
+    super.initState();
+    _loadCompanyData(); // Load existing company details on startup
+  }
+
+  // Method to load company data from SharedPreferences
+  Future<void> _loadCompanyData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _companyNameController.text = prefs.getString('companyName') ?? '';
+      _gstinController.text = prefs.getString('gstin') ?? '';
+      _emailController.text = prefs.getString('email') ?? '';
+      _phoneNumberController.text = prefs.getString('phoneNumber') ?? '';
+    });
+    print('$_companyNameController.text');
+    print('$_gstinController.text');
+    print('$_emailController.text');
+    print('$_phoneNumberController.text');
+  }
+
+  // Method to save (update) company data to SharedPreferences
   Future<void> _saveCompanyData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Save the data
+    // Save updated company details
     await prefs.setString('companyName', _companyNameController.text);
     await prefs.setString('gstin', _gstinController.text);
     await prefs.setString('email', _emailController.text);
     await prefs.setString('phoneNumber', _phoneNumberController.text);
 
-    // Fetch and print the saved data from SharedPreferences
-    final savedCompanyName = prefs.getString('companyName');
-    final savedGstin = prefs.getString('gstin');
-    final savedEmail = prefs.getString('email');
-    final savedPhoneNumber = prefs.getString('phoneNumber');
-
-    // Print the data to the console
-    print('Saved Company Name: $savedCompanyName');
-    print('Saved GSTIN: $savedGstin');
-    print('Saved Email: $savedEmail');
-    print('Saved Phone Number: $savedPhoneNumber');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Company details updated successfully!')),
+    );
   }
 
   @override
@@ -67,9 +80,8 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                     width: 200,
                     fit: BoxFit.contain,
                   ),
-                  // Heading
                   const Text(
-                    'Create a Company',
+                    'Edit Company',
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -137,17 +149,13 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Register Button
+                  // Update Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        // Save company data to SharedPreferences
+                        // Save updated company details to SharedPreferences
                         await _saveCompanyData();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Company created successfully!')),
-                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
@@ -160,7 +168,7 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                         ),
                       ),
                       child: const Text(
-                        'Create Company',
+                        'Update Company',
                         style: TextStyle(fontSize: 16),
                       ),
                     ),
