@@ -1,6 +1,8 @@
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CreateBranch extends StatefulWidget {
   const CreateBranch({Key? key}) : super(key: key);
@@ -17,14 +19,55 @@ class _CreateBranchState extends State<CreateBranch> {
       TextEditingController();
   final TextEditingController _openingDateController = TextEditingController();
 
+  Future<void> _createBranch() async {
+    final String apiUrl = 'https://chits.tutytech.in/branch.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'insert',
+          'branchname': _branchNameController.text,
+          'openingbalance': _openingBalanceController.text,
+          'openingdate': _openingDateController.text,
+          'entryid': '123', // Replace with a real entry ID if needed
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData[0]['id'] != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Branch created successfully!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${responseData[0]['error']}')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to create branch.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Set the key here
+      key: _scaffoldKey,
       appBar: CustomAppBar(
         title: 'Create Branch',
         onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+          _scaffoldKey.currentState?.openDrawer();
         },
       ),
       drawer: CustomDrawer(),
@@ -94,9 +137,7 @@ class _CreateBranchState extends State<CreateBranch> {
                       height: 50,
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle create branch action here
-                        },
+                        onPressed: _createBranch,
                         child: const Text(
                           'Create Branch',
                           style: TextStyle(
