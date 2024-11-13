@@ -1,6 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CompanyCreationScreen extends StatefulWidget {
   const CompanyCreationScreen({Key? key}) : super(key: key);
@@ -16,41 +18,89 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
   final TextEditingController _phoneNumberController = TextEditingController();
   String selectedlogo = 'No file chosen';
 
-  // Method to save company data to SharedPreferences
-  Future<void> _saveCompanyData() async {
+  // Method to save company data to SharedPreferences and call the API
+  Future<void> _saveCompanyData(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Save the data
-    await prefs.setString('companyName', _companyNameController.text);
-    await prefs.setString('gstin', _gstinController.text);
-    await prefs.setString('email', _emailController.text);
-    await prefs.setString('phoneNumber', _phoneNumberController.text);
+    // Save the data locally using SharedPreferences
+    await prefs.setString('companyname', _companyNameController.text);
+    await prefs.setString('address', _gstinController.text);
+    await prefs.setString('mailid', _emailController.text);
+    await prefs.setString('phoneno', _phoneNumberController.text);
 
-    // Fetch and print the saved data from SharedPreferences
-    final savedCompanyName = prefs.getString('companyName');
-    final savedGstin = prefs.getString('gstin');
-    final savedEmail = prefs.getString('email');
-    final savedPhoneNumber = prefs.getString('phoneNumber');
+    print('Saved Company Name: ${prefs.getString('companyname')}');
+    print('Saved Address: ${prefs.getString('address')}');
+    print('Saved Email: ${prefs.getString('mailid')}');
+    print('Saved Phone Number: ${prefs.getString('phoneno')}');
 
-    // Print the data to the console
-    print('Saved Company Name: $savedCompanyName');
-    print('Saved GSTIN: $savedGstin');
-    print('Saved Email: $savedEmail');
-    print('Saved Phone Number: $savedPhoneNumber');
+    try {
+      // Construct the request URL
+      final uri = Uri.parse('https://chits.tutytech.in/company.php');
+
+      // Prepare the form data (key-value pairs)
+      final response = await http.post(
+        uri,
+        body: {
+          'type': 'insert',
+          'companyname': _companyNameController.text,
+          'address': _gstinController.text,
+          'phoneno': _phoneNumberController.text,
+          'mailid': _emailController.text,
+          'entryid': '12345', // You might want to dynamically get this value
+          'entrydate': DateTime.now()
+              .toIso8601String()
+              .split('T')
+              .first, // Format the date as YYYY-MM-DD
+        },
+        headers: {
+          'Content-Type':
+              'application/x-www-form-urlencoded', // Ensure form-data is used
+        },
+      );
+
+      print('Response Status Code: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        // Log raw response
+        print('Raw Response: ${response.body}');
+
+        // Decode the response
+        final List<dynamic> responseData = jsonDecode(response.body);
+
+        // Check if there's an error in the response
+        if (responseData.isNotEmpty && responseData[0]['error'] != null) {
+          print('API Error: ${responseData[0]['error']}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${responseData[0]['error']}')),
+          );
+        } else {
+          print('Company created successfully: $responseData');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Company created successfully!')),
+          );
+        }
+      } else {
+        // Handle unexpected status codes
+        print('Failed to create company. Status code: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to create company.')),
+        );
+      }
+    } catch (e) {
+      print('Exception: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
   }
 
   void _pickFileForLogo() async {
     try {
-      // Open file picker for selecting files
       final result = await FilePicker.platform.pickFiles();
-
-      // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
         setState(() {
-          selectedlogo = result.files.first.name; // Get the file name
+          selectedlogo = result.files.first.name;
         });
       } else {
-        // No file selected
         setState(() {
           selectedlogo = 'No file chosen';
         });
@@ -65,7 +115,6 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -75,7 +124,6 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
               ),
             ),
           ),
-          // Main Content
           Padding(
             padding: const EdgeInsets.only(bottom: 100),
             child: SingleChildScrollView(
@@ -83,14 +131,12 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // App Logo
                   Image.asset(
                     'nobglogo.png',
                     height: 200,
                     width: 200,
                     fit: BoxFit.contain,
                   ),
-                  // Heading
                   const Text(
                     'Create a Company',
                     style: TextStyle(
@@ -100,7 +146,6 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  // Company Name Input
                   TextField(
                     controller: _companyNameController,
                     decoration: InputDecoration(
@@ -115,7 +160,6 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // GSTIN Input
                   TextField(
                     controller: _gstinController,
                     decoration: InputDecoration(
@@ -130,7 +174,6 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Email Input
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -145,7 +188,6 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Phone Number Input
                   TextField(
                     controller: _phoneNumberController,
                     decoration: InputDecoration(
@@ -160,18 +202,11 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // Register Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        // Save company data to SharedPreferences
-                        await _saveCompanyData();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Company created successfully!')),
-                        );
+                        await _saveCompanyData(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
@@ -193,7 +228,6 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
               ),
             ),
           ),
-          // Footer Section
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(

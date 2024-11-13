@@ -129,20 +129,7 @@ class _CreateStaffState extends State<CreateStaff> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  TextField(
-                    controller: _openingDateController,
-                    decoration: InputDecoration(
-                      labelText: 'Enter Salary Amount',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
+
                   const SizedBox(height: 30),
                   TextField(
                     controller: _openingDateController,
