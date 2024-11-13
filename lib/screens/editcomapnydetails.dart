@@ -1,3 +1,6 @@
+import 'package:chitfunds/wigets/customappbar.dart';
+import 'package:chitfunds/wigets/customdrawer.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,11 +16,34 @@ class _EditCompanyState extends State<EditCompany> {
   final TextEditingController _gstinController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String selectedlogo = 'No file chosen';
 
   @override
   void initState() {
     super.initState();
     _loadCompanyData(); // Load existing company details on startup
+  }
+
+  void _pickFileForLogo() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedlogo = result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedlogo = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
   // Method to load company data from SharedPreferences
@@ -53,6 +79,14 @@ class _EditCompanyState extends State<EditCompany> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey, // Set the key here
+      appBar: CustomAppBar(
+        title: 'Edit Company',
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+        },
+      ),
+      drawer: CustomDrawer(),
       body: Stack(
         children: [
           // Background Gradient
@@ -74,22 +108,7 @@ class _EditCompanyState extends State<EditCompany> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // App Logo
-                  Image.asset(
-                    'nobglogo.png',
-                    height: 200,
-                    width: 200,
-                    fit: BoxFit.contain,
-                  ),
-                  const Text(
-                    'Edit Company',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  // Company Name Input
+                  const SizedBox(height: 100),
                   TextField(
                     controller: _companyNameController,
                     decoration: InputDecoration(
@@ -148,7 +167,50 @@ class _EditCompanyState extends State<EditCompany> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Text(
+                        'Upload Logo',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Stack(
+                    alignment: Alignment.centerLeft,
+                    children: [
+                      // The disabled text field to hold the button and text
+                      TextField(
+                        enabled: false,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.only(
+                              left:
+                                  120), // Adjust the padding to fit the button
+                          hintText: selectedlogo,
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      // Positioned Choose File button inside the text field
+                      Positioned(
+                        left: 8,
+                        child: ElevatedButton(
+                          onPressed: _pickFileForLogo,
+                          child: const Text('Choose File'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
                   // Update Button
                   SizedBox(
                     width: double.infinity,

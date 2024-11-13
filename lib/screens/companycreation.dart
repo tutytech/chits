@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,6 +14,7 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
   final TextEditingController _gstinController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  String selectedlogo = 'No file chosen';
 
   // Method to save company data to SharedPreferences
   Future<void> _saveCompanyData() async {
@@ -35,6 +37,27 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
     print('Saved GSTIN: $savedGstin');
     print('Saved Email: $savedEmail');
     print('Saved Phone Number: $savedPhoneNumber');
+  }
+
+  void _pickFileForLogo() async {
+    try {
+      // Open file picker for selecting files
+      final result = await FilePicker.platform.pickFiles();
+
+      // Check if a file was selected
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedlogo = result.files.first.name; // Get the file name
+        });
+      } else {
+        // No file selected
+        setState(() {
+          selectedlogo = 'No file chosen';
+        });
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
   }
 
   @override
@@ -137,6 +160,7 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+
                   // Register Button
                   SizedBox(
                     width: double.infinity,
