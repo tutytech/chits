@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class CreateCenter extends StatefulWidget {
   const CreateCenter({Key? key}) : super(key: key);
@@ -10,14 +13,9 @@ class CreateCenter extends StatefulWidget {
 }
 
 class _CreateBranchState extends State<CreateCenter> {
-  final TextEditingController _branchNameController = TextEditingController();
-  final TextEditingController _fullBranchNameController =
-      TextEditingController();
-  final TextEditingController _registerCompanyNameController =
-      TextEditingController();
-  final TextEditingController _openingBalanceController =
-      TextEditingController();
-  final TextEditingController _openingDateController = TextEditingController();
+  final TextEditingController _centerNameController = TextEditingController();
+
+  final TextEditingController _centeridController = TextEditingController();
 
   String? selectedBranch;
   String? selectedDayOrder;
@@ -30,6 +28,47 @@ class _CreateBranchState extends State<CreateCenter> {
   final List<String> dayOrders = ['Morning', 'Afternoon', 'Evening'];
   final List<String> timings = ['9:00 AM', '10:00 AM', '11:00 AM'];
   final List<String> fieldOfficers = ['Officer A', 'Officer B', 'Officer C'];
+  Future<void> _createCenter() async {
+    final String apiUrl = 'https://chits.tutytech.in/center.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'insert',
+          'centername': _centerNameController.text,
+
+          'centercode': _centeridController.text,
+          'branchid': '1',
+          'entryid': '123', // Replace with a real entry ID if needed
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData[0]['id'] != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Center created successfully!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${responseData[0]['error']}')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to create branch.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +105,7 @@ class _CreateBranchState extends State<CreateCenter> {
 
                     // Branch Name field
                     TextField(
-                      controller: _branchNameController,
+                      controller: _centeridController,
                       decoration: InputDecoration(
                         labelText: 'Enter Center ID',
                         labelStyle: const TextStyle(color: Colors.black),
@@ -82,7 +121,7 @@ class _CreateBranchState extends State<CreateCenter> {
 
                     // Full Branch Name field
                     TextField(
-                      controller: _fullBranchNameController,
+                      controller: _centerNameController,
                       decoration: InputDecoration(
                         labelText: 'Enter Center Name',
                         labelStyle: const TextStyle(color: Colors.black),
@@ -130,9 +169,7 @@ class _CreateBranchState extends State<CreateCenter> {
                       height: 50,
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle create center action here
-                        },
+                        onPressed: _createCenter,
                         child: const Text(
                           'Create Center',
                           style: TextStyle(
