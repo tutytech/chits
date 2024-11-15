@@ -1,33 +1,91 @@
 import 'dart:convert';
-
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class CreateCenter extends StatefulWidget {
-  const CreateCenter({Key? key}) : super(key: key);
+  final List<String>? branches;
+  const CreateCenter({
+    this.branches,
+  });
 
   @override
-  _CreateBranchState createState() => _CreateBranchState();
+  _CreateCenterState createState() => _CreateCenterState();
 }
 
-class _CreateBranchState extends State<CreateCenter> {
+class _CreateCenterState extends State<CreateCenter> {
   final TextEditingController _centerNameController = TextEditingController();
-
   final TextEditingController _centeridController = TextEditingController();
+  String? selectedBranch; // Holds the selected branch value
+  List<String> branchNames =
+      []; // List to hold branch names fetched from the API
 
-  String? selectedBranch;
-  String? selectedDayOrder;
-  String? selectedTiming;
-  String? selectedFieldOfficer;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // Sample data for dropdowns
-  final List<String> branches = ['Branch 1', 'Branch 2', 'Branch 3'];
-  final List<String> dayOrders = ['Morning', 'Afternoon', 'Evening'];
-  final List<String> timings = ['9:00 AM', '10:00 AM', '11:00 AM'];
-  final List<String> fieldOfficers = ['Officer A', 'Officer B', 'Officer C'];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchBranches(); // Fetch branches when the widget dependencies change
+  }
+
+  // Fetch branches from the API
+  Future<void> _fetchBranches() async {
+    final String apiUrl = 'https://chits.tutytech.in/branch.php';
+
+    try {
+      print("Request URL: $apiUrl");
+      print("Request Body: { 'type': 'select' }");
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'select', // Assuming 'select' fetches all branches
+        },
+      );
+
+      print("Response Status Code: ${response.statusCode}");
+      print("Response Headers: ${response.headers}");
+      print(
+          "Response Body: ${response.body.isNotEmpty ? response.body : 'No content'}");
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        List<String> branches = [];
+        for (var branch in responseData) {
+          if (branch['branchname'] != null) {
+            branches.add(branch['branchname']);
+          }
+        }
+
+        setState(() {
+          branchNames = branches;
+        });
+
+        print("Branch Names: $branches");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to fetch branches.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  // Show Snackbar for feedback messages
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  // Create Center API call
   Future<void> _createCenter() async {
     final String apiUrl = 'https://chits.tutytech.in/center.php';
 
@@ -40,9 +98,9 @@ class _CreateBranchState extends State<CreateCenter> {
         body: {
           'type': 'insert',
           'centername': _centerNameController.text,
-
           'centercode': _centeridController.text,
-          'branchid': '1',
+          'branchid':
+              selectedBranch ?? '1', // Use selectedBranch or default to '1'
           'entryid': '123', // Replace with a real entry ID if needed
         },
       );
@@ -50,40 +108,32 @@ class _CreateBranchState extends State<CreateCenter> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData[0]['id'] != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Center created successfully!')),
-          );
+          _showSnackBar('Center created successfully!');
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${responseData[0]['error']}')),
-          );
+          _showSnackBar('Error: ${responseData[0]['error']}');
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create branch.')),
-        );
+        _showSnackBar(
+            'Failed to create center. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showSnackBar('An error occurred: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Set the key here
+      key: _scaffoldKey,
       appBar: CustomAppBar(
         title: 'Create Center',
         onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+          _scaffoldKey.currentState?.openDrawer();
         },
       ),
       drawer: CustomDrawer(),
       body: Stack(
         children: [
-          // Background Gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -102,24 +152,6 @@ class _CreateBranchState extends State<CreateCenter> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-
-                    // Branch Name field
-                    TextField(
-                      controller: _centeridController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Center ID',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Full Branch Name field
                     TextField(
                       controller: _centerNameController,
                       decoration: InputDecoration(
@@ -134,10 +166,20 @@ class _CreateBranchState extends State<CreateCenter> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
-                    // Select Branch dropdown
+                    // Dropdown for selecting a branch
                     DropdownButtonFormField<String>(
                       value: selectedBranch,
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedBranch = newValue;
+                        });
+                      },
+                      items: branchNames
+                          .map((branchName) => DropdownMenuItem<String>(
+                                value: branchName,
+                                child: Text(branchName),
+                              ))
+                          .toList(),
                       decoration: InputDecoration(
                         labelText: 'Select Branch',
                         labelStyle: const TextStyle(color: Colors.black),
@@ -148,23 +190,22 @@ class _CreateBranchState extends State<CreateCenter> {
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      items: branches.map((branch) {
-                        return DropdownMenuItem<String>(
-                          value: branch,
-                          child: Text(branch),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedBranch = value;
-                        });
-                      },
                     ),
                     const SizedBox(height: 20),
-
-                    // Day Order dropdown
-
-                    // Create Center button
+                    TextField(
+                      controller: _centeridController,
+                      decoration: InputDecoration(
+                        labelText: 'Enter Center ID',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
                     SizedBox(
                       height: 50,
                       width: double.infinity,
@@ -173,9 +214,7 @@ class _CreateBranchState extends State<CreateCenter> {
                         child: const Text(
                           'Create Center',
                           style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              color: Colors.black, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),

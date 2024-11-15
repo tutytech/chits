@@ -8,9 +8,16 @@ import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:flutter/material.dart';
 
-class CustomDrawer extends StatelessWidget {
-  CustomDrawer({Key? key}) : super(key: key);
+class CustomDrawer extends StatefulWidget {
+  final List<String>? branchNames;
+  const CustomDrawer({this.branchNames});
 
+  @override
+  _CustomDrawerState createState() => _CustomDrawerState();
+}
+
+class _CustomDrawerState extends State<CustomDrawer> {
+  final List<Map<String, dynamic>> _branches = [];
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -52,7 +59,10 @@ class CustomDrawer extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreateCenter()),
+                MaterialPageRoute(
+                    builder: (context) => CreateCenter(
+                          branches: widget.branchNames,
+                        )),
               );
             },
           ),

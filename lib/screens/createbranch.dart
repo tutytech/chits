@@ -13,7 +13,7 @@ class CreateBranch extends StatefulWidget {
 
 class _CreateBranchState extends State<CreateBranch> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
+  List<String> branchNames = [];
   final TextEditingController _branchNameController = TextEditingController();
   final TextEditingController _openingBalanceController =
       TextEditingController();
@@ -43,6 +43,9 @@ class _CreateBranchState extends State<CreateBranch> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Branch created successfully!')),
           );
+
+          // Fetch the list of all branches
+          await _fetchBranches();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: ${responseData[0]['error']}')),
@@ -51,6 +54,48 @@ class _CreateBranchState extends State<CreateBranch> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to create branch.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  Future<void> _fetchBranches() async {
+    final String apiUrl = 'https://chits.tutytech.in/branch.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'list', // Assuming 'list' type fetches all branches
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        List<String> branches = [];
+        // Assuming the response contains a list of branches with a 'branchname' field
+        for (var branch in responseData) {
+          if (branch['branchname'] != null) {
+            branches.add(branch['branchname']);
+          }
+        }
+
+        setState(() {
+          branchNames = branches;
+        });
+
+        // Print the branch names to the terminal
+        print("Branch Names: $branches");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to fetch branches.')),
         );
       }
     } catch (e) {
@@ -70,7 +115,7 @@ class _CreateBranchState extends State<CreateBranch> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(branchNames: branchNames),
       body: Stack(
         children: [
           Container(
