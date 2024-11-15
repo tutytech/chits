@@ -99,7 +99,7 @@ class _CreateCenterState extends State<CreateCenter> {
           'type': 'insert',
           'centername': _centerNameController.text,
           'centercode': _centeridController.text,
-          'branchid':
+          'branchname':
               selectedBranch ?? '1', // Use selectedBranch or default to '1'
           'entryid': '123', // Replace with a real entry ID if needed
         },
@@ -168,7 +168,9 @@ class _CreateCenterState extends State<CreateCenter> {
                     const SizedBox(height: 20),
                     // Dropdown for selecting a branch
                     DropdownButtonFormField<String>(
-                      value: selectedBranch,
+                      value: branchNames.contains(selectedBranch)
+                          ? selectedBranch
+                          : null,
                       onChanged: (newValue) {
                         setState(() {
                           selectedBranch = newValue;
@@ -191,6 +193,7 @@ class _CreateCenterState extends State<CreateCenter> {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 20),
                     TextField(
                       controller: _centeridController,
