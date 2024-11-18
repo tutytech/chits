@@ -20,13 +20,14 @@ class _CreateCenterState extends State<CreateCenter> {
   String? selectedBranch; // Holds the selected branch value
   List<String> branchNames =
       []; // List to hold branch names fetched from the API
-
+  List<String> centerNames = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _fetchBranches(); // Fetch branches when the widget dependencies change
+    _fetchCenters();
   }
 
   // Fetch branches from the API
@@ -75,6 +76,63 @@ class _CreateCenterState extends State<CreateCenter> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
+    }
+  }
+
+  Future<void> _fetchCenters() async {
+    final String apiUrl = 'https://chits.tutytech.in/center.php';
+
+    try {
+      // Print the request details
+      print('Request URL: $apiUrl');
+      print('Request Body: type=list');
+      print('Request Headers: Content-Type=application/x-www-form-urlencoded');
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'select', // Replace with the correct type for listing centers
+        },
+      );
+
+      // Print response details
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+
+        // Check if response data is a list
+        if (responseData is List) {
+          List<String> centers = [];
+
+          // Iterate and extract center names
+          for (var center in responseData) {
+            if (center['centername'] != null) {
+              centers.add(center['centername']);
+            }
+          }
+
+          setState(() {
+            centerNames = centers; // Update your state variable
+          });
+
+          // Print center names for debugging
+          print('Center Names: $centers');
+        } else {
+          _showSnackBar('Unexpected response format');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to fetch centers. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Print the error details for debugging
+      print('Error: $e');
+      _showSnackBar('An error occurred: $e');
     }
   }
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:chitfunds/wigets/customappbar.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class CreateCustomer extends StatefulWidget {
   const CreateCustomer({Key? key}) : super(key: key);
@@ -47,7 +49,171 @@ class _CreateCustomerState extends State<CreateCustomer> {
   String selectedBondSheetFileName = 'No file chosen';
   String selectedImagesFileName = 'No file chosen';
   Uint8List? selectedImage;
+  List<String> branchNames = [];
+  List<String> centerNames = [];
+  final TextEditingController _customerIdController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneNoController = TextEditingController();
+  final TextEditingController _mobileNoController = TextEditingController();
+  final TextEditingController _aadharNoController = TextEditingController();
+  final TextEditingController _uploadAadharPath = TextEditingController();
+  final TextEditingController _uploadVoterIdPath = TextEditingController();
+  final TextEditingController _uploadPanPath = TextEditingController();
+  final TextEditingController _uploadNomineeAadharPath =
+      TextEditingController();
+  final TextEditingController _uploadNomineeVoterIdPath =
+      TextEditingController();
+  final TextEditingController _uploadNomineePanPath = TextEditingController();
+  final TextEditingController _uploadRationCardPath = TextEditingController();
+  final TextEditingController _uploadPropertyTaxReceiptPath =
+      TextEditingController();
+  final TextEditingController _uploadEbBillPath = TextEditingController();
+  final TextEditingController _uploadGasBillPath = TextEditingController();
+  final TextEditingController _uploadChequeLeafPath = TextEditingController();
+  final TextEditingController _uploadBondSheetPath = TextEditingController();
+  String? selectedCenter;
   final ImagePicker _picker = ImagePicker();
+  List<String> centers = [];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // super.didChangeDependencies();
+    _fetchBranches();
+    _fetchCenters(); // Fetch branches when the widget dependencies change
+  }
+
+  Future<void> _fetchCenters() async {
+    final String apiUrl = 'https://chits.tutytech.in/center.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'select', // Replace with the correct type for listing centers
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Log response for debugging
+        print("Response Body: ${response.body}");
+
+        final responseData = json.decode(response.body);
+
+        // Log decoded response to check structure
+        print("Decoded Response Data: $responseData");
+
+        for (var center in responseData) {
+          if (center['centername'] != null) {
+            centers.add(center['centername']);
+          }
+        }
+
+        if (centers.isEmpty) {
+          _showSnackBar('Centers were not found in the response data.');
+        } else {
+          setState(() {
+            centerNames = centers;
+          });
+
+          print('Center Names: $centers');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to fetch centers. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showSnackBar('An error occurred: $e');
+    }
+  }
+
+  Future<void> _createCustomer() async {
+    final String apiUrl = 'https://chits.tutytech.in/customer.php';
+
+    try {
+      // Print the request URL and body for debugging
+      print('Request URL: $apiUrl');
+      print('Request body: ${{
+        'type': 'insert',
+        'customerid': _customerIdController.text,
+        'name': _nameController.text,
+        'address': _addressController.text,
+        'phoneno': _phoneNoController.text,
+        'aadharno': _aadharNoController.text,
+        'branch': selectedBranch,
+        'center': selectedCenter,
+        'uploadaadhar': _uploadAadharPath,
+        'uploadvoterid': _uploadVoterIdPath,
+        'uploadpan': _uploadPanPath,
+        'uploadnomineeaadharcard': _uploadNomineeAadharPath,
+        'uploadnomineevoterid': _uploadNomineeVoterIdPath,
+        'uploadnomineepan': _uploadNomineePanPath,
+        'uploadrationcard': _uploadRationCardPath,
+        'uploadpropertytaxreceipt': _uploadPropertyTaxReceiptPath,
+        'uploadebbill': _uploadEbBillPath,
+        'uploadgasbill': _uploadGasBillPath,
+        'uploadchequeleaf': _uploadChequeLeafPath,
+        'uploadbondsheet': _uploadBondSheetPath,
+      }}');
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'insert',
+          'customerid': _customerIdController.text,
+          'name': _nameController.text,
+          'address': _addressController.text,
+          'phoneno': _phoneNoController.text,
+          'aadharno': _aadharNoController.text,
+          'branch': selectedBranch,
+          'center': selectedCenter,
+          'uploadaadhar': _uploadAadharPath,
+          'uploadvoterid': _uploadVoterIdPath,
+          'uploadpan': _uploadPanPath,
+          'uploadnomineeaadharcard': _uploadNomineeAadharPath,
+          'uploadnomineevoterid': _uploadNomineeVoterIdPath,
+          'uploadnomineepan': _uploadNomineePanPath,
+          'uploadrationcard': _uploadRationCardPath,
+          'uploadpropertytaxreceipt': _uploadPropertyTaxReceiptPath,
+          'uploadebbill': _uploadEbBillPath,
+          'uploadgasbill': _uploadGasBillPath,
+          'uploadchequeleaf': _uploadChequeLeafPath,
+          'uploadbondsheet': _uploadBondSheetPath,
+        },
+      );
+
+      // Print the response body for debugging
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData[0]['id'] != null) {
+          _showSnackBar('Customer created successfully!');
+        } else {
+          _showSnackBar('Error: ${responseData[0]['error']}');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to create customer. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Print the error for debugging
+      print('Error: $e');
+      _showSnackBar('An error occurred: $e');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -105,6 +271,78 @@ class _CreateCustomerState extends State<CreateCustomer> {
       }
     } catch (e) {
       print('Error picking file: $e');
+    }
+  }
+
+  Future<void> _fetchBranches() async {
+    final String apiUrl = 'https://chits.tutytech.in/branch.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'select', // Assuming 'list' type fetches all branches
+        },
+      );
+
+      // Print the response for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        try {
+          final responseData = json.decode(response.body);
+
+          if (responseData is List) {
+            // Check if the response is a list
+            List<String> branches = [];
+
+            for (var branch in responseData) {
+              if (branch is Map && branch['branchname'] != null) {
+                branches.add(branch['branchname']);
+              }
+            }
+
+            setState(() {
+              branchNames = branches;
+            });
+
+            // Print the branch names to the terminal
+            print("Branch Names: $branches");
+          } else {
+            // Handle unexpected response structure
+            print('Unexpected JSON structure: $responseData');
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Unexpected JSON structure received.')),
+            );
+          }
+        } catch (e) {
+          // Handle JSON decoding errors
+          print('JSON decode error: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Invalid JSON response: $e')),
+          );
+        }
+      } else {
+        // Handle cases where the response is not OK or empty
+        print(
+            'Failed to fetch branches or empty response. Status code: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Failed to fetch branches or received an empty response.')),
+        );
+      }
+    } catch (e) {
+      // Handle any other errors
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
     }
   }
 
@@ -470,7 +708,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                     ),
                     const SizedBox(height: 20),
                     TextField(
-                      controller: _fullBranchNameController,
+                      controller: _nameController,
                       decoration: InputDecoration(
                         labelText: 'Name',
                         labelStyle: const TextStyle(color: Colors.black),
@@ -484,7 +722,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                     ),
                     const SizedBox(height: 20),
                     TextField(
-                      controller: _fullBranchNameController,
+                      controller: _addressController,
                       decoration: InputDecoration(
                         labelText: 'Address',
                         labelStyle: const TextStyle(color: Colors.black),
@@ -498,7 +736,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                     ),
                     const SizedBox(height: 20),
                     TextField(
-                      controller: _fullBranchNameController,
+                      controller: _phoneNoController,
                       decoration: InputDecoration(
                         labelText: 'Phone No',
                         labelStyle: const TextStyle(color: Colors.black),
@@ -511,22 +749,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
                       ),
                     ),
                     const SizedBox(height: 20),
+
                     TextField(
-                      controller: _fullBranchNameController,
-                      decoration: InputDecoration(
-                        labelText: 'Mobile No',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _fullBranchNameController,
+                      controller: _aadharNoController,
                       decoration: InputDecoration(
                         labelText: 'Aadhaar No',
                         labelStyle: const TextStyle(color: Colors.black),
@@ -542,9 +767,22 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
                     // Branch Dropdown
                     DropdownButtonFormField<String>(
-                      value: selectedBranch,
+                      value: branchNames.contains(selectedBranch)
+                          ? selectedBranch
+                          : null,
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedBranch = newValue;
+                        });
+                      },
+                      items: branchNames
+                          .map((branchName) => DropdownMenuItem<String>(
+                                value: branchName,
+                                child: Text(branchName),
+                              ))
+                          .toList(),
                       decoration: InputDecoration(
-                        labelText: 'Branch',
+                        labelText: 'Select Branch',
                         labelStyle: const TextStyle(color: Colors.black),
                         filled: true,
                         fillColor: Colors.white,
@@ -553,25 +791,26 @@ class _CreateCustomerState extends State<CreateCustomer> {
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      items: branches.map((branch) {
-                        return DropdownMenuItem<String>(
-                          value: branch,
-                          child: Text(branch),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedBranch = value;
-                        });
-                      },
                     ),
                     const SizedBox(height: 20),
 
-                    // Center Dropdown
                     DropdownButtonFormField<String>(
-                      value: selectedDayOrder,
+                      value: centerNames.contains(selectedCenter)
+                          ? selectedCenter
+                          : null,
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedCenter = newValue;
+                        });
+                      },
+                      items: centerNames
+                          .map((centerName) => DropdownMenuItem<String>(
+                                value: centerName,
+                                child: Text(centerName),
+                              ))
+                          .toList(),
                       decoration: InputDecoration(
-                        labelText: 'Center',
+                        labelText: 'Select Center',
                         labelStyle: const TextStyle(color: Colors.black),
                         filled: true,
                         fillColor: Colors.white,
@@ -580,17 +819,6 @@ class _CreateCustomerState extends State<CreateCustomer> {
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      items: dayOrders.map((dayOrder) {
-                        return DropdownMenuItem<String>(
-                          value: dayOrder,
-                          child: Text(dayOrder),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedDayOrder = value;
-                        });
-                      },
                     ),
 
                     const SizedBox(height: 20),
@@ -1094,20 +1322,12 @@ class _CreateCustomerState extends State<CreateCustomer> {
                     // Document Upload Buttons
 
                     // Create Customer Button
-                    SizedBox(
-                      height: 50,
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Handle create customer action here
-                        },
-                        child: const Text(
-                          'Create Customer',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    ElevatedButton(
+                      onPressed: _createCustomer,
+                      child: const Text(
+                        'Create Customer',
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
