@@ -6,7 +6,7 @@ import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
@@ -133,78 +133,92 @@ class _CreateCustomerState extends State<CreateCustomer> {
   Future<void> _createCustomer() async {
     final String apiUrl = 'https://chits.tutytech.in/customer.php';
 
-    try {
-      // Print the request URL and body for debugging
-      print('Request URL: $apiUrl');
-      print('Request body: ${{
-        'type': 'insert',
-        'customerid': _customerIdController.text,
-        'name': _nameController.text,
-        'address': _addressController.text,
-        'phoneno': _phoneNoController.text,
-        'aadharno': _aadharNoController.text,
-        'branch': selectedBranch,
-        'center': selectedCenter,
-        'uploadaadhar': _uploadAadharPath,
-        'uploadvoterid': _uploadVoterIdPath,
-        'uploadpan': _uploadPanPath,
-        'uploadnomineeaadharcard': _uploadNomineeAadharPath,
-        'uploadnomineevoterid': _uploadNomineeVoterIdPath,
-        'uploadnomineepan': _uploadNomineePanPath,
-        'uploadrationcard': _uploadRationCardPath,
-        'uploadpropertytaxreceipt': _uploadPropertyTaxReceiptPath,
-        'uploadebbill': _uploadEbBillPath,
-        'uploadgasbill': _uploadGasBillPath,
-        'uploadchequeleaf': _uploadChequeLeafPath,
-        'uploadbondsheet': _uploadBondSheetPath,
-      }}');
+    // Check if image is selected
+    if (selectedImage == null) {
+      print("No image selected.");
+      return;
+    }
 
-      final response = await http.post(
+    try {
+      // Create the MultipartRequest
+      final request = http.MultipartRequest(
+        'POST',
         Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: {
-          'type': 'insert',
-          'customerid': _customerIdController.text,
-          'name': _nameController.text,
-          'address': _addressController.text,
-          'phoneno': _phoneNoController.text,
-          'aadharno': _aadharNoController.text,
-          'branch': selectedBranch,
-          'center': selectedCenter,
-          'uploadaadhar': _uploadAadharPath,
-          'uploadvoterid': _uploadVoterIdPath,
-          'uploadpan': _uploadPanPath,
-          'uploadnomineeaadharcard': _uploadNomineeAadharPath,
-          'uploadnomineevoterid': _uploadNomineeVoterIdPath,
-          'uploadnomineepan': _uploadNomineePanPath,
-          'uploadrationcard': _uploadRationCardPath,
-          'uploadpropertytaxreceipt': _uploadPropertyTaxReceiptPath,
-          'uploadebbill': _uploadEbBillPath,
-          'uploadgasbill': _uploadGasBillPath,
-          'uploadchequeleaf': _uploadChequeLeafPath,
-          'uploadbondsheet': _uploadBondSheetPath,
-        },
       );
 
-      // Print the response body for debugging
-      print('Response body: ${response.body}');
+      // Dynamically add all fields from the controllers (use .text to get the values)
+      request.fields['type'] = 'insert';
+      request.fields['customerId'] = _customerIdController.text; // Corrected
+      request.fields['name'] = _nameController.text;
+      request.fields['address'] = _addressController.text;
+      request.fields['phoneNo'] = _phoneNoController.text;
+      request.fields['aadharNo'] = _aadharNoController.text;
+      request.fields['branch'] = selectedBranch!;
+      request.fields['center'] = selectedCenter!;
+      request.fields['uploadAadhar'] = selectedAadhaarFileName; // Corrected
+      request.fields['uploadVoterId'] = selectedVoterIdFileName; // Corrected
+      request.fields['uploadPan'] = selectedPanFileName; // Corrected
+      request.fields['uploadNomineeAadharCard'] =
+          selectedNomineeAadharFileName; // Corrected
+      request.fields['uploadnomineeVoterId'] =
+          selectNomineeVoterIdFileName; // Corrected
+      request.fields['uploadNomineePan'] =
+          selectedNomineePanFileName; // Corrected
+      request.fields['uploadRationCard'] =
+          selectedRationCardFileName; // Corrected
+      request.fields['uploadPropertyTaxReceipt'] =
+          selectedpropertyTaxReceiptFileName; // Corrected
+      request.fields['uploadEbBill'] = selectedEBBillFileName; // Corrected
+      request.fields['uploadGasBill'] = selectedGasBillFileName; // Corrected
+      request.fields['uploadChequeLeaf'] =
+          selectedChequeLeafFileName; // Corrected
+      request.fields['uploadBondSheet'] =
+          selectedBondSheetFileName; // Corrected
+
+      // Add image to the request (if picked)
+      if (selectedImage != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'customerPhoto', // Field name for the image
+            selectedImage!, // Image bytes
+            filename: 'customer_image.jpg', // Image file name
+            contentType:
+                MediaType('image', 'jpeg'), // Set appropriate content type
+          ),
+        );
+      }
+
+      // Log request details for debugging
+      print("Request URL: ${request.url}");
+      print("Request Fields: ${request.fields}");
+      print("Request Files: ${request.files}");
+
+      // Send the request
+      final response = await request.send();
+
+      // Log the status code and response
+      print("Response Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData[0]['id'] != null) {
+        final responseBody = await response.stream.bytesToString();
+        print("Raw Response: $responseBody");
+
+        // Assuming the backend returns an ID or success message in the response
+        if (responseBody.isNotEmpty) {
+          print("Customer created successfully: $responseBody");
           _showSnackBar('Customer created successfully!');
         } else {
-          _showSnackBar('Error: ${responseData[0]['error']}');
+          print(
+              "Customer created successfully, but no response body returned.");
+          _showSnackBar('Failed to create customer.');
         }
       } else {
-        _showSnackBar(
-            'Failed to create customer. Status code: ${response.statusCode}');
+        print("Error creating customer: ${response.reasonPhrase}");
+        _showSnackBar('Failed to create customer.');
       }
     } catch (e) {
-      // Print the error for debugging
-      print('Error: $e');
+      // Catch any exceptions during the request
+      print("Exception: $e");
       _showSnackBar('An error occurred: $e');
     }
   }
@@ -222,7 +236,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       if (pickedImage != null) {
         final Uint8List imageBytes = await pickedImage.readAsBytes();
         setState(() {
-          selectedImage = imageBytes; // Update selectedImage with bytes
+          selectedImage = imageBytes; // Update selectedImage with image bytes
         });
       }
     } catch (e) {
@@ -355,13 +369,12 @@ class _CreateCustomerState extends State<CreateCustomer> {
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
         setState(() {
-          selectedNomineePanFileName =
-              result.files.first.name; // Get the file name
+          selectedPanFileName = result.files.first.name; // Get the file name
         });
       } else {
         // No file selected
         setState(() {
-          selectedNomineePanFileName = 'No file chosen';
+          selectedPanFileName = 'No file chosen';
         });
       }
     } catch (e) {
@@ -422,13 +435,13 @@ class _CreateCustomerState extends State<CreateCustomer> {
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
         setState(() {
-          selectNomineeVoterIdFileName =
+          selectedNomineePanFileName =
               result.files.first.name; // Get the file name
         });
       } else {
         // No file selected
         setState(() {
-          selectNomineeVoterIdFileName = 'No file chosen';
+          selectedNomineePanFileName = 'No file chosen';
         });
       }
     } catch (e) {
@@ -694,7 +707,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
                     const SizedBox(height: 40),
                     TextField(
-                      controller: _branchNameController,
+                      controller: _customerIdController,
                       decoration: InputDecoration(
                         labelText: 'CustomerID',
                         labelStyle: const TextStyle(color: Colors.black),
@@ -925,7 +938,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedNomineePanFileName,
+                            hintText: selectedPanFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -1048,7 +1061,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             contentPadding: const EdgeInsets.only(
                                 left:
                                     120), // Adjust the padding to fit the button
-                            hintText: selectedAadhaarFileName,
+                            hintText: selectedNomineePanFileName,
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -1322,25 +1335,24 @@ class _CreateCustomerState extends State<CreateCustomer> {
                     // Document Upload Buttons
 
                     // Create Customer Button
-                    ElevatedButton(
-                      onPressed: _createCustomer,
-                      child: const Text(
-                        'Create Customer',
-                        style: TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.bold),
+                    SizedBox(
+                      height: 50,
+                      width: double.infinity,
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: _createCustomer,
+                          child: const Text(
+                            'Create Customer',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              height: 100,
-              color: Colors.transparent,
             ),
           ),
         ],
