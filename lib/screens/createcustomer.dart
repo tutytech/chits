@@ -48,6 +48,33 @@ class _CreateCustomerState extends State<CreateCustomer> {
   String selectedChequeLeafFileName = 'No file chosen';
   String selectedBondSheetFileName = 'No file chosen';
   String selectedImagesFileName = 'No file chosen';
+  Uint8List? _imageBytes;
+// Variables to hold file bytes for each selected document
+  Uint8List? selectedAadhaarFileBytes;
+
+  Uint8List? selectedVoterIdFileBytes;
+
+  Uint8List? selectedPanFileBytes;
+
+  Uint8List? selectedNomineeAadharFileBytes;
+
+  Uint8List? selectNomineeVoterIdFileBytes;
+
+  Uint8List? selectedNomineePanFileBytes;
+
+  Uint8List? selectedRationCardFileBytes;
+
+  Uint8List? selectedpropertyTaxReceiptFileBytes;
+
+  Uint8List? selectedEBBillFileBytes;
+
+  Uint8List? selectedGasBillFileBytes;
+
+  Uint8List? selectedChequeLeafFileBytes;
+
+  Uint8List? selectedBondSheetFileBytes;
+
+  String? _imageFileName;
   Uint8List? selectedImage;
   List<String> branchNames = [];
   List<String> centerNames = [];
@@ -75,6 +102,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
   String? selectedCenter;
   final ImagePicker _picker = ImagePicker();
   List<String> centers = [];
+  File? _image;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -133,9 +161,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
   Future<void> _createCustomer() async {
     final String apiUrl = 'https://chits.tutytech.in/customer.php';
 
-    // Check if image is selected
-    if (selectedImage == null) {
+    if (_image == null) {
       print("No image selected.");
+      _showSnackBar('Please select an image.');
       return;
     }
 
@@ -146,44 +174,170 @@ class _CreateCustomerState extends State<CreateCustomer> {
         Uri.parse(apiUrl),
       );
 
-      // Dynamically add all fields from the controllers (use .text to get the values)
+      // Add all fields from the controllers
       request.fields['type'] = 'insert';
-      request.fields['customerId'] = _customerIdController.text; // Corrected
-      request.fields['name'] = _nameController.text;
-      request.fields['address'] = _addressController.text;
-      request.fields['phoneNo'] = _phoneNoController.text;
-      request.fields['aadharNo'] = _aadharNoController.text;
-      request.fields['branch'] = selectedBranch!;
-      request.fields['center'] = selectedCenter!;
-      request.fields['uploadAadhar'] = selectedAadhaarFileName; // Corrected
-      request.fields['uploadVoterId'] = selectedVoterIdFileName; // Corrected
-      request.fields['uploadPan'] = selectedPanFileName; // Corrected
-      request.fields['uploadNomineeAadharCard'] =
-          selectedNomineeAadharFileName; // Corrected
-      request.fields['uploadnomineeVoterId'] =
-          selectNomineeVoterIdFileName; // Corrected
-      request.fields['uploadNomineePan'] =
-          selectedNomineePanFileName; // Corrected
-      request.fields['uploadRationCard'] =
-          selectedRationCardFileName; // Corrected
-      request.fields['uploadPropertyTaxReceipt'] =
-          selectedpropertyTaxReceiptFileName; // Corrected
-      request.fields['uploadEbBill'] = selectedEBBillFileName; // Corrected
-      request.fields['uploadGasBill'] = selectedGasBillFileName; // Corrected
-      request.fields['uploadChequeLeaf'] =
-          selectedChequeLeafFileName; // Corrected
-      request.fields['uploadBondSheet'] =
-          selectedBondSheetFileName; // Corrected
+      request.fields['customerId'] = _customerIdController.text.trim();
+      request.fields['name'] = _nameController.text.trim();
+      request.fields['address'] = _addressController.text.trim();
+      request.fields['phoneNo'] = _phoneNoController.text.trim();
+      request.fields['aadharNo'] =
+          _aadharNoController.text.trim(); // Ensure this is passed as a string
+      request.fields['branch'] = selectedBranch ?? '';
+      request.fields['center'] = selectedCenter ?? '';
 
-      // Add image to the request (if picked)
-      if (selectedImage != null) {
+      // Add file names for uploaded documents if available
+      request.fields['uploadAadhar'] = selectedAadhaarFileName ?? '';
+      request.fields['uploadVoterId'] = selectedVoterIdFileName ?? '';
+      request.fields['uploadPan'] = selectedPanFileName ?? '';
+      request.fields['uploadNomineeAadharCard'] =
+          selectedNomineeAadharFileName ?? '';
+      request.fields['uploadNomineeVoterId'] =
+          selectNomineeVoterIdFileName ?? '';
+      request.fields['uploadNomineePan'] = selectedNomineePanFileName ?? '';
+      request.fields['uploadRationCard'] = selectedRationCardFileName ?? '';
+      request.fields['uploadPropertyTaxReceipt'] =
+          selectedpropertyTaxReceiptFileName ?? '';
+      request.fields['uploadEbBill'] = selectedEBBillFileName ?? '';
+      request.fields['uploadGasBill'] = selectedGasBillFileName ?? '';
+      request.fields['uploadChequeLeaf'] = selectedChequeLeafFileName ?? '';
+      request.fields['uploadBondSheet'] = selectedBondSheetFileName ?? '';
+
+      // Add image file
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'customerPhoto',
+          _imageBytes!,
+          filename: _imageFileName ?? 'customer_photo.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        ),
+      );
+
+      // Add any other document files if applicable
+      if (selectedAadhaarFileBytes != null && selectedAadhaarFileName != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
-            'customerPhoto', // Field name for the image
-            selectedImage!, // Image bytes
-            filename: 'customer_image.jpg', // Image file name
-            contentType:
-                MediaType('image', 'jpeg'), // Set appropriate content type
+            'uploadAadhar',
+            selectedAadhaarFileBytes!,
+            filename: selectedAadhaarFileName!,
+            contentType: MediaType(
+                'application', 'pdf'), // Update content type if needed
+          ),
+        );
+      }
+      if (selectedVoterIdFileBytes != null && selectedVoterIdFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadVoterId',
+            selectedVoterIdFileBytes!,
+            filename: selectedVoterIdFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectedPanFileBytes != null && selectedPanFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadPan',
+            selectedPanFileBytes!,
+            filename: selectedPanFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectedNomineeAadharFileBytes != null &&
+          selectedNomineeAadharFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadNomineeAadharCard',
+            selectedNomineeAadharFileBytes!,
+            filename: selectedNomineeAadharFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectNomineeVoterIdFileBytes != null &&
+          selectNomineeVoterIdFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadNomineeVoterId',
+            selectNomineeVoterIdFileBytes!,
+            filename: selectNomineeVoterIdFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectedNomineePanFileBytes != null &&
+          selectedNomineePanFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadNomineePan',
+            selectedNomineePanFileBytes!,
+            filename: selectedNomineePanFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectedRationCardFileBytes != null &&
+          selectedRationCardFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadRationCard',
+            selectedRationCardFileBytes!,
+            filename: selectedRationCardFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectedpropertyTaxReceiptFileBytes != null &&
+          selectedpropertyTaxReceiptFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadPropertyTaxReceipt',
+            selectedpropertyTaxReceiptFileBytes!,
+            filename: selectedpropertyTaxReceiptFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectedEBBillFileBytes != null && selectedEBBillFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadEbBill',
+            selectedEBBillFileBytes!,
+            filename: selectedEBBillFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectedGasBillFileBytes != null && selectedGasBillFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadGasBill',
+            selectedGasBillFileBytes!,
+            filename: selectedGasBillFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectedChequeLeafFileBytes != null &&
+          selectedChequeLeafFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadChequeLeaf',
+            selectedChequeLeafFileBytes!,
+            filename: selectedChequeLeafFileName!,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+      if (selectedBondSheetFileBytes != null &&
+          selectedBondSheetFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'uploadBondSheet',
+            selectedBondSheetFileBytes!,
+            filename: selectedBondSheetFileName!,
+            contentType: MediaType('application', 'pdf'),
           ),
         );
       }
@@ -196,14 +350,11 @@ class _CreateCustomerState extends State<CreateCustomer> {
       // Send the request
       final response = await request.send();
 
-      // Log the status code and response
-      print("Response Status Code: ${response.statusCode}");
-
+      // Handle response
       if (response.statusCode == 200) {
         final responseBody = await response.stream.bytesToString();
         print("Raw Response: $responseBody");
 
-        // Assuming the backend returns an ID or success message in the response
         if (responseBody.isNotEmpty) {
           print("Customer created successfully: $responseBody");
           _showSnackBar('Customer created successfully!');
@@ -217,7 +368,6 @@ class _CreateCustomerState extends State<CreateCustomer> {
         _showSnackBar('Failed to create customer.');
       }
     } catch (e) {
-      // Catch any exceptions during the request
       print("Exception: $e");
       _showSnackBar('An error occurred: $e');
     }
@@ -230,17 +380,29 @@ class _CreateCustomerState extends State<CreateCustomer> {
   }
 
   Future<void> _pickImage() async {
+    print('pick1');
     try {
-      final XFile? pickedImage =
-          await _picker.pickImage(source: ImageSource.gallery);
-      if (pickedImage != null) {
-        final Uint8List imageBytes = await pickedImage.readAsBytes();
+      print('pick2');
+      // Pick the image from the gallery
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        print('pick3');
+        final bytes = await pickedFile.readAsBytes(); // Convert image to bytes
         setState(() {
-          selectedImage = imageBytes; // Update selectedImage with image bytes
+          print('pick4');
+          _imageBytes = bytes; // Store the image bytes
+          _imageFileName = pickedFile.name;
+          _image = File(pickedFile.path);
+          print('$_imageFileName');
+          print('$_image');
         });
+      } else {
+        print('pick5');
+        print("No image selected.");
       }
     } catch (e) {
-      print("Image pick error: $e");
+      print('pick6');
+      print("Error picking image: $e");
     }
   }
 
@@ -613,7 +775,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
               Positioned(
                 left: 8,
                 child: ElevatedButton(
-                  onPressed: onPickFile,
+                  onPressed: _pickImage,
                   child: const Text('Choose File'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -676,10 +838,11 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             child: CircleAvatar(
                               radius: 70,
                               backgroundColor: Colors.grey[300],
-                              backgroundImage: selectedImage != null
-                                  ? MemoryImage(selectedImage!)
+                              backgroundImage: _imageBytes != null
+                                  ? MemoryImage(
+                                      _imageBytes!) // Use image bytes to show the picked image
                                   : null,
-                              child: selectedImage == null
+                              child: _imageBytes == null
                                   ? const Icon(Icons.person,
                                       size: 40, color: Colors.grey)
                                   : null,
@@ -689,7 +852,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             bottom: 0,
                             right: 0,
                             child: InkWell(
-                              onTap: _pickImage,
+                              onTap:
+                                  _pickImage, // Call the method to pick an image
                               child: CircleAvatar(
                                 radius: 15,
                                 backgroundColor: Colors.blue,
