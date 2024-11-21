@@ -23,16 +23,30 @@ class _CreateSchemeState extends State<CreateScheme> {
 
   final List<String> _collectionModes = ['Weekly', 'Monthly', 'Daily'];
   List<Map<String, dynamic>> _tableData = []; // Data for table rows
+
+  void _initializeTableData() {
+    _tableData = [
+      for (int i = 0; i < 5; i++)
+        {
+          'principalAmount': 0.0,
+          'interestAmount': 0.0,
+          'savingsAmount': 0.0,
+          'totalCollection': 0.0,
+        }
+    ];
+  }
+
+  // Update total collection for a given row
   void _updateTotalCollection(int index) {
-    double principalAmount = double.tryParse(_principalController.text) ?? 0;
-    double interestAmount = double.tryParse(_interestController.text) ?? 0;
-    double savingsAmount = double.tryParse(_savingsController.text) ?? 0;
+    final row = _tableData[index];
 
-    // Calculate the new total collection
-    double totalCollection = principalAmount + interestAmount + savingsAmount;
+    // Calculate the total collection
+    double total =
+        row['principalAmount'] + row['interestAmount'] + row['savingsAmount'];
 
+    // Update the total collection value for this row
     setState(() {
-      _tableData[index]['totalCollection'] = totalCollection;
+      row['totalCollection'] = total;
     });
   }
 
@@ -193,10 +207,6 @@ class _CreateSchemeState extends State<CreateScheme> {
 
                 // Table Header
                 if (_tableData.isNotEmpty)
-                  // Table Header
-
-// Table Rows
-                  // Table Rows
                   Container(
                     color: Colors.grey[300], // Updated header background color
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -227,7 +237,7 @@ class _CreateSchemeState extends State<CreateScheme> {
                           ),
                         ),
                         Container(
-                          width: 1,
+                          width: 0.5, // Reduced width for the separator
                           color: Colors.black,
                         ),
                         Expanded(
@@ -241,7 +251,7 @@ class _CreateSchemeState extends State<CreateScheme> {
                           ),
                         ),
                         Container(
-                          width: 1,
+                          width: 0.5, // Reduced width for the separator
                           color: Colors.black,
                         ),
                         Expanded(
@@ -321,30 +331,30 @@ class _CreateSchemeState extends State<CreateScheme> {
                                         horizontal:
                                             4.0), // Space between columns
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4), // Adjust inner padding
+                                        horizontal: 8.0, vertical: 4.0),
+                                    height: 38,
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black26),
-                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(color: Colors.black12),
                                     ),
-                                    child: Center(
-                                      child: TextField(
-                                        controller: TextEditingController(
-                                            text:
-                                                '${row['principalAmount']}'), // Pre-filled with existing value
-                                        textAlign: TextAlign.center,
-                                        decoration: const InputDecoration(
-                                          isDense:
-                                              true, // Minimizes the height of the TextField
-                                          contentPadding: EdgeInsets
-                                              .zero, // Removes extra padding
-                                          border:
-                                              InputBorder.none, // No underline
-                                        ),
-                                        style: const TextStyle(
-                                            fontSize:
-                                                14), // Adjust font size if needed
+                                    child: TextFormField(
+                                      initialValue:
+                                          row['principalAmount'].toString(),
+                                      decoration: const InputDecoration(
+                                        hintText: 'Principal Amount',
+                                        border: InputBorder.none,
                                       ),
+                                      keyboardType:
+                                          TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      textAlign: TextAlign.center,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          row['principalAmount'] =
+                                              double.tryParse(value) ?? 0.0;
+                                          _updateTotalCollection(
+                                              _tableData.indexOf(row));
+                                        });
+                                      },
                                     ),
                                   ),
                                 ),
@@ -352,27 +362,32 @@ class _CreateSchemeState extends State<CreateScheme> {
                                   child: Container(
                                     margin: const EdgeInsets.symmetric(
                                         horizontal:
-                                            6.0), // Space between columns
+                                            4.0), // Space between columns
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4), // Adjust inner padding
+                                        horizontal: 8.0, vertical: 5.0),
+                                    height: 38,
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black26),
-                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(color: Colors.black12),
                                     ),
-                                    child: Center(
-                                      child: TextField(
-                                        controller: TextEditingController(
-                                            text:
-                                                '${row['interestAmount']}'), // Pre-filled with existing value
-                                        textAlign: TextAlign.center,
-                                        decoration: const InputDecoration(
-                                          isDense: true,
-                                          contentPadding: EdgeInsets.zero,
-                                          border: InputBorder.none,
-                                        ),
-                                        style: const TextStyle(fontSize: 14),
+                                    child: TextFormField(
+                                      initialValue:
+                                          row['interestAmount'].toString(),
+                                      decoration: const InputDecoration(
+                                        hintText: 'Interest Amount',
+                                        border: InputBorder.none,
                                       ),
+                                      keyboardType:
+                                          TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      textAlign: TextAlign.center,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          row['interestAmount'] =
+                                              double.tryParse(value) ?? 0.0;
+                                          _updateTotalCollection(
+                                              _tableData.indexOf(row));
+                                        });
+                                      },
                                     ),
                                   ),
                                 ),
@@ -380,27 +395,38 @@ class _CreateSchemeState extends State<CreateScheme> {
                                   child: Container(
                                     margin: const EdgeInsets.symmetric(
                                         horizontal:
-                                            6.0), // Space between columns
+                                            2.0), // Reduced horizontal space for width control
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4), // Adjust inner padding
+                                        horizontal:
+                                            4.0), // Adjusted padding for reduced height
+                                    height:
+                                        38, // Set a fixed height for the container to control height
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black26),
-                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(color: Colors.black12),
                                     ),
-                                    child: Center(
-                                      child: TextField(
-                                        controller: TextEditingController(
-                                            text:
-                                                '${row['savingsAmount']}'), // Pre-filled with existing value
-                                        textAlign: TextAlign.center,
-                                        decoration: const InputDecoration(
-                                          isDense: true,
-                                          contentPadding: EdgeInsets.zero,
-                                          border: InputBorder.none,
-                                        ),
-                                        style: const TextStyle(fontSize: 14),
+                                    child: TextFormField(
+                                      initialValue:
+                                          row['savingsAmount'].toString(),
+                                      decoration: const InputDecoration(
+                                        hintText: 'Savings Amount',
+                                        border: InputBorder.none,
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 0.0,
+                                            horizontal:
+                                                4.0), // Reduce internal padding to match height and width
                                       ),
+                                      keyboardType:
+                                          TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      textAlign: TextAlign.center,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          row['savingsAmount'] =
+                                              double.tryParse(value) ?? 0.0;
+                                          _updateTotalCollection(
+                                              _tableData.indexOf(row));
+                                        });
+                                      },
                                     ),
                                   ),
                                 ),
@@ -408,26 +434,23 @@ class _CreateSchemeState extends State<CreateScheme> {
                                   child: Container(
                                     margin: const EdgeInsets.symmetric(
                                         horizontal:
-                                            6.0), // Space between columns
+                                            4.0), // Space between columns
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
+                                        // Apply gradient background
                                         colors: [
                                           Color(0xFF4A90E2),
                                           Color(0xFF50E3C2)
-                                        ], // Gradient colors
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
+                                        ],
                                       ),
-                                      border: Border.all(color: Colors.black26),
-                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(color: Colors.black12),
                                     ),
                                     child: Text(
-                                      '${row['totalCollection']}',
+                                      row['totalCollection'].toString(),
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
-                                        color: Colors
-                                            .white, // Ensures text is readable on the gradient background
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
@@ -435,13 +458,12 @@ class _CreateSchemeState extends State<CreateScheme> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 8), // Space between rows
+                          const Divider(),
                         ],
                       );
                     }).toList(),
                   ),
                 ),
-
                 const SizedBox(height: 30),
 
                 // Create Scheme button
@@ -450,12 +472,17 @@ class _CreateSchemeState extends State<CreateScheme> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle create scheme action here
+                      // Handle scheme creation logic here
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Scheme Created Successfully')),
+                      );
                     },
                     child: const Text(
                       'Create Scheme',
                       style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
