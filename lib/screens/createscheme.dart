@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class CreateScheme extends StatefulWidget {
   const CreateScheme({Key? key}) : super(key: key);
@@ -34,6 +37,61 @@ class _CreateSchemeState extends State<CreateScheme> {
           'totalCollection': 0.0,
         }
     ];
+  }
+
+  Future<void> _createScheme() async {
+    final String apiUrl = 'https://chits.tutytech.in/scheme.php';
+
+    try {
+      // Print the request URL and body for debugging
+      print('Request URL: $apiUrl');
+      print('Request body: ${{
+        'type': 'insert',
+        'schemeid': _schemeIdController.text,
+        'schemename': _schemeNameController.text,
+        'amount': _loanAmountController.text,
+        'collectiontype': _weeksDaysController.text,
+      }}');
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'insert',
+          'schemeid': _schemeIdController.text,
+          'schemename': _schemeNameController.text,
+          'amount': _loanAmountController.text,
+          'collectiontype': _weeksDaysController.text,
+        },
+      );
+
+      // Print the response body for debugging
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData[0]['id'] != null) {
+          _showSnackBar('Staff created successfully!');
+        } else {
+          _showSnackBar('Error: ${responseData[0]['error']}');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to create center. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Print the error for debugging
+      print('Error: $e');
+      _showSnackBar('An error occurred: $e');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   // Update total collection for a given row
@@ -472,7 +530,7 @@ class _CreateSchemeState extends State<CreateScheme> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle scheme creation logic here
+                      _createScheme();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Scheme Created Successfully')),
                       );
