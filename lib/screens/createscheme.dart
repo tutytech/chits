@@ -31,9 +31,9 @@ class _CreateSchemeState extends State<CreateScheme> {
     _tableData = [
       for (int i = 0; i < 5; i++)
         {
-          'principalAmount': 0.0,
-          'interestAmount': 0.0,
-          'savingsAmount': 0.0,
+          'principalamt': 0.0,
+          'interestamt': 0.0,
+          'savingsamt': 0.0,
           'totalCollection': 0.0,
         }
     ];
@@ -43,15 +43,21 @@ class _CreateSchemeState extends State<CreateScheme> {
     final String apiUrl = 'https://chits.tutytech.in/scheme.php';
 
     try {
-      // Print the request URL and body for debugging
-      print('Request URL: $apiUrl');
-      print('Request body: ${{
-        'type': 'insert',
-        'schemeid': _schemeIdController.text,
-        'schemename': _schemeNameController.text,
-        'amount': _loanAmountController.text,
-        'collectiontype': _weeksDaysController.text,
-      }}');
+      // Transform `_tableData` to match expected field names in the API
+      final List<Map<String, dynamic>> transformedTableData =
+          _tableData.map((entry) {
+        return {
+          "principalamt": entry["principalAmount"],
+          "interestamt": entry["interestAmount"],
+          "savingsamt": entry["savingsAmount"],
+          "totalCollection": entry["totalCollection"],
+        };
+      }).toList();
+
+      // Encode the transformed data as JSON
+      final String schemeDetailsJson = jsonEncode(transformedTableData);
+
+      print('Sending schemedetails: $schemeDetailsJson'); // Debug
 
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -64,25 +70,24 @@ class _CreateSchemeState extends State<CreateScheme> {
           'schemename': _schemeNameController.text,
           'amount': _loanAmountController.text,
           'collectiontype': _weeksDaysController.text,
+          'schemedetails': schemeDetailsJson,
         },
       );
 
-      // Print the response body for debugging
-      print('Response body: ${response.body}');
+      print('Response body: ${response.body}'); // Debug the response
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        if (responseData[0]['id'] != null) {
-          _showSnackBar('Staff created successfully!');
+        if (responseData['success']) {
+          _showSnackBar('Scheme created successfully!');
         } else {
-          _showSnackBar('Error: ${responseData[0]['error']}');
+          _showSnackBar('Error: ${responseData['error']}');
         }
       } else {
         _showSnackBar(
-            'Failed to create center. Status code: ${response.statusCode}');
+            'Failed to create scheme. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      // Print the error for debugging
       print('Error: $e');
       _showSnackBar('An error occurred: $e');
     }
