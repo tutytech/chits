@@ -1,5 +1,6 @@
 import 'package:chitfunds/screens/LoginScreen.dart';
 import 'package:chitfunds/screens/amountransfer.dart';
+import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/companycreation.dart';
 import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/screens/createcenter.dart';
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      home: CreateScheme(),
+      home: CreateBranch(),
     );
   }
 }

@@ -1,8 +1,11 @@
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
+import 'package:chitfunds/wigets/inputwidget.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:intl/intl.dart';
 
 class CreateBranch extends StatefulWidget {
   const CreateBranch({Key? key}) : super(key: key);
@@ -18,6 +21,43 @@ class _CreateBranchState extends State<CreateBranch> {
   final TextEditingController _openingBalanceController =
       TextEditingController();
   final TextEditingController _openingDateController = TextEditingController();
+  final entrydateController = TextEditingController();
+  final dobController = TextEditingController();
+  final dojController = TextEditingController();
+  final domController = TextEditingController();
+  Future<void> _selectMarriage(BuildContext context, String label) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: label == "DOB"
+          ? dobController.text.isNotEmpty
+              ? DateFormat('yyyy-MM-dd').parse(dobController.text)
+              : DateTime.now()
+          : label == "DOJ"
+              ? dojController.text.isNotEmpty
+                  ? DateFormat('yyyy-MM-dd').parse(dojController.text)
+                  : DateTime.now()
+              : DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null) {
+      setState(() {
+        String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+
+        // Update the correct controller based on the label
+        if (label == "DOB") {
+          dobController.text = formattedDate;
+        } else if (label == "DOJ") {
+          dojController.text = formattedDate;
+        } else if (label == "DOM") {
+          domController.text = formattedDate;
+        } else if (label == "EntryDate") {
+          entrydateController.text = formattedDate;
+        }
+      });
+    }
+  }
 
   Future<void> _createBranch() async {
     final String apiUrl = 'https://chits.tutytech.in/branch.php';
@@ -164,6 +204,8 @@ class _CreateBranchState extends State<CreateBranch> {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    _buildMarriageDateField(context, "DOB"),
+                    const SizedBox(height: 20),
                     TextField(
                       controller: _openingDateController,
                       decoration: InputDecoration(
@@ -214,6 +256,51 @@ class _CreateBranchState extends State<CreateBranch> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMarriageDateField(BuildContext context, String label) {
+    TextEditingController controller;
+
+    // Select the correct controller based on the label
+    if (label == "DOB") {
+      controller = dobController;
+    } else if (label == "DOJ") {
+      controller = dojController;
+    } else if (label == "DOM") {
+      controller = domController;
+    } else if (label == "EntryDate") {
+      controller = entrydateController;
+    } else {
+      throw ArgumentError("Invalid label: $label");
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InputWidget(
+          label: label,
+          controller: controller,
+          hintText: "Opening Date",
+          readOnly: true, // Make the field read-only
+          suffixWidget: IconButton(
+            icon: Icon(Icons.calendar_today, color: Colors.grey),
+            onPressed: () => _selectMarriage(
+              context,
+              label,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
