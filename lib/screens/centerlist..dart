@@ -13,8 +13,8 @@ class CenterListPage extends StatefulWidget {
 
 class _BranchListPageState extends State<CenterListPage> {
   late Future<List<Map<String, dynamic>>> _branchListFuture;
-  List<Map<String, dynamic>> _allBranches = [];
-  List<Map<String, dynamic>> _filteredBranches = [];
+  List<Map<String, dynamic>> _allCenters = [];
+  List<Map<String, dynamic>> _filteredCenters = [];
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
@@ -35,7 +35,7 @@ class _BranchListPageState extends State<CenterListPage> {
   }
 
   Future<List<Map<String, dynamic>>> fetchBranches() async {
-    const String _baseUrl = 'https://chits.tutytech.in/branch.php';
+    const String _baseUrl = 'https://chits.tutytech.in/center.php';
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -50,9 +50,10 @@ class _BranchListPageState extends State<CenterListPage> {
         return responseData.map((branch) {
           return {
             'id': branch['id'] ?? '',
-            'branchname': branch['branchname'] ?? 'Unknown Branch',
-            'openingbalance': branch['openingbalance']?.toString() ?? '0',
-            'openingdate': branch['openingdate'] ?? 'N/A',
+            'centercode': branch['centercode'] ?? 'Unknown code',
+            'centername': branch['centername'] ?? 'Unknown center',
+            'branchid': branch['branchid']?.toString() ?? '0',
+            'entryid': branch['entryid'] ?? 'N/A',
           };
         }).toList();
       } else {
@@ -66,10 +67,10 @@ class _BranchListPageState extends State<CenterListPage> {
   void _filterBranches(String query) {
     setState(() {
       if (query.isEmpty) {
-        _filteredBranches = _allBranches;
+        _filteredCenters = _allCenters;
       } else {
-        _filteredBranches = _allBranches
-            .where((branch) => branch['branchname']
+        _filteredCenters = _allCenters
+            .where((branch) => branch['centername']
                 .toString()
                 .toLowerCase()
                 .contains(query.toLowerCase()))
@@ -79,7 +80,7 @@ class _BranchListPageState extends State<CenterListPage> {
   }
 
   Future<void> deleteBranch(String branchId) async {
-    const String _baseUrl = 'https://chits.tutytech.in/branch.php';
+    const String _baseUrl = 'https://chits.tutytech.in/center.php';
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -158,7 +159,7 @@ class _BranchListPageState extends State<CenterListPage> {
                 child: TextField(
                   controller: _searchController,
                   decoration: const InputDecoration(
-                    labelText: 'Search Branches',
+                    labelText: 'Search Centers',
                     border: InputBorder.none,
                     prefixIcon: Icon(Icons.search),
                     contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -193,10 +194,10 @@ class _BranchListPageState extends State<CenterListPage> {
                       return const Center(child: Text('No branches found'));
                     }
 
-                    _allBranches = snapshot.data!;
-                    _filteredBranches = _searchController.text.isEmpty
-                        ? _allBranches
-                        : _filteredBranches;
+                    _allCenters = snapshot.data!;
+                    _filteredCenters = _searchController.text.isEmpty
+                        ? _allCenters
+                        : _filteredCenters;
 
                     return SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -207,7 +208,7 @@ class _BranchListPageState extends State<CenterListPage> {
                         columns: [
                           DataColumn(
                             label: Text(
-                              'Branch Name',
+                              'Center Name',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -218,7 +219,7 @@ class _BranchListPageState extends State<CenterListPage> {
                           ),
                           DataColumn(
                             label: Text(
-                              'Opening Balance',
+                              'Center Code',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -228,7 +229,7 @@ class _BranchListPageState extends State<CenterListPage> {
                           ),
                           DataColumn(
                             label: Text(
-                              'Opening Date',
+                              'branchid',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -247,12 +248,12 @@ class _BranchListPageState extends State<CenterListPage> {
                             ),
                           ),
                         ],
-                        rows: _filteredBranches.map((branch) {
+                        rows: _filteredCenters.map((branch) {
                           return DataRow(
                             cells: [
-                              DataCell(Text(branch['branchname'] ?? 'N/A')),
-                              DataCell(Text(branch['openingbalance'] ?? '0')),
-                              DataCell(Text(branch['openingdate'] ?? 'N/A')),
+                              DataCell(Text(branch['centername'] ?? 'N/A')),
+                              DataCell(Text(branch['centercode'] ?? '0')),
+                              DataCell(Text(branch['branchid'] ?? 'N/A')),
                               DataCell(
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
