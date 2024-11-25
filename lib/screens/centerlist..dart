@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class BranchListPage extends StatefulWidget {
-  const BranchListPage({Key? key}) : super(key: key);
+class CenterListPage extends StatefulWidget {
+  const CenterListPage({Key? key}) : super(key: key);
 
   @override
   _BranchListPageState createState() => _BranchListPageState();
 }
 
-class _BranchListPageState extends State<BranchListPage> {
+class _BranchListPageState extends State<CenterListPage> {
   late Future<List<Map<String, dynamic>>> _branchListFuture;
   List<Map<String, dynamic>> _allBranches = [];
   List<Map<String, dynamic>> _filteredBranches = [];
@@ -120,7 +120,7 @@ class _BranchListPageState extends State<BranchListPage> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(
-        title: 'Branch List',
+        title: 'Center List',
         onMenuPressed: () {
           _scaffoldKey.currentState?.openDrawer();
         },
