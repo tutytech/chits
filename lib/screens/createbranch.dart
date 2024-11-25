@@ -72,7 +72,7 @@ class _CreateBranchState extends State<CreateBranch> {
           'type': 'insert',
           'branchname': _branchNameController.text,
           'openingbalance': _openingBalanceController.text,
-          'openingdate': _openingDateController.text,
+          'openingdate': dobController.text,
           'entryid': '123', // Replace with a real entry ID if needed
         },
       );
@@ -189,7 +189,7 @@ class _CreateBranchState extends State<CreateBranch> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 20), // Keeps consistent spacing
                     TextField(
                       controller: _openingBalanceController,
                       decoration: InputDecoration(
@@ -203,23 +203,10 @@ class _CreateBranchState extends State<CreateBranch> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    _buildMarriageDateField(context, "DOB"),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _openingDateController,
-                      decoration: InputDecoration(
-                        labelText: 'Opening Date',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
+                    // Reduced height between fields
+                    _buildMarriageDateField(
+                        context, "DOB"), // Opening Date field
+                    const SizedBox(height: 20), // Spacing before the button
                     SizedBox(
                       height: 50,
                       width: double.infinity,
@@ -275,32 +262,18 @@ class _CreateBranchState extends State<CreateBranch> {
       throw ArgumentError("Invalid label: $label");
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+    return InputWidget(
+      label: label,
+      controller: controller,
+      hintText: "Opening Date",
+      readOnly: true, // Make the field read-only
+      suffixWidget: IconButton(
+        icon: Icon(Icons.calendar_today, color: Colors.grey),
+        onPressed: () => _selectMarriage(
+          context,
           label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
         ),
-        const SizedBox(height: 8),
-        InputWidget(
-          label: label,
-          controller: controller,
-          hintText: "Opening Date",
-          readOnly: true, // Make the field read-only
-          suffixWidget: IconButton(
-            icon: Icon(Icons.calendar_today, color: Colors.grey),
-            onPressed: () => _selectMarriage(
-              context,
-              label,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

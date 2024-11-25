@@ -1,3 +1,5 @@
+import 'package:chitfunds/wigets/customappbar.dart';
+import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -14,6 +16,8 @@ class _BranchListPageState extends State<BranchListPage> {
   List<Map<String, dynamic>> _allBranches = [];
   List<Map<String, dynamic>> _filteredBranches = [];
   final TextEditingController _searchController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<String> branchNames = [];
 
   @override
   void initState() {
@@ -114,85 +118,100 @@ class _BranchListPageState extends State<BranchListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Branch List'),
+      key: _scaffoldKey,
+      appBar: CustomAppBar(
+        title: 'Branch List',
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: 'Search',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+      drawer: CustomDrawer(branchNames: branchNames),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Search bar container
+            Container(
+              margin: const EdgeInsets.only(bottom: 16.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  labelText: 'Search Branches',
+                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.search),
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: _branchListFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No branches found'));
-                }
 
-                _allBranches = snapshot.data!;
-                _filteredBranches = _searchController.text.isEmpty
-                    ? _allBranches
-                    : _filteredBranches;
+            // Branch list section
+            Expanded(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: _branchListFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No branches found'));
+                  }
 
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(label: Text('Branch Name')),
-                      DataColumn(label: Text('Opening Balance')),
-                      DataColumn(label: Text('Opening Date')),
-                      DataColumn(label: Text('Actions')),
-                    ],
-                    rows: _filteredBranches.map((branch) {
-                      return DataRow(
-                        cells: [
-                          DataCell(Text(branch['branchname'] ?? 'N/A')),
-                          DataCell(Text(branch['openingbalance'] ?? '0')),
-                          DataCell(Text(branch['openingdate'] ?? 'N/A')),
-                          DataCell(
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Edit feature not implemented')),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => _deleteBranch(branch['id']),
-                                ),
-                              ],
+                  _allBranches = snapshot.data!;
+                  _filteredBranches = _searchController.text.isEmpty
+                      ? _allBranches
+                      : _filteredBranches;
+
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columns: const [
+                        DataColumn(label: Text('Branch Name')),
+                        DataColumn(label: Text('Opening Balance')),
+                        DataColumn(label: Text('Opening Date')),
+                        DataColumn(label: Text('Actions')),
+                      ],
+                      rows: _filteredBranches.map((branch) {
+                        return DataRow(
+                          cells: [
+                            DataCell(Text(branch['branchname'] ?? 'N/A')),
+                            DataCell(Text(branch['openingbalance'] ?? '0')),
+                            DataCell(Text(branch['openingdate'] ?? 'N/A')),
+                            DataCell(
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.blue),
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Edit feature not implemented')),
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                    onPressed: () =>
+                                        _deleteBranch(branch['id']),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                );
-              },
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
