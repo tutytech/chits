@@ -27,13 +27,23 @@ class _CustomDrawerState extends State<CustomDrawer> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Color.fromARGB(218, 209, 209, 204),
-            ),
-            child: Text(
-              'Menu',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          SizedBox(
+            height: 130, // Keep the header height as 100
+            child: DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Center(
+                child: Image.asset(
+                  'nobglogo.png', // Path to your logo image
+                  height:
+                      120, // Keep the height of the image equal to the header height
+                  width:
+                      120, // Keep the width of the image equal to the header width
+                  fit: BoxFit
+                      .contain, // Ensures the logo scales to fit within the available space
+                ),
+              ),
             ),
           ),
           ListTile(
