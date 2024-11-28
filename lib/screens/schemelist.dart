@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/createscheme.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -167,9 +168,38 @@ class _BranchListPageState extends State<SchemeListPage> {
                     ),
                   ),
                 ),
-                const SizedBox(
-                    height: 16.0), // Space between search bar and data table
-
+                const SizedBox(height: 10.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreateScheme(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // Button background color
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0, vertical: 12.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(8.0), // Rounded corners
+                        ),
+                      ),
+                      child: const Text(
+                        'Add Scheme',
+                        style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.white), // Text styling
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10.0),
                 // Fetched data container
                 Container(
                   decoration: BoxDecoration(

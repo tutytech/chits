@@ -178,10 +178,6 @@ class _BranchListPageState extends State<BranchListPage> {
                           builder: (context) => CreateBranch(),
                         ),
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Add Branch button pressed')),
-                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue, // Button background color

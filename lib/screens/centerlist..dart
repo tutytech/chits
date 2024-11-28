@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/createcenter.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -166,8 +167,38 @@ class _BranchListPageState extends State<CenterListPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 10.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CreateCenter(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue, // Button background color
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0, vertical: 12.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(8.0), // Rounded corners
+                      ),
+                    ),
+                    child: const Text(
+                      'Add Center',
+                      style: TextStyle(
+                          fontSize: 16.0, color: Colors.white), // Text styling
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(
-                  height: 16.0), // Space between search bar and data table
+                  height: 10.0), // Space between search bar and data table
 
               // Fetched data container
               Container(
@@ -260,7 +291,7 @@ class _BranchListPageState extends State<CenterListPage> {
                                 DataCell(Text(branch['branchid'] ?? 'N/A')),
                                 DataCell(
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       IconButton(
                                         icon: const Icon(Icons.edit,
