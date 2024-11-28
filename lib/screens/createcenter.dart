@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:chitfunds/screens/createscheme.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -170,6 +171,12 @@ class _CreateCenterState extends State<CreateCenter> {
         } else {
           _showSnackBar('Error: ${responseData[0]['error']}');
         }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CreateScheme(),
+          ),
+        );
       } else {
         _showSnackBar(
             'Failed to create center. Status code: ${response.statusCode}');

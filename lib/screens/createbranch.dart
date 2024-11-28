@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/createcenter.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:chitfunds/wigets/inputwidget.dart';
@@ -86,6 +87,12 @@ class _CreateBranchState extends State<CreateBranch> {
 
           // Fetch the list of all branches
           await _fetchBranches();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateCenter(),
+            ),
+          );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: ${responseData[0]['error']}')),
@@ -203,9 +210,42 @@ class _CreateBranchState extends State<CreateBranch> {
                         ),
                       ),
                     ),
-                    // Reduced height between fields
-                    _buildMarriageDateField(
-                        context, "DOB"), // Opening Date field
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: dobController,
+                      readOnly:
+                          true, // Prevent manual text entry if only using the calendar
+                      decoration: InputDecoration(
+                        labelText: 'Opening Date',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.calendar_today,
+                              color: Colors.grey),
+                          onPressed: () async {
+                            // Show the date picker when the icon is pressed
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
+                            );
+                            if (picked != null) {
+                              dobController.text =
+                                  DateFormat('yyyy-MM-dd').format(picked);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+
+                    // Reduced height specifically here
+                    // Opening Date field
                     const SizedBox(height: 20), // Spacing before the button
                     SizedBox(
                       height: 50,

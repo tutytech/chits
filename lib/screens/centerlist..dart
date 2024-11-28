@@ -201,87 +201,93 @@ class _BranchListPageState extends State<CenterListPage> {
 
                     return SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                            minWidth: MediaQuery.of(context).size.width),
+                        child: DataTable(
+                          headingRowColor: MaterialStateColor.resolveWith(
                             (states) => Colors
-                                .grey[200]!), // Light background for headers
-                        columns: [
-                          DataColumn(
-                            label: Text(
-                              'Center Name',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(
-                                    0xFF4A90E2), // Blue color to match gradient theme
-                              ),
-                            ),
+                                .grey[200]!, // Light background for headers
                           ),
-                          DataColumn(
-                            label: Text(
-                              'Center Code',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF4A90E2),
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              'branchid',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF4A90E2),
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              'Actions',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF4A90E2),
-                              ),
-                            ),
-                          ),
-                        ],
-                        rows: _filteredCenters.map((branch) {
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(branch['centername'] ?? 'N/A')),
-                              DataCell(Text(branch['centercode'] ?? '0')),
-                              DataCell(Text(branch['branchid'] ?? 'N/A')),
-                              DataCell(
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit,
-                                          color: Colors.blue),
-                                      onPressed: () {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  'Edit feature not implemented')),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.red),
-                                      onPressed: () =>
-                                          _deleteBranch(branch['id']),
-                                    ),
-                                  ],
+                          columns: [
+                            DataColumn(
+                              label: Text(
+                                'Center Name',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(
+                                      0xFF4A90E2), // Blue color to match gradient theme
                                 ),
                               ),
-                            ],
-                          );
-                        }).toList(),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Center Code',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(0xFF4A90E2),
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Branch ID',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(0xFF4A90E2),
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Actions',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(0xFF4A90E2),
+                                ),
+                              ),
+                            ),
+                          ],
+                          rows: _filteredCenters.map((branch) {
+                            return DataRow(
+                              cells: [
+                                DataCell(Text(branch['centername'] ?? 'N/A')),
+                                DataCell(Text(branch['centercode'] ?? '0')),
+                                DataCell(Text(branch['branchid'] ?? 'N/A')),
+                                DataCell(
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.blue),
+                                        onPressed: () {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Edit feature not implemented'),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () =>
+                                            _deleteBranch(branch['id']),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
                       ),
                     );
                   },

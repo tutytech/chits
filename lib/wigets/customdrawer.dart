@@ -1,4 +1,6 @@
 import 'package:chitfunds/screens/amountransfer.dart';
+import 'package:chitfunds/screens/branchlist.dart';
+import 'package:chitfunds/screens/centerlist..dart';
 import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/screens/createcenter.dart';
 import 'package:chitfunds/screens/createcustomer.dart';
@@ -6,6 +8,7 @@ import 'package:chitfunds/screens/createscheme.dart';
 import 'package:chitfunds/screens/createstaff.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/editcomapnydetails.dart';
+import 'package:chitfunds/screens/schemelist.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -49,7 +52,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreateBranch()),
+                MaterialPageRoute(builder: (context) => BranchListPage()),
               );
             },
           ),
@@ -59,10 +62,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => CreateCenter(
-                          branches: widget.branchNames,
-                        )),
+                MaterialPageRoute(builder: (context) => CenterListPage()),
               );
             },
           ),
@@ -72,7 +72,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreateScheme()),
+                MaterialPageRoute(builder: (context) => SchemeListPage()),
               );
             },
           ),

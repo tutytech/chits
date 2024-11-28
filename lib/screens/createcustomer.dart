@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:file_picker/file_picker.dart';
@@ -367,6 +368,12 @@ class _CreateCustomerState extends State<CreateCustomer> {
         print("Error creating customer: ${response.reasonPhrase}");
         _showSnackBar('Failed to create customer.');
       }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BranchListPage(),
+        ),
+      );
     } catch (e) {
       print("Exception: $e");
       _showSnackBar('An error occurred: $e');

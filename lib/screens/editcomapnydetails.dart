@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/smssettings.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:file_picker/file_picker.dart';
@@ -63,6 +64,12 @@ class _EditCompanyState extends State<EditCompany> {
 
   // Method to save (update) company data to SharedPreferences
   Future<void> _saveCompanyData() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SmsSettings(),
+      ),
+    );
     final prefs = await SharedPreferences.getInstance();
 
     // Save updated company details

@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -387,7 +388,12 @@ class _ReceiptState extends State<Receipt> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Handle collection print action here
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditCompany(),
+                          ),
+                        );
                       },
                       child: const Text(
                         'Collection Print',

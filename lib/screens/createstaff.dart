@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -96,6 +97,12 @@ class _CreateStaffState extends State<CreateStaff> {
         _showSnackBar(
             'Failed to create center. Status code: ${response.statusCode}');
       }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CreateCustomer(),
+        ),
+      );
     } catch (e) {
       // Print the error for debugging
       print('Error: $e');

@@ -11,6 +11,7 @@ import 'package:chitfunds/screens/createstaff.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/screens/registration.dart';
+import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/smssettings.dart';
 
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      home: CenterListPage(),
+      home: BranchListPage(),
     );
   }
 }

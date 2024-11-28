@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -165,9 +166,41 @@ class _BranchListPageState extends State<BranchListPage> {
                   ),
                 ),
               ),
-              const SizedBox(
-                  height: 16.0), // Space between search bar and data table
-
+              const SizedBox(height: 10.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CreateBranch(),
+                        ),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Add Branch button pressed')),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue, // Button background color
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0, vertical: 12.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(8.0), // Rounded corners
+                      ),
+                    ),
+                    child: const Text(
+                      'Add Branch',
+                      style: TextStyle(
+                          fontSize: 16.0, color: Colors.white), // Text styling
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10.0),
               // Fetched data container
               Container(
                 decoration: BoxDecoration(
@@ -200,91 +233,100 @@ class _BranchListPageState extends State<BranchListPage> {
 
                     return SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                            minWidth: MediaQuery.of(context).size.width),
+                        child: DataTable(
+                          headingRowColor: MaterialStateColor.resolveWith(
                             (states) => Colors
-                                .grey[200]!), // Light background for headers
-                        columns: [
-                          DataColumn(
-                            label: Text(
-                              'Branch Name',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(
-                                    0xFF4A90E2), // Blue color to match gradient theme
-                              ),
-                            ),
+                                .grey[200]!, // Light background for headers
                           ),
-                          DataColumn(
-                            label: Text(
-                              'Opening Balance',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF4A90E2),
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              'Opening Date',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF4A90E2),
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              'Actions',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF4A90E2),
-                              ),
-                            ),
-                          ),
-                        ],
-                        rows: _filteredBranches.map((branch) {
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(branch['branchname'] ?? 'N/A')),
-                              DataCell(Text(branch['openingbalance'] ?? '0')),
-                              DataCell(Text(branch['openingdate'] ?? 'N/A')),
-                              DataCell(
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit,
-                                          color: Colors.blue),
-                                      onPressed: () {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  'Edit feature not implemented')),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.red),
-                                      onPressed: () =>
-                                          _deleteBranch(branch['id']),
-                                    ),
-                                  ],
+                          columns: [
+                            DataColumn(
+                              label: Text(
+                                'Branch Name',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(
+                                      0xFF4A90E2), // Blue color to match gradient theme
                                 ),
                               ),
-                            ],
-                          );
-                        }).toList(),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Opening Balance',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(0xFF4A90E2),
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Opening Date',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(0xFF4A90E2),
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Actions',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(0xFF4A90E2),
+                                ),
+                              ),
+                            ),
+                          ],
+                          rows: _filteredBranches.map((branch) {
+                            return DataRow(
+                              cells: [
+                                DataCell(Text(branch['branchname'] ?? 'N/A')),
+                                DataCell(Text(branch['openingbalance'] ?? '0')),
+                                DataCell(Text(branch['openingdate'] ?? 'N/A')),
+                                DataCell(
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.blue),
+                                        onPressed: () {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Edit feature not implemented'),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () =>
+                                            _deleteBranch(branch['id']),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
                       ),
                     );
                   },
                 ),
+              ),
+              SizedBox(
+                height: 10,
               ),
             ],
           ),

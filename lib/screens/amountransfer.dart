@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -226,7 +227,12 @@ class _AmountTransferState extends State<AmountTransfer> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Handle create branch action here
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Receipt(),
+                          ),
+                        );
                       },
                       child: const Text(
                         'Save',
