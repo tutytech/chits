@@ -12,6 +12,7 @@ import 'package:chitfunds/screens/customerlist.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/screens/loan.dart';
+import 'package:chitfunds/screens/loanlist.dart';
 import 'package:chitfunds/screens/registration.dart';
 import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/smssettings.dart';
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      home: Loan(),
+      home: LoanListPage(),
     );
   }
 }
