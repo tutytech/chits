@@ -48,7 +48,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           ListTile(
             leading: const Icon(Icons.info),
-            title: const Text('Customer Info'),
+            title: const Text('Customer'),
             onTap: () {
               Navigator.push(
                 context,
@@ -88,7 +88,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           ListTile(
             leading: const Icon(Icons.attach_money),
-            title: const Text('Loan'),
+            title: const Text('Chits/Loan'),
             onTap: () {
               Navigator.push(
                 context,

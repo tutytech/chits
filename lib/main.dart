@@ -8,8 +8,10 @@ import 'package:chitfunds/screens/createcenter.dart';
 import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/screens/createscheme.dart';
 import 'package:chitfunds/screens/createstaff.dart';
+import 'package:chitfunds/screens/customerlist.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/editcomapnydetails.dart';
+import 'package:chitfunds/screens/loan.dart';
 import 'package:chitfunds/screens/registration.dart';
 import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/smssettings.dart';
@@ -29,7 +31,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      home: BranchListPage(),
+      home: Loan(),
     );
   }
 }
