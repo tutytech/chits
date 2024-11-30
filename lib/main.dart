@@ -16,6 +16,7 @@ import 'package:chitfunds/screens/loanlist.dart';
 import 'package:chitfunds/screens/registration.dart';
 import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/smssettings.dart';
+import 'package:chitfunds/screens/stafflist.dart';
 
 import 'package:flutter/material.dart';
 
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      home: LoanListPage(),
+      home: LoginScreen(),
     );
   }
 }
