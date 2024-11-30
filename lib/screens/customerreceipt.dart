@@ -1,12 +1,15 @@
+import 'dart:convert';
+
 import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../wigets/customappbar.dart';
+import 'package:http/http.dart' as http;
 
 class Receipt extends StatefulWidget {
-  const Receipt({Key? key}) : super(key: key);
+  Receipt();
 
   @override
   _ReceiptState createState() => _ReceiptState();
@@ -53,6 +56,58 @@ class _ReceiptState extends State<Receipt> {
     'System Entry',
     'Field Officier'
   ];
+
+  Future<void> _createBranch() async {
+    final String apiUrl = 'https://chits.tutytech.in/receipt.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'insert',
+          'customername': _customernameController.text,
+          'mobileno': _mobilenoController.text,
+          'loanamount': _loanamountController.text,
+          'receivedamount': _receivedamountController.text,
+          'depositamount': _depositamountController.text,
+          'paymenttype': selectedStaff1,
+          'chequeno': _chequenoController.text,
+          'chequedate': _chequedateController.text,
+          'bankname': _banknameController.text,
+          'remarks': _remarksController.text,
+          // Replace with a real entry ID if needed
+        },
+      );
+      print('Request URL: $apiUrl');
+      print('Request Body: ${response.body}');
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData[0]['id'] != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Receipt created successfully!')),
+          );
+
+          // Fetch the list of all branches
+          // await _fetchBranches();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${responseData[0]['error']}')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to create branch.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +158,7 @@ class _ReceiptState extends State<Receipt> {
                   TextField(
                     controller:
                         _customernameController, // This controller will hold the balance
-                    readOnly: true, // Makes the text field read-only
+                    // Makes the text field read-only
                     decoration: InputDecoration(
                       labelText: 'Customer Name',
                       labelStyle: const TextStyle(color: Colors.black),
@@ -120,7 +175,7 @@ class _ReceiptState extends State<Receipt> {
                   TextField(
                     controller:
                         _mobilenoController, // This controller will hold the balance
-                    readOnly: true, // Makes the text field read-only
+                    // Makes the text field read-only
                     decoration: InputDecoration(
                       labelText: 'Mobile No',
                       labelStyle: const TextStyle(color: Colors.black),
@@ -138,7 +193,7 @@ class _ReceiptState extends State<Receipt> {
                   TextField(
                     controller:
                         _loanamountController, // This controller will hold the balance
-                    readOnly: true, // Makes the text field read-only
+                    // Makes the text field read-only
                     decoration: InputDecoration(
                       labelText: 'Loan Amount',
                       labelStyle: const TextStyle(color: Colors.black),
@@ -155,7 +210,7 @@ class _ReceiptState extends State<Receipt> {
                   TextField(
                     controller:
                         _receivedamountController, // This controller will hold the balance
-                    readOnly: true, // Makes the text field read-only
+                    // Makes the text field read-only
                     decoration: InputDecoration(
                       labelText: 'Received Amount',
                       labelStyle: const TextStyle(color: Colors.black),
@@ -298,7 +353,7 @@ class _ReceiptState extends State<Receipt> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Handle create branch action here
+                        _createBranch();
                       },
                       child: const Text(
                         'Submit',
