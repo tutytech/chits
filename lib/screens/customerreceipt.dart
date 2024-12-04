@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:chitfunds/screens/editcomapnydetails.dart';
+import 'package:chitfunds/screens/loanlist.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -112,8 +113,8 @@ class _ReceiptState extends State<Receipt> {
         },
         body: {
           'type': 'insert',
-          'customername': _customernameController.text,
-          'mobileno': _mobilenoController.text,
+          'customername': _customerNameController.text,
+          'mobileno': _mobileNoController.text,
           'loanamount': _loanamountController.text,
           'receivedamount': _receivedamountController.text,
           'depositamount': _depositamountController.text,
@@ -285,7 +286,7 @@ class _ReceiptState extends State<Receipt> {
                         _loanamountController, // This controller will hold the balance
                     // Makes the text field read-only
                     decoration: InputDecoration(
-                      labelText: 'Loan Amount',
+                      labelText: 'Loan/Chits/Savings',
                       labelStyle: const TextStyle(color: Colors.black),
                       filled: true,
                       fillColor: Colors.grey[
@@ -441,17 +442,43 @@ class _ReceiptState extends State<Receipt> {
                   SizedBox(
                     height: 50,
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _createBranch();
-                      },
-                      child: const Text(
-                        'Submit',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20),
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(
+                          width: 150, // Adjust the width as needed
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            child: const Text(
+                              'Save',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 150, // Adjust the width as needed
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => LoanListPage(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 30),

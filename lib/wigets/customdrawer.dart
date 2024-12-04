@@ -6,9 +6,12 @@ import 'package:chitfunds/screens/createcenter.dart';
 import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/screens/createscheme.dart';
 import 'package:chitfunds/screens/createstaff.dart';
+import 'package:chitfunds/screens/customerlist.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/editcomapnydetails.dart';
+import 'package:chitfunds/screens/loan.dart';
 import 'package:chitfunds/screens/schemelist.dart';
+import 'package:chitfunds/screens/stafflist.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -52,7 +55,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const CreateCustomer()),
+                MaterialPageRoute(builder: (context) => CustomerList()),
               );
             },
           ),
@@ -92,7 +95,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AmountTransfer()),
+                MaterialPageRoute(builder: (context) => Loan()),
               );
             },
           ),
@@ -132,7 +135,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreateStaff()),
+                MaterialPageRoute(builder: (context) => staffListPage()),
               );
             },
           ),

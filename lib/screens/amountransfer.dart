@@ -225,22 +225,43 @@ class _AmountTransferState extends State<AmountTransfer> {
                   SizedBox(
                     height: 50,
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Receipt(),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(
+                          width: 150, // Adjust the width as needed
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            child: const Text(
+                              'Save',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        );
-                      },
-                      child: const Text(
-                        'Save',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20),
-                      ),
+                        ),
+                        SizedBox(
+                          width: 150, // Adjust the width as needed
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (context) => LoanListPage(),
+                              //   ),
+                              // );
+                            },
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

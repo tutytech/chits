@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -533,20 +534,43 @@ class _CreateSchemeState extends State<CreateScheme> {
                 SizedBox(
                   height: 50,
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _createScheme();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Scheme Created Successfully')),
-                      );
-                    },
-                    child: const Text(
-                      'Create Scheme',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 150, // Adjust the width as needed
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          child: const Text(
+                            'Save',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(
+                        width: 150, // Adjust the width as needed
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SchemeListPage(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

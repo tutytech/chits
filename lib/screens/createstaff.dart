@@ -312,13 +312,43 @@ class _CreateStaffState extends State<CreateStaff> {
                     SizedBox(
                       height: 50,
                       width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _createStaff,
-                        child: const Text(
-                          'Create Staff',
-                          style: TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.bold),
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Save',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //     builder: (context) => LoanListPage(),
+                                //   ),
+                                // );
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

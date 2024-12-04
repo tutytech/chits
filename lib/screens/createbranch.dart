@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/createcenter.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
@@ -250,13 +251,43 @@ class _CreateBranchState extends State<CreateBranch> {
                     SizedBox(
                       height: 50,
                       width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _createBranch,
-                        child: const Text(
-                          'Create Branch',
-                          style: TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.bold),
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Save',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BranchListPage(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

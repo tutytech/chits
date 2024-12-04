@@ -1,4 +1,5 @@
 import 'package:chitfunds/screens/companycreation.dart';
+import 'package:chitfunds/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'registration.dart';
 
@@ -82,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CompanyCreationScreen(),
+                              builder: (context) => Dashboard(),
                             ),
                           );
                         },

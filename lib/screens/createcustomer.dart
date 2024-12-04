@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:chitfunds/screens/branchlist.dart';
+import 'package:chitfunds/screens/customerlist.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:file_picker/file_picker.dart';
@@ -1509,16 +1510,43 @@ class _CreateCustomerState extends State<CreateCustomer> {
                     SizedBox(
                       height: 50,
                       width: double.infinity,
-                      child: Center(
-                        child: ElevatedButton(
-                          onPressed: _createCustomer,
-                          child: const Text(
-                            'Create Customer',
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Save',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CustomerList(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

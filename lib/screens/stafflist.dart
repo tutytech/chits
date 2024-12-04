@@ -1,4 +1,5 @@
 import 'package:chitfunds/screens/createbranch.dart';
+import 'package:chitfunds/screens/createstaff.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -191,7 +192,7 @@ class _BranchListPageState extends State<staffListPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CreateBranch(),
+                          builder: (context) => CreateStaff(),
                         ),
                       );
                     },

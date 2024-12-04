@@ -1,4 +1,5 @@
 import 'package:chitfunds/screens/createcenter.dart';
+import 'package:chitfunds/screens/loanlist.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:chitfunds/wigets/inputwidget.dart';
@@ -361,37 +362,47 @@ class _CreateBranchState extends State<Loan> {
                       ),
                     ),
                     const SizedBox(height: 20), // Spacing before the button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          height: 40,
-                          width: 100,
-                          child: ElevatedButton(
-                            onPressed: _submitLoanForm,
-                            child: const Text(
-                              'Submit',
-                              style: TextStyle(
+                    SizedBox(
+                      height: 50,
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Save',
+                                style: TextStyle(
                                   color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 20),
-                        SizedBox(
-                          height: 40,
-                          width: 100,
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LoanListPage(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
                                   color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
