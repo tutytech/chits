@@ -34,6 +34,9 @@ class _ReceiptState extends State<Receipt> {
   final TextEditingController _remarksController = TextEditingController();
   final TextEditingController _selectcenterController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+
+  final TextEditingController _customerNameController = TextEditingController();
+  final TextEditingController _mobileNoController = TextEditingController();
   String? selectedStaff;
   String? selectedStaff1;
   String? selectedCenter;
@@ -56,6 +59,43 @@ class _ReceiptState extends State<Receipt> {
     'System Entry',
     'Field Officier'
   ];
+  List<Map<String, dynamic>> _customers = [];
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomers();
+  }
+
+  Future<void> _loadCustomers() async {
+    try {
+      final customers = await fetchCustomers();
+      setState(() {
+        _customers = customers;
+      });
+    } catch (e) {
+      print('Error loading customers: $e');
+    }
+  }
+
+  void _searchCustomer(String typedName) {
+    final customer = _customers.firstWhere(
+      (customer) => customer['name'].toLowerCase() == typedName.toLowerCase(),
+      orElse: () => {}, // Return an empty map instead of null
+    );
+
+    if (customer.isNotEmpty) {
+      // Set the name and phone number to the respective text fields
+      _customerNameController.text = customer['name'];
+      _mobileNoController.text = customer['phoneNo'];
+
+      // Disable editing for these fields
+      setState(() {});
+    } else {
+      // Clear the fields if no match is found
+      _customerNameController.clear();
+      _mobileNoController.clear();
+    }
+  }
 
   Future<void> _createBranch() async {
     final String apiUrl = 'https://chits.tutytech.in/receipt.php';
@@ -109,6 +149,60 @@ class _ReceiptState extends State<Receipt> {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchCustomers() async {
+    const String _baseUrl = 'https://chits.tutytech.in/customer.php';
+    final Map<String, String> body = {'type': 'fetch'};
+
+    try {
+      // Log request details
+      print('Request URL: $_baseUrl');
+      print('Request Body: $body');
+
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: body,
+      );
+
+      // Log response details
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+
+        if (decodedResponse['success'] == true &&
+            decodedResponse['customerDetails'] is List) {
+          // Parse the list of customers
+          return List<Map<String, dynamic>>.from(
+              decodedResponse['customerDetails'].map((customer) {
+            return {
+              'id': customer['id'] ?? '',
+              'customerId': customer['customerId'] ?? 'Unknown customer',
+              'name': customer['name']?.toString() ?? 'N/A',
+              'address': customer['address'] ?? 'N/A',
+              'phoneNo': customer['phoneNo'] ?? 'N/A',
+              'aadharNo': customer['aadharNo'] ?? 'N/A',
+              'branch': customer['branch'] ?? 'N/A',
+              'center': customer['center'] ?? 'N/A',
+            };
+          }));
+        } else if (decodedResponse['error'] != null) {
+          // Handle API error response
+          throw Exception('API Error: ${decodedResponse['error']}');
+        } else {
+          throw Exception('Unexpected response format');
+        }
+      } else {
+        throw Exception(
+            'Failed to fetch customers (HTTP ${response.statusCode})');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      throw Exception('Error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,49 +238,41 @@ class _ReceiptState extends State<Receipt> {
                     controller: _detailsController,
                     decoration: InputDecoration(
                       labelText: 'Customer Details',
-                      labelStyle: const TextStyle(color: Colors.black),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
                       ),
                     ),
+                    onChanged: (value) {
+                      _searchCustomer(value);
+                    },
                   ),
                   const SizedBox(height: 20),
-                  // Branch Name field
                   TextField(
-                    controller:
-                        _customernameController, // This controller will hold the balance
-                    // Makes the text field read-only
+                    controller: _customerNameController,
                     decoration: InputDecoration(
                       labelText: 'Customer Name',
-                      labelStyle: const TextStyle(color: Colors.black),
                       filled: true,
-                      fillColor: Colors.grey[
-                          200], // Optional: gives a light grey background for better visibility
+                      fillColor: Colors.grey[200],
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
                       ),
                     ),
+                    readOnly: true,
                   ),
                   const SizedBox(height: 20),
                   TextField(
-                    controller:
-                        _mobilenoController, // This controller will hold the balance
-                    // Makes the text field read-only
+                    controller: _mobileNoController,
                     decoration: InputDecoration(
                       labelText: 'Mobile No',
-                      labelStyle: const TextStyle(color: Colors.black),
                       filled: true,
-                      fillColor: Colors.grey[
-                          200], // Optional: gives a light grey background for better visibility
+                      fillColor: Colors.grey[200],
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
                       ),
                     ),
+                    readOnly: true,
                   ),
                   const SizedBox(height: 20),
                   // Branch Name field
