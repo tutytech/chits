@@ -77,10 +77,14 @@ class _ReceiptState extends State<Receipt> {
     }
   }
 
-  void _searchCustomer(String typedName) {
+  void _searchCustomer(String input) {
     final customer = _customers.firstWhere(
-      (customer) => customer['name'].toLowerCase() == typedName.toLowerCase(),
-      orElse: () => {}, // Return an empty map instead of null
+      (customer) =>
+          customer['name'].toLowerCase() ==
+              input.toLowerCase() || // Check by name
+          customer['phoneNo'] == input || // Check by mobile number
+          customer['customerId'] == input, // Check by customer ID
+      orElse: () => {}, // Return an empty map if no match is found
     );
 
     if (customer.isNotEmpty) {
