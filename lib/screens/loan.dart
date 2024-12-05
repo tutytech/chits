@@ -19,6 +19,10 @@ class Loan extends StatefulWidget {
 class _CreateBranchState extends State<Loan> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+  final TextEditingController _customerNameController = TextEditingController();
+  final TextEditingController _mobileNoController = TextEditingController();
+  List<Map<String, dynamic>> _customers = [];
+  final TextEditingController _detailsController = TextEditingController();
   final TextEditingController customeridController = TextEditingController();
   final TextEditingController customernameController = TextEditingController();
   final TextEditingController accountnoController = TextEditingController();
@@ -63,6 +67,76 @@ class _CreateBranchState extends State<Loan> {
   //     });
   //   }
   // }
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomers();
+  }
+
+  Future<void> _loadCustomers() async {
+    try {
+      final customers = await fetchCustomers();
+      setState(() {
+        _customers = customers;
+      });
+    } catch (e) {
+      print('Error loading customers: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCustomers() async {
+    const String _baseUrl = 'https://chits.tutytech.in/customer.php';
+    final Map<String, String> body = {'type': 'fetch'};
+
+    try {
+      // Log request details
+      print('Request URL: $_baseUrl');
+      print('Request Body: $body');
+
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: body,
+      );
+
+      // Log response details
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+
+        if (decodedResponse['success'] == true &&
+            decodedResponse['customerDetails'] is List) {
+          // Parse the list of customers
+          return List<Map<String, dynamic>>.from(
+              decodedResponse['customerDetails'].map((customer) {
+            return {
+              'id': customer['id'] ?? '',
+              'customerId': customer['customerId'] ?? 'Unknown customer',
+              'name': customer['name']?.toString() ?? 'N/A',
+              'address': customer['address'] ?? 'N/A',
+              'phoneNo': customer['phoneNo'] ?? 'N/A',
+              'aadharNo': customer['aadharNo'] ?? 'N/A',
+              'branch': customer['branch'] ?? 'N/A',
+              'center': customer['center'] ?? 'N/A',
+            };
+          }));
+        } else if (decodedResponse['error'] != null) {
+          // Handle API error response
+          throw Exception('API Error: ${decodedResponse['error']}');
+        } else {
+          throw Exception('Unexpected response format');
+        }
+      } else {
+        throw Exception(
+            'Failed to fetch customers (HTTP ${response.statusCode})');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      throw Exception('Error: $e');
+    }
+  }
 
   Future<void> _submitLoanForm() async {
     final String apiUrl = 'https://chits.tutytech.in/loan.php'; // API URL
@@ -163,6 +237,30 @@ class _CreateBranchState extends State<Loan> {
     }
   }
 
+  void _searchCustomer(String input) {
+    final customer = _customers.firstWhere(
+      (customer) =>
+          customer['name'].toLowerCase() ==
+              input.toLowerCase() || // Check by name
+          customer['phoneNo'] == input || // Check by mobile number
+          customer['customerId'] == input, // Check by customer ID
+      orElse: () => {}, // Return an empty map if no match is found
+    );
+
+    if (customer.isNotEmpty) {
+      // Set the name and phone number to the respective text fields
+      customernameController.text = customer['name'];
+      customeridController.text = customer['customerId'];
+
+      // Disable editing for these fields
+      setState(() {});
+    } else {
+      // Clear the fields if no match is found
+      customernameController.clear();
+      customeridController.clear();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -193,6 +291,21 @@ class _CreateBranchState extends State<Loan> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    TextField(
+                      controller: _detailsController,
+                      decoration: InputDecoration(
+                        labelText: 'Customer Details',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        _searchCustomer(value);
+                      },
+                    ),
+                    const SizedBox(height: 20),
                     TextField(
                       controller: customeridController,
                       decoration: InputDecoration(
