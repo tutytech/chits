@@ -22,6 +22,8 @@ class _CreateStaffState extends State<CreateStaff> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _branchCodeController = TextEditingController();
   final TextEditingController _receiptNoController = TextEditingController();
+  final TextEditingController _companyIdController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   String? selectedBranch;
   String? selectedRights;
 
@@ -80,6 +82,8 @@ class _CreateStaffState extends State<CreateStaff> {
           'branchCode': _branchCodeController.text,
           'receiptNo': _receiptNoController.text,
           'rights': selectedRights,
+          'companyid': _companyIdController.text,
+          'email': _emailController.text,
         },
       );
 
@@ -165,6 +169,34 @@ class _CreateStaffState extends State<CreateStaff> {
                       controller: _staffNameController,
                       decoration: InputDecoration(
                         labelText: 'Enter Staff Name',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _companyIdController,
+                      decoration: InputDecoration(
+                        labelText: 'CompanyID',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
                         labelStyle: const TextStyle(color: Colors.black),
                         filled: true,
                         fillColor: Colors.white,
@@ -318,7 +350,9 @@ class _CreateStaffState extends State<CreateStaff> {
                           SizedBox(
                             width: 150, // Adjust the width as needed
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                _createStaff();
+                              },
                               child: const Text(
                                 'Save',
                                 style: TextStyle(
