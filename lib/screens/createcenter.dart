@@ -9,8 +9,9 @@ import 'package:http/http.dart' as http;
 class CreateCenter extends StatefulWidget {
   final List<String>? branches;
   const CreateCenter({
+    Key? key,
     this.branches,
-  });
+  }) : super(key: key);
 
   @override
   _CreateCenterState createState() => _CreateCenterState();
@@ -24,6 +25,7 @@ class _CreateCenterState extends State<CreateCenter> {
       []; // List to hold branch names fetched from the API
   List<String> centerNames = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Form key
 
   @override
   void didChangeDependencies() {
@@ -37,23 +39,15 @@ class _CreateCenterState extends State<CreateCenter> {
     final String apiUrl = 'https://chits.tutytech.in/branch.php';
 
     try {
-      print("Request URL: $apiUrl");
-      print("Request Body: { 'type': 'select' }");
-
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          'type': 'select', // Assuming 'select' fetches all branches
+          'type': 'select',
         },
       );
-
-      print("Response Status Code: ${response.statusCode}");
-      print("Response Headers: ${response.headers}");
-      print(
-          "Response Body: ${response.body.isNotEmpty ? response.body : 'No content'}");
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -67,8 +61,6 @@ class _CreateCenterState extends State<CreateCenter> {
         setState(() {
           branchNames = branches;
         });
-
-        print("Branch Names: $branches");
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to fetch branches.')),
@@ -85,33 +77,21 @@ class _CreateCenterState extends State<CreateCenter> {
     final String apiUrl = 'https://chits.tutytech.in/center.php';
 
     try {
-      // Print the request details
-      print('Request URL: $apiUrl');
-      print('Request Body: type=list');
-      print('Request Headers: Content-Type=application/x-www-form-urlencoded');
-
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          'type': 'select', // Replace with the correct type for listing centers
+          'type': 'select',
         },
       );
-
-      // Print response details
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
 
-        // Check if response data is a list
         if (responseData is List) {
           List<String> centers = [];
-
-          // Iterate and extract center names
           for (var center in responseData) {
             if (center['centername'] != null) {
               centers.add(center['centername']);
@@ -119,11 +99,8 @@ class _CreateCenterState extends State<CreateCenter> {
           }
 
           setState(() {
-            centerNames = centers; // Update your state variable
+            centerNames = centers;
           });
-
-          // Print center names for debugging
-          print('Center Names: $centers');
         } else {
           _showSnackBar('Unexpected response format');
         }
@@ -132,21 +109,21 @@ class _CreateCenterState extends State<CreateCenter> {
             'Failed to fetch centers. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      // Print the error details for debugging
-      print('Error: $e');
       _showSnackBar('An error occurred: $e');
     }
   }
 
-  // Show Snackbar for feedback messages
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
-  // Create Center API call
   Future<void> _createCenter() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // If form is not valid, exit early
+    }
+
     final String apiUrl = 'https://chits.tutytech.in/center.php';
 
     try {
@@ -159,9 +136,8 @@ class _CreateCenterState extends State<CreateCenter> {
           'type': 'insert',
           'centername': _centerNameController.text,
           'centercode': _centeridController.text,
-          'branchname':
-              selectedBranch ?? '1', // Use selectedBranch or default to '1'
-          'entryid': '123', // Replace with a real entry ID if needed
+          'branchname': selectedBranch ?? '1',
+          'entryid': '123',
         },
       );
 
@@ -212,129 +188,131 @@ class _CreateCenterState extends State<CreateCenter> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 100),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _centerNameController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Center Name',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Dropdown for selecting a branch
-                    DropdownButtonFormField<String>(
-                      value: branchNames.contains(selectedBranch)
-                          ? selectedBranch
-                          : null,
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedBranch = newValue;
-                        });
-                      },
-                      items: branchNames
-                          .map((branchName) => DropdownMenuItem<String>(
-                                value: branchName,
-                                child: Text(branchName),
-                              ))
-                          .toList(),
-                      decoration: InputDecoration(
-                        labelText: 'Select Branch',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _centeridController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Center ID',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    SizedBox(
-                      height: 50,
-                      width: double.infinity,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              child: const Text(
-                                'Save',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+              child: Form(
+                key: _formKey, // Attach form key to the form widget
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _centerNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Center Name',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
                           ),
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CenterListPage(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a center name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      DropdownButtonFormField<String>(
+                        value: branchNames.contains(selectedBranch)
+                            ? selectedBranch
+                            : null,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedBranch = newValue;
+                          });
+                        },
+                        items: branchNames
+                            .map((branchName) => DropdownMenuItem<String>(
+                                  value: branchName,
+                                  child: Text(branchName),
+                                ))
+                            .toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Select Branch',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a branch';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _centeridController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Center ID',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a center ID';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 30),
+                      SizedBox(
+                        height: 50,
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: 150,
+                              child: ElevatedButton(
+                                onPressed: _createCenter,
+                                child: const Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                );
-                              },
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            SizedBox(
+                              width: 150,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CenterListPage(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              color: const Color.fromARGB(218, 209, 209, 204),
-              padding: const EdgeInsets.all(10.0),
-              child: const Text(
-                'POWERED BY TUTYTECH',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+                    ],
+                  ),
                 ),
               ),
             ),
