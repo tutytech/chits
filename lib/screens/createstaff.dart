@@ -145,247 +145,249 @@ class _CreateStaffState extends State<CreateStaff> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _staffIdController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Staff ID',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+              child: Form(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 30),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _staffIdController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Staff ID',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _staffNameController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Staff Name',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _staffNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Staff Name',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _companyIdController,
-                      decoration: InputDecoration(
-                        labelText: 'CompanyID',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _companyIdController,
+                        decoration: InputDecoration(
+                          labelText: 'CompanyID',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Address',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _addressController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Address',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    TextField(
-                      controller: _mobileNoController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Mobile No',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 30),
+                      TextField(
+                        controller: _mobileNoController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Mobile No',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    TextField(
-                      controller: _userNameController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter User Name',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 30),
+                      TextField(
+                        controller: _userNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter User Name',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    TextField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Password',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 30),
+                      TextField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Password',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    DropdownButtonFormField<String>(
-                      value: selectedBranch,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Branch',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 30),
+                      DropdownButtonFormField<String>(
+                        value: selectedBranch,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Branch',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        items: branches.map((branch) {
+                          return DropdownMenuItem<String>(
+                            value: branch,
+                            child: Text(branch),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedBranch = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _branchCodeController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Branch Code',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                      items: branches.map((branch) {
-                        return DropdownMenuItem<String>(
-                          value: branch,
-                          child: Text(branch),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedBranch = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _branchCodeController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Branch Code',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 30),
+                      TextField(
+                        controller: _receiptNoController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Receipt No',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    TextField(
-                      controller: _receiptNoController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Receipt No',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+                      const SizedBox(height: 30),
+                      DropdownButtonFormField<String>(
+                        value: selectedRights,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Rights',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
+                        items: rights.map((rights) {
+                          return DropdownMenuItem<String>(
+                            value: rights,
+                            child: Text(rights),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedRights = value;
+                          });
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    DropdownButtonFormField<String>(
-                      value: selectedRights,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Rights',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      items: rights.map((rights) {
-                        return DropdownMenuItem<String>(
-                          value: rights,
-                          child: Text(rights),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedRights = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      height: 50,
-                      width: double.infinity,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
-                            child: ElevatedButton(
-                              onPressed: () {
-                                _createStaff();
-                              },
-                              child: const Text(
-                                'Save',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        height: 50,
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: 150, // Adjust the width as needed
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _createStaff();
+                                },
+                                child: const Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
-                            child: ElevatedButton(
-                              onPressed: () {
-                                // Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder: (context) => LoanListPage(),
-                                //   ),
-                                // );
-                              },
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
+                            SizedBox(
+                              width: 150, // Adjust the width as needed
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) => LoanListPage(),
+                                  //   ),
+                                  // );
+                                },
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

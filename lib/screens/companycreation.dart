@@ -19,10 +19,17 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
   final TextEditingController _gstinController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   String selectedlogo = 'No file chosen';
 
   // Method to save company data to SharedPreferences and call the API
   Future<void> _saveCompanyData(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) {
+      // If the form is not valid, do not proceed
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
 
     // Save the data locally using SharedPreferences
@@ -31,16 +38,8 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
     await prefs.setString('mailid', _emailController.text);
     await prefs.setString('phoneno', _phoneNumberController.text);
 
-    print('Saved Company Name: ${prefs.getString('companyname')}');
-    print('Saved Address: ${prefs.getString('address')}');
-    print('Saved Email: ${prefs.getString('mailid')}');
-    print('Saved Phone Number: ${prefs.getString('phoneno')}');
-
     try {
-      // Construct the request URL
       final uri = Uri.parse('https://chits.tutytech.in/company.php');
-
-      // Prepare the form data (key-value pairs)
       final response = await http.post(
         uri,
         body: {
@@ -49,55 +48,35 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
           'address': _gstinController.text,
           'phoneno': _phoneNumberController.text,
           'mailid': _emailController.text,
-          'entryid': '12345', // You might want to dynamically get this value
-          'entrydate': DateTime.now()
-              .toIso8601String()
-              .split('T')
-              .first, // Format the date as YYYY-MM-DD
+          'entryid': '12345', // Replace this with the actual value
+          'entrydate': DateTime.now().toIso8601String().split('T').first,
         },
-        headers: {
-          'Content-Type':
-              'application/x-www-form-urlencoded', // Ensure form-data is used
-        },
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       );
 
-      print('Response Status Code: ${response.statusCode}');
       if (response.statusCode == 200) {
-        // Log raw response
-        print('Raw Response: ${response.body}');
-
-        // Decode the response
         final List<dynamic> responseData = jsonDecode(response.body);
-
-        // Check if there's an error in the response
         if (responseData.isNotEmpty && responseData[0]['error'] != null) {
-          print('API Error: ${responseData[0]['error']}');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: ${responseData[0]['error']}')),
           );
         } else {
-          print('Company created successfully: $responseData');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Company created successfully!')),
+            const SnackBar(content: Text('Company created successfully!')),
           );
 
-          // Navigate to CreateBranch after success
+          // Navigate to AmountTransfer after success
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => AmountTransfer(),
-            ),
-          ); // Adjust the route name to match your app
+            MaterialPageRoute(builder: (context) => AmountTransfer()),
+          );
         }
       } else {
-        // Handle unexpected status codes
-        print('Failed to create company. Status code: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create company.')),
+          const SnackBar(content: Text('Failed to create company.')),
         );
       }
     } catch (e) {
-      print('Exception: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
@@ -139,103 +118,139 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
             padding: const EdgeInsets.only(bottom: 100),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'nobglogo.png',
-                    height: 200,
-                    width: 200,
-                    fit: BoxFit.contain,
-                  ),
-                  const Text(
-                    'Create a Company',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'nobglogo.png',
+                      height: 200,
+                      width: 200,
+                      fit: BoxFit.contain,
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  TextField(
-                    controller: _companyNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Company Name',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+                    const Text(
+                      'Create a Company',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _gstinController,
-                    decoration: InputDecoration(
-                      labelText: 'Address',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Mail ID',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _phoneNumberController,
-                    decoration: InputDecoration(
-                      labelText: 'Phone No.',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        await _saveCompanyData(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 221, 226, 240),
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 30),
-                        shape: RoundedRectangleBorder(
+                    const SizedBox(height: 30),
+                    TextFormField(
+                      controller: _companyNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Company Name',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
                         ),
                       ),
-                      child: const Text(
-                        'Create Company',
-                        style: TextStyle(fontSize: 16),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Company name is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _gstinController,
+                      decoration: InputDecoration(
+                        labelText: 'Address',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Address is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Mail ID',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Email is required';
+                        }
+                        if (!RegExp(
+                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                            .hasMatch(value)) {
+                          return 'Enter a valid email address';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _phoneNumberController,
+                      decoration: InputDecoration(
+                        labelText: 'Phone No.',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Phone number is required';
+                        }
+                        if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                          return 'Enter a valid 10-digit phone number';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await _saveCompanyData(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 221, 226, 240),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 30),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Create Company',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

@@ -161,6 +161,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
   }
 
   Future<void> _createCustomer() async {
+    if (_formKey.currentState!.validate()) {
+      return;
+    }
     final String apiUrl = 'https://chits.tutytech.in/customer.php';
 
     if (_image == null) {
@@ -754,6 +757,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
   final List<String> dayOrders = ['Morning', 'Afternoon', 'Evening'];
   final List<String> timings = ['9:00 AM', '10:00 AM', '11:00 AM'];
   final List<String> fieldOfficers = ['Officer A', 'Officer B', 'Officer C'];
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   Widget buildUploadRow(
       String label, String selectedFileName, VoidCallback onPickFile) {
     return Expanded(
@@ -768,7 +772,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
           Stack(
             alignment: Alignment.centerLeft,
             children: [
-              TextField(
+              TextFormField(
                 enabled: false,
                 decoration: InputDecoration(
                   hintText: selectedFileName,
@@ -822,734 +826,790 @@ class _CreateCustomerState extends State<CreateCustomer> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Stack(
-                        children: [
-                          // CircleAvatar with border
-                          Container(
-                            width: 140, // Adjust width according to your needs
-                            height:
-                                140, // Adjust height according to your needs
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.grey
-                                    .withOpacity(0.5), // Mild grey border color
-                                width: 2, // Border width
+              child: Form(
+                key: _formKey,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 30),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Stack(
+                          children: [
+                            // CircleAvatar with border
+                            Container(
+                              width:
+                                  140, // Adjust width according to your needs
+                              height:
+                                  140, // Adjust height according to your needs
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.grey.withOpacity(
+                                      0.5), // Mild grey border color
+                                  width: 2, // Border width
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 70,
+                                backgroundColor: Colors.grey[300],
+                                backgroundImage: _imageBytes != null
+                                    ? MemoryImage(
+                                        _imageBytes!) // Use image bytes to show the picked image
+                                    : null,
+                                child: _imageBytes == null
+                                    ? const Icon(Icons.person,
+                                        size: 40, color: Colors.grey)
+                                    : null,
                               ),
                             ),
-                            child: CircleAvatar(
-                              radius: 70,
-                              backgroundColor: Colors.grey[300],
-                              backgroundImage: _imageBytes != null
-                                  ? MemoryImage(
-                                      _imageBytes!) // Use image bytes to show the picked image
-                                  : null,
-                              child: _imageBytes == null
-                                  ? const Icon(Icons.person,
-                                      size: 40, color: Colors.grey)
-                                  : null,
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: InkWell(
+                                onTap:
+                                    _pickImage, // Call the method to pick an image
+                                child: CircleAvatar(
+                                  radius: 15,
+                                  backgroundColor: Colors.blue,
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
                             ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+                      TextFormField(
+                        controller: _customerIdController,
+                        decoration: InputDecoration(
+                          labelText: 'CustomerID',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a Customer ID';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Name',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a Name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _addressController,
+                        decoration: InputDecoration(
+                          labelText: 'Address',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter an Address';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _phoneNoController,
+                        decoration: InputDecoration(
+                          labelText: 'Phone No',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a phone number';
+                          } else if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
+                            return 'Please enter a valid phone number (10 digits)';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Aadhaar No validation
+                      TextFormField(
+                        controller: _aadharNoController,
+                        decoration: InputDecoration(
+                          labelText: 'Aadhaar No',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter Aadhaar number';
+                          } else if (!RegExp(r'^\d{12}$').hasMatch(value)) {
+                            return 'Please enter a valid Aadhaar number (12 digits)';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Branch Dropdown validation
+                      DropdownButtonFormField<String>(
+                        value: branchNames.contains(selectedBranch)
+                            ? selectedBranch
+                            : null,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedBranch = newValue;
+                          });
+                        },
+                        items: branchNames
+                            .map((branchName) => DropdownMenuItem<String>(
+                                  value: branchName,
+                                  child: Text(branchName),
+                                ))
+                            .toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Select Branch',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a branch';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Center Dropdown validation
+                      DropdownButtonFormField<String>(
+                        value: centerNames.contains(selectedCenter)
+                            ? selectedCenter
+                            : null,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedCenter = newValue;
+                          });
+                        },
+                        items: centerNames
+                            .map((centerName) => DropdownMenuItem<String>(
+                                  value: centerName,
+                                  child: Text(centerName),
+                                ))
+                            .toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Select Center',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a center';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      // Upload Aadhaar Field
+                      Row(
+                        children: [
+                          const Text(
+                            'Upload Aadhaar',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(left: 120),
+                              hintText:
+                                  selectedAadhaarFileName ?? 'No file chosen',
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (selectedAadhaarFileName == null ||
+                                  selectedAadhaarFileName!.isEmpty) {
+                                return 'Please select an Aadhaar file';
+                              }
+                              return null;
+                            },
                           ),
                           Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: InkWell(
-                              onTap:
-                                  _pickImage, // Call the method to pick an image
-                              child: CircleAvatar(
-                                radius: 15,
-                                backgroundColor: Colors.blue,
-                                child: const Icon(
-                                  Icons.camera_alt,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForAadhaar,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-
-                    const SizedBox(height: 40),
-                    TextField(
-                      controller: _customerIdController,
-                      decoration: InputDecoration(
-                        labelText: 'CustomerID',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload VoterId',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Name',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        labelText: 'Address',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _phoneNoController,
-                      decoration: InputDecoration(
-                        labelText: 'Phone No',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    TextField(
-                      controller: _aadharNoController,
-                      decoration: InputDecoration(
-                        labelText: 'Aadhaar No',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Branch Dropdown
-                    DropdownButtonFormField<String>(
-                      value: branchNames.contains(selectedBranch)
-                          ? selectedBranch
-                          : null,
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedBranch = newValue;
-                        });
-                      },
-                      items: branchNames
-                          .map((branchName) => DropdownMenuItem<String>(
-                                value: branchName,
-                                child: Text(branchName),
-                              ))
-                          .toList(),
-                      decoration: InputDecoration(
-                        labelText: 'Select Branch',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    DropdownButtonFormField<String>(
-                      value: centerNames.contains(selectedCenter)
-                          ? selectedCenter
-                          : null,
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedCenter = newValue;
-                        });
-                      },
-                      items: centerNames
-                          .map((centerName) => DropdownMenuItem<String>(
-                                value: centerName,
-                                child: Text(centerName),
-                              ))
-                          .toList(),
-                      decoration: InputDecoration(
-                        labelText: 'Select Center',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                    // Upload Aadhaar Field
-                    Row(
-                      children: [
-                        const Text(
-                          'Upload Aadhaar',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedAadhaarFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForAadhaar,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload VoterId',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedVoterIdFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForVoterId,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload PAN',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedPanFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForPAN,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload Nominee AadharCard',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedNomineeAadharFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForNomineeAdhaar,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload Nominee VoterID',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectNomineeVoterIdFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForNomineeVoterId,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload NomineePAN',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedNomineePanFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForNomineePan,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload RationCard',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedRationCardFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForRationCard,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload PropertyTaxReceipt',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedpropertyTaxReceiptFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForPropertyTaxReceipt,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload EB Bill',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedEBBillFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForEBBill,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload Gas Bill',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedGasBillFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForGasBill,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload ChequeLeaf',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedChequeLeafFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForChequeLeaf,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Upload BondSheet',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // The disabled text field to hold the button and text
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(
-                                left:
-                                    120), // Adjust the padding to fit the button
-                            hintText: selectedBondSheetFileName,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        // Positioned Choose File button inside the text field
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForBondSheet,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Document Upload Buttons
-
-                    // Create Customer Button
-                    SizedBox(
-                      height: 50,
-                      width: double.infinity,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
                         children: [
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              child: const Text(
-                                'Save',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedVoterIdFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
                               ),
                             ),
                           ),
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CustomerList(),
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              onPressed: _pickFileForVoterId,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload PAN',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedPanFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForPAN,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload Nominee AadharCard',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedNomineeAadharFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForNomineeAdhaar,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload Nominee VoterID',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectNomineeVoterIdFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForNomineeVoterId,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload NomineePAN',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedNomineePanFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForNomineePan,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload RationCard',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedRationCardFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForRationCard,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload PropertyTaxReceipt',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedpropertyTaxReceiptFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForPropertyTaxReceipt,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload EB Bill',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedEBBillFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForEBBill,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload Gas Bill',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedGasBillFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForGasBill,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload ChequeLeaf',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedChequeLeafFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForChequeLeaf,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Upload BondSheet',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // The disabled text field to hold the button and text
+                          TextFormField(
+                            enabled: false,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left:
+                                      120), // Adjust the padding to fit the button
+                              hintText: selectedBondSheetFileName,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          // Positioned Choose File button inside the text field
+                          Positioned(
+                            left: 8,
+                            child: ElevatedButton(
+                              onPressed: _pickFileForBondSheet,
+                              child: const Text('Choose File'),
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Document Upload Buttons
+
+                      // Create Customer Button
+                      SizedBox(
+                        height: 50,
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: 150, // Adjust the width as needed
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _createCustomer();
+                                },
+                                child: const Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 150, // Adjust the width as needed
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CustomerList(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

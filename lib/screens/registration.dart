@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -19,9 +18,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController companyIdController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController companyidController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -37,6 +36,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<void> _createStaff() async {
+    if (_formKey.currentState!.validate()) {
+      return;
+    }
     final String apiUrl = 'https://chits.tutytech.in/staff.php';
 
     try {
@@ -119,210 +121,216 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           // Main Content
           SingleChildScrollView(
             padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // App Logo
-                Image.asset(
-                  'nobglogo.png',
-                  height: 200,
-                  width: 200,
-                  fit: BoxFit.contain, // Maintains aspect ratio
-                ),
-
-                // Heading
-                const Text(
-                  'Create an Account',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // App Logo
+                  Image.asset(
+                    'nobglogo.png',
+                    height: 200,
+                    width: 200,
+                    fit: BoxFit.contain, // Maintains aspect ratio
                   ),
-                ),
-                const SizedBox(height: 30),
-                // Name Input
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
+                  // Heading
+                  const Text(
+                    'Create an Account',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                // Email Input
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Mobile Number Input
-                TextField(
-                  controller: mobileNoController,
-                  decoration: InputDecoration(
-                    labelText: 'MobileNo',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Company ID Input
-                TextField(
-                  controller: companyIdController,
-                  decoration: InputDecoration(
-                    labelText: 'CompanyID',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Username Input
-                TextField(
-                  controller: usernameController,
-                  decoration: InputDecoration(
-                    labelText: 'UserName',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Password Input
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Confirm Password Input
-                TextField(
-                  controller: confirmPasswordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Confirm Password',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Register Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Handle registration logic here
-                      print('Name: ${nameController.text}');
-                      print('Email: ${emailController.text}');
-                      print('Mobile No: ${mobileNoController.text}');
-                      print('Company ID: ${companyIdController.text}');
-                      print('Username: ${usernameController.text}');
-                      print('Password: ${passwordController.text}');
-                      print(
-                          'Confirm Password: ${confirmPasswordController.text}');
-                      _createStaff();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 221, 226, 240),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 30),
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 30),
+                  // Name Input
+                  TextFormField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
                       ),
                     ),
-                    child: const Text(
-                      'Register',
-                      style: TextStyle(fontSize: 16),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your name';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Email Input
+                  TextFormField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Mobile Number Input
+                  TextFormField(
+                    controller: mobileNoController,
+                    decoration: InputDecoration(
+                      labelText: 'MobileNo',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your mobile number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Company ID Input
+                  TextFormField(
+                    controller: companyIdController,
+                    decoration: InputDecoration(
+                      labelText: 'CompanyID',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your company ID';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Username Input
+                  TextFormField(
+                    controller: usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'UserName',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a username';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Password Input
+                  TextFormField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Confirm Password Input
+                  TextFormField(
+                    controller: confirmPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Confirm Password',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please confirm your password';
+                      }
+                      if (value != passwordController.text) {
+                        return 'Passwords do not match';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // Register Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Handle registration logic here
+                        print('Name: ${nameController.text}');
+                        print('Email: ${emailController.text}');
+                        print('Mobile No: ${mobileNoController.text}');
+                        print('Company ID: ${companyIdController.text}');
+                        print('Username: ${usernameController.text}');
+                        print('Password: ${passwordController.text}');
+                        print(
+                            'Confirm Password: ${confirmPasswordController.text}');
+                        _createStaff();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 221, 226, 240),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 30),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        'Register',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                // Already have an account link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Already have an account? ',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // Navigate to login screen
-                        Navigator.pop(context);
-                      },
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Footer Section
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              color: const Color.fromARGB(218, 209, 209, 204),
-              padding: const EdgeInsets.all(10.0),
-              child: const Text(
-                'POWERED BY TUTYTECH',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
+                ],
               ),
             ),
           ),

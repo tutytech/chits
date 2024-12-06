@@ -13,6 +13,8 @@ class AmountTransfer extends StatefulWidget {
 
 class _AmountTransferState extends State<AmountTransfer> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   final TextEditingController _creditopeningbalController =
       TextEditingController();
   final TextEditingController _amountController = TextEditingController();
@@ -22,33 +24,22 @@ class _AmountTransferState extends State<AmountTransfer> {
   final TextEditingController _transferdateController = TextEditingController();
   final TextEditingController _debitopeningbalController =
       TextEditingController();
-  String? selectedStaff;
+
   String? selectedStaff1;
   final List<String> areas = ['CASH', 'CHEQUE', 'NEFT', 'RTGS', 'UPI'];
-  final List<String> rights = [
-    'Admin',
-    'HR',
-    'MD',
-    'Manager',
-    'Auditor',
-    'Accounts',
-    'System Entry',
-    'Field Officier'
-  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Set the key here
+      key: _scaffoldKey,
       appBar: CustomAppBar(
         title: 'Create Voucher',
         onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+          _scaffoldKey.currentState?.openDrawer();
         },
       ),
       drawer: CustomDrawer(),
       body: Stack(children: [
-        // Background Gradient
         Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -61,177 +52,192 @@ class _AmountTransferState extends State<AmountTransfer> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _transferdateController,
-                    decoration: InputDecoration(
-                      labelText: 'Voucher Date',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+            child: Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 30),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _transferdateController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Voucher Date',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.calendar_today,
+                              color: Colors.grey),
+                          onPressed: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (pickedDate != null) {
+                              setState(() {
+                                _transferdateController.text =
+                                    DateFormat('dd/MM/yyyy').format(pickedDate);
+                              });
+                            }
+                          },
+                        ),
                       ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today,
-                            color: Colors.grey),
-                        onPressed: () async {
-                          DateTime? pickedDate = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
-                          );
-                          if (pickedDate != null) {
-                            setState(() {
-                              _transferdateController.text =
-                                  DateFormat('dd/MM/yyyy').format(pickedDate);
-                            });
-                          }
-                        },
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? 'Select a date' : null,
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _debitController,
+                      decoration: InputDecoration(
+                        labelText: 'Debit Account',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) => value?.isEmpty ?? true
+                          ? 'Enter a debit account'
+                          : null,
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _debitopeningbalController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Debit Opening Balance',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Branch Name field
-                  TextField(
-                    controller: _debitController,
-                    decoration: InputDecoration(
-                      labelText: 'Debit Account',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _creditController,
+                      decoration: InputDecoration(
+                        labelText: 'Credit Account',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) => value?.isEmpty ?? true
+                          ? 'Enter a credit account'
+                          : null,
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _creditopeningbalController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Credit Opening Balance',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller:
-                        _debitopeningbalController, // This controller will hold the balance
-                    readOnly: true, // Makes the text field read-only
-                    decoration: InputDecoration(
-                      labelText: 'Debit Opening Balance',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.grey[
-                          200], // Optional: gives a light grey background for better visibility
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Amount',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Enter an amount';
+                        }
+                        if (double.tryParse(value!) == null ||
+                            double.parse(value) <= 0) {
+                          return 'Enter a valid amount';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _creditController,
-                    decoration: InputDecoration(
-                      labelText: 'Credit Account',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+                    const SizedBox(height: 30),
+                    DropdownButtonFormField<String>(
+                      value: selectedStaff1,
+                      decoration: InputDecoration(
+                        labelText: 'Transaction Type',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
+                      items: areas.map((branch) {
+                        return DropdownMenuItem<String>(
+                          value: branch,
+                          child: Text(branch),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedStaff1 = value;
+                        });
+                      },
+                      validator: (value) =>
+                          value == null ? 'Select a transaction type' : null,
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller:
-                        _creditopeningbalController, // This controller will hold the balance
-                    readOnly: true, // Makes the text field read-only
-                    decoration: InputDecoration(
-                      labelText: 'Credit Opening Balance',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.grey[
-                          200], // Optional: gives a light grey background for better visibility
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _remarksController,
+                      decoration: InputDecoration(
+                        labelText: 'Remarks',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? 'Enter remarks' : null,
                     ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Opening Date field
-                  // Opening Date field
-
-                  TextField(
-                    controller: _amountController,
-                    decoration: InputDecoration(
-                      labelText: 'Amount',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  DropdownButtonFormField<String>(
-                    value: selectedStaff1,
-                    decoration: InputDecoration(
-                      labelText: 'Transaction Type',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    items: areas.map((branch) {
-                      return DropdownMenuItem<String>(
-                        value: branch,
-                        child: Text(branch),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedStaff1 = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _remarksController,
-                    decoration: InputDecoration(
-                      labelText: 'Remarks',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Create Branch button
-                  SizedBox(
-                    height: 50,
-                    width: double.infinity,
-                    child: Row(
+                    const SizedBox(height: 20),
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         SizedBox(
-                          width: 150, // Adjust the width as needed
+                          width: 150,
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                // Perform save logic
+                              }
+                            },
                             child: const Text(
                               'Save',
                               style: TextStyle(
@@ -242,15 +248,10 @@ class _AmountTransferState extends State<AmountTransfer> {
                           ),
                         ),
                         SizedBox(
-                          width: 150, // Adjust the width as needed
+                          width: 150,
                           child: ElevatedButton(
                             onPressed: () {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (context) => LoanListPage(),
-                              //   ),
-                              // );
+                              // Cancel logic
                             },
                             child: const Text(
                               'Cancel',
@@ -263,8 +264,8 @@ class _AmountTransferState extends State<AmountTransfer> {
                         ),
                       ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

@@ -18,6 +18,7 @@ class CreateBranch extends StatefulWidget {
 
 class _CreateBranchState extends State<CreateBranch> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   List<String> branchNames = [];
   final TextEditingController _branchNameController = TextEditingController();
   final TextEditingController _openingBalanceController =
@@ -62,6 +63,9 @@ class _CreateBranchState extends State<CreateBranch> {
   }
 
   Future<void> _createBranch() async {
+    if (_formKey.currentState!.validate()) {
+      return;
+    }
     final String apiUrl = 'https://chits.tutytech.in/branch.php';
 
     try {
@@ -178,119 +182,145 @@ class _CreateBranchState extends State<CreateBranch> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 100),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _branchNameController,
-                      decoration: InputDecoration(
-                        labelText: 'Enter Branch Name',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20), // Keeps consistent spacing
-                    TextField(
-                      controller: _openingBalanceController,
-                      decoration: InputDecoration(
-                        labelText: 'Opening Balance',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: dobController,
-                      readOnly:
-                          true, // Prevent manual text entry if only using the calendar
-                      decoration: InputDecoration(
-                        labelText: 'Opening Date',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.calendar_today,
-                              color: Colors.grey),
-                          onPressed: () async {
-                            // Show the date picker when the icon is pressed
-                            final DateTime? picked = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2101),
-                            );
-                            if (picked != null) {
-                              dobController.text =
-                                  DateFormat('yyyy-MM-dd').format(picked);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-
-                    // Reduced height specifically here
-                    // Opening Date field
-                    const SizedBox(height: 20), // Spacing before the button
-                    SizedBox(
-                      height: 50,
-                      width: double.infinity,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              child: const Text(
-                                'Save',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+              child: Form(
+                key: _formKey,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _branchNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Branch Name',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
                           ),
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => BranchListPage(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Branch name is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _openingBalanceController,
+                        decoration: InputDecoration(
+                          labelText: 'Opening Balance',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Opening balance is required';
+                          }
+                          if (double.tryParse(value) == null) {
+                            return 'Enter a valid number';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: dobController,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          labelText: 'Opening Date',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.calendar_today,
+                                color: Colors.grey),
+                            onPressed: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2101),
+                              );
+                              if (picked != null) {
+                                dobController.text =
+                                    DateFormat('yyyy-MM-dd').format(picked);
+                              }
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Opening date is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        height: 50,
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: 150,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (_formKey.currentState?.validate() ??
+                                      false) {
+                                    // Form is valid
+                                    _createBranch();
+                                  }
+                                },
+                                child: const Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                );
-                              },
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            SizedBox(
+                              width: 150,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => BranchListPage(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
