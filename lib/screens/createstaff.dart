@@ -27,6 +27,14 @@ class _CreateStaffState extends State<CreateStaff> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? selectedBranch;
   String? selectedRights;
+  List<Map<String, String>> branchData = [];
+  String? selectedBranchName;
+  String? selectedBranchId;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchBranches(); // Fetch branches when the widget dependencies change
+  }
 
   final List<String> branches = [
     'Head Office',
@@ -45,6 +53,46 @@ class _CreateStaffState extends State<CreateStaff> {
     'System Entry',
     'Field Officer'
   ];
+  Future<void> _fetchBranches() async {
+    final String apiUrl = 'https://chits.tutytech.in/branch.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'select',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        List<Map<String, String>> branches = [];
+        for (var branch in responseData) {
+          if (branch['id'] != null && branch['branchname'] != null) {
+            branches.add({
+              'id': branch['id'].toString(),
+              'name': branch['branchname'],
+            });
+          }
+        }
+
+        setState(() {
+          branchData = branches;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to fetch branches.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
 
   Future<void> _createStaff() async {
     // Check if the form is valid
@@ -64,7 +112,7 @@ class _CreateStaffState extends State<CreateStaff> {
         'mobileNo': _mobileNoController.text,
         'username': _userNameController.text,
         'password': _passwordController.text,
-        'branch': selectedBranch,
+        'branch': selectedBranchName,
         'branchCode': _branchCodeController.text,
         'receiptNo': _receiptNoController.text,
         'rights': selectedRights,
@@ -83,7 +131,7 @@ class _CreateStaffState extends State<CreateStaff> {
           'mobileNo': _mobileNoController.text,
           'username': _userNameController.text,
           'password': _passwordController.text,
-          'branch': selectedBranch,
+          'branch': selectedBranchName,
           'branchCode': _branchCodeController.text,
           'receiptNo': _receiptNoController.text,
           'rights': selectedRights,
@@ -319,9 +367,24 @@ class _CreateStaffState extends State<CreateStaff> {
                       ),
                       const SizedBox(height: 30),
                       DropdownButtonFormField<String>(
-                        value: selectedBranch,
+                        value: selectedBranchId,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedBranchId = newValue;
+                            selectedBranchName = branchData.firstWhere(
+                                    (branch) => branch['id'] == newValue)[
+                                'name']; // Fetch branch name
+                          });
+                        },
+                        items: branchData
+                            .map((branch) => DropdownMenuItem<String>(
+                                  value: branch['id'], // Use branch ID as value
+                                  child: Text(
+                                      branch['name']!), // Display branch name
+                                ))
+                            .toList(),
                         decoration: InputDecoration(
-                          labelText: 'Enter Branch',
+                          labelText: 'Select Branch',
                           labelStyle: const TextStyle(color: Colors.black),
                           filled: true,
                           fillColor: Colors.white,
@@ -332,20 +395,9 @@ class _CreateStaffState extends State<CreateStaff> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your branch';
+                            return 'Please select a branch';
                           }
                           return null;
-                        },
-                        items: branches.map((branch) {
-                          return DropdownMenuItem<String>(
-                            value: branch,
-                            child: Text(branch),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedBranch = value;
-                          });
                         },
                       ),
                       const SizedBox(height: 20),
