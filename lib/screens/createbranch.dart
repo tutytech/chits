@@ -63,8 +63,8 @@ class _CreateBranchState extends State<CreateBranch> {
   }
 
   Future<void> _createBranch() async {
-    if (_formKey.currentState!.validate()) {
-      return;
+    if (!(_formKey.currentState?.validate() ?? true)) {
+      return; // Exit the method if validation fails
     }
     final String apiUrl = 'https://chits.tutytech.in/branch.php';
 
@@ -281,11 +281,8 @@ class _CreateBranchState extends State<CreateBranch> {
                               width: 150,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  if (_formKey.currentState?.validate() ??
-                                      false) {
-                                    // Form is valid
-                                    _createBranch();
-                                  }
+                                  // Form is valid
+                                  _createBranch();
                                 },
                                 child: const Text(
                                   'Save',

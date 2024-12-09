@@ -36,9 +36,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<void> _createStaff() async {
-    if (_formKey.currentState!.validate()) {
-      return;
+    // Check if the form is valid
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return; // Exit the method if validation fails
     }
+
     final String apiUrl = 'https://chits.tutytech.in/staff.php';
 
     try {
@@ -77,19 +79,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         final responseData = json.decode(response.body);
         if (responseData[0]['id'] != null) {
           _showSnackBar('Staff created successfully!');
+          // Navigate only if staff creation succeeds
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateCustomer(),
+            ),
+          );
         } else {
           _showSnackBar('Error: ${responseData[0]['error']}');
         }
       } else {
         _showSnackBar(
-            'Failed to create center. Status code: ${response.statusCode}');
+            'Failed to create staff. Status code: ${response.statusCode}');
       }
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CreateCustomer(),
-        ),
-      );
     } catch (e) {
       // Print the error for debugging
       print('Error: $e');

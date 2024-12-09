@@ -20,10 +20,13 @@ class CreateCenter extends StatefulWidget {
 class _CreateCenterState extends State<CreateCenter> {
   final TextEditingController _centerNameController = TextEditingController();
   final TextEditingController _centeridController = TextEditingController();
+  List<Map<String, String>> branchData = [];
   String? selectedBranch; // Holds the selected branch value
   List<String> branchNames =
       []; // List to hold branch names fetched from the API
   List<String> centerNames = [];
+  String? selectedBranchName;
+  String? selectedBranchId;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Form key
 
@@ -51,15 +54,18 @@ class _CreateCenterState extends State<CreateCenter> {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        List<String> branches = [];
+        List<Map<String, String>> branches = [];
         for (var branch in responseData) {
-          if (branch['branchname'] != null) {
-            branches.add(branch['branchname']);
+          if (branch['id'] != null && branch['branchname'] != null) {
+            branches.add({
+              'id': branch['id'].toString(),
+              'name': branch['branchname'],
+            });
           }
         }
 
         setState(() {
-          branchNames = branches;
+          branchData = branches;
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -127,19 +133,30 @@ class _CreateCenterState extends State<CreateCenter> {
     final String apiUrl = 'https://chits.tutytech.in/center.php';
 
     try {
+      // Construct request body
+      final body = {
+        'type': 'insert',
+        'centername': _centerNameController.text,
+        'centercode': _centeridController.text,
+        'branchname': selectedBranchName ?? '1',
+        'entryid': '123',
+      };
+
+      // Print request URL and body
+      print('Request URL: $apiUrl');
+      print('Request Body: $body');
+
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: {
-          'type': 'insert',
-          'centername': _centerNameController.text,
-          'centercode': _centeridController.text,
-          'branchname': selectedBranch ?? '1',
-          'entryid': '123',
-        },
+        body: body,
       );
+
+      // Print response status and body
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -160,6 +177,7 @@ class _CreateCenterState extends State<CreateCenter> {
       }
     } catch (e) {
       _showSnackBar('An error occurred: $e');
+      print('Error: $e');
     }
   }
 
@@ -217,18 +235,20 @@ class _CreateCenterState extends State<CreateCenter> {
                       ),
                       const SizedBox(height: 20),
                       DropdownButtonFormField<String>(
-                        value: branchNames.contains(selectedBranch)
-                            ? selectedBranch
-                            : null,
+                        value: selectedBranchId,
                         onChanged: (newValue) {
                           setState(() {
-                            selectedBranch = newValue;
+                            selectedBranchId = newValue;
+                            selectedBranchName = branchData.firstWhere(
+                                    (branch) => branch['id'] == newValue)[
+                                'name']; // Fetch branch name
                           });
                         },
-                        items: branchNames
-                            .map((branchName) => DropdownMenuItem<String>(
-                                  value: branchName,
-                                  child: Text(branchName),
+                        items: branchData
+                            .map((branch) => DropdownMenuItem<String>(
+                                  value: branch['id'], // Use branch ID as value
+                                  child: Text(
+                                      branch['name']!), // Display branch name
                                 ))
                             .toList(),
                         decoration: InputDecoration(

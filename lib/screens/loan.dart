@@ -19,6 +19,7 @@ class Loan extends StatefulWidget {
 class _CreateBranchState extends State<Loan> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _customerNameController = TextEditingController();
   final TextEditingController _mobileNoController = TextEditingController();
   List<Map<String, dynamic>> _customers = [];
@@ -139,6 +140,12 @@ class _CreateBranchState extends State<Loan> {
   }
 
   Future<void> _submitLoanForm() async {
+    // Validate the form first
+    if (_formKey.currentState?.validate() != true) {
+      // If the form is invalid, stop further execution
+      return;
+    }
+
     final String apiUrl = 'https://chits.tutytech.in/loan.php'; // API URL
 
     // Collect form data
@@ -286,238 +293,297 @@ class _CreateBranchState extends State<Loan> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 50),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: _detailsController,
-                      decoration: InputDecoration(
-                        labelText: 'Customer Details',
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onChanged: (value) {
-                        _searchCustomer(value);
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: customeridController,
-                      decoration: InputDecoration(
-                        labelText: 'Customer ID',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: customernameController,
-                      decoration: InputDecoration(
-                        labelText: 'Customer Name',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: accountnoController,
-                      decoration: InputDecoration(
-                        labelText: 'AccountNo',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: dobController,
-                      readOnly:
-                          true, // Prevent manual text entry if only using the calendar
-                      decoration: InputDecoration(
-                        labelText: 'Date',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.calendar_today,
-                              color: Colors.grey),
-                          onPressed: () async {
-                            // Show the date picker when the icon is pressed
-                            final DateTime? picked = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2101),
-                            );
-                            if (picked != null) {
-                              dobController.text =
-                                  DateFormat('yyyy-MM-dd').format(picked);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-// Keeps consistent spacing
-
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: firstcollectiondateController,
-                      readOnly:
-                          true, // Prevent manual text entry if only using the calendar
-                      decoration: InputDecoration(
-                        labelText: 'First Collection Date',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.calendar_today,
-                              color: Colors.grey),
-                          onPressed: () async {
-                            // Show the date picker when the icon is pressed
-                            final DateTime? picked = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2101),
-                            );
-                            if (picked != null) {
-                              firstcollectiondateController.text =
-                                  DateFormat('yyyy-MM-dd').format(picked);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-
-                    // Reduced height specifically here
-                    // Opening Date field
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: amountController,
-                      decoration: InputDecoration(
-                        labelText: 'Amount',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    DropdownButtonFormField<String>(
-                      value: branchName.contains(selectedBranch)
-                          ? selectedBranch
-                          : null,
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedBranch = newValue;
-                        });
-                      },
-                      items: branchName
-                          .map((branchName) => DropdownMenuItem<String>(
-                                value: branchName,
-                                child: Text(branchName),
-                              ))
-                          .toList(),
-                      decoration: InputDecoration(
-                        labelText: 'Scheme',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: remarksController,
-                      decoration: InputDecoration(
-                        labelText: 'Remarks',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20), // Spacing before the button
-                    SizedBox(
-                      height: 50,
-                      width: double.infinity,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              child: const Text(
-                                'Save',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+              child: Form(
+                key: _formKey,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 50),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _detailsController,
+                        decoration: InputDecoration(
+                          labelText: 'Customer Details',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          SizedBox(
-                            width: 150, // Adjust the width as needed
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LoanListPage(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Customer Details is required';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          _searchCustomer(value);
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: customeridController,
+                        decoration: InputDecoration(
+                          labelText: 'Customer ID',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Customer ID is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: customernameController,
+                        decoration: InputDecoration(
+                          labelText: 'Customer Name',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Customer Name is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: accountnoController,
+                        decoration: InputDecoration(
+                          labelText: 'AccountNo',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Accountno is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: dobController,
+                        readOnly:
+                            true, // Prevent manual text entry if only using the calendar
+                        decoration: InputDecoration(
+                          labelText: 'Date',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.calendar_today,
+                                color: Colors.grey),
+                            onPressed: () async {
+                              // Show the date picker when the icon is pressed
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2101),
+                              );
+                              if (picked != null) {
+                                dobController.text =
+                                    DateFormat('yyyy-MM-dd').format(picked);
+                              }
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Date is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      // Keeps consistent spacing
+
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: firstcollectiondateController,
+                        readOnly:
+                            true, // Prevent manual text entry if only using the calendar
+                        decoration: InputDecoration(
+                          labelText: 'First Collection Date',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.calendar_today,
+                                color: Colors.grey),
+                            onPressed: () async {
+                              // Show the date picker when the icon is pressed
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2101),
+                              );
+                              if (picked != null) {
+                                firstcollectiondateController.text =
+                                    DateFormat('yyyy-MM-dd').format(picked);
+                              }
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'FirstCollectionDate is required';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      // Reduced height specifically here
+                      // Opening Date field
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: amountController,
+                        decoration: InputDecoration(
+                          labelText: 'Amount',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Amount is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      DropdownButtonFormField<String>(
+                        value: branchName.contains(selectedBranch)
+                            ? selectedBranch
+                            : null,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedBranch = newValue;
+                          });
+                        },
+                        items: branchName
+                            .map((branchName) => DropdownMenuItem<String>(
+                                  value: branchName,
+                                  child: Text(branchName),
+                                ))
+                            .toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Scheme',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Scheme is required';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: remarksController,
+                        decoration: InputDecoration(
+                          labelText: 'Remarks',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Remarks is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20), // Spacing before the button
+                      SizedBox(
+                        height: 50,
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: 150, // Adjust the width as needed
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _submitLoanForm();
+                                },
+                                child: const Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                );
-                              },
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            SizedBox(
+                              width: 150, // Adjust the width as needed
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LoanListPage(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

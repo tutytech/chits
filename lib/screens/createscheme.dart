@@ -23,6 +23,7 @@ class _CreateSchemeState extends State<CreateScheme> {
   TextEditingController _interestController = TextEditingController();
   TextEditingController _savingsController = TextEditingController();
   String _selectedCollectionMode = 'Weekly';
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String _textFieldLabel = 'No of Weeks';
 
   final List<String> _collectionModes = ['Weekly', 'Monthly', 'Daily'];
@@ -167,413 +168,334 @@ class _CreateSchemeState extends State<CreateScheme> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
+            child: Form(
+              key: _formKey, // Added a Form with a GlobalKey
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
 
-                // Scheme ID field
-                TextField(
-                  controller: _schemeIdController,
-                  decoration: InputDecoration(
-                    labelText: 'Enter Scheme ID',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
+                  // Scheme ID field
+                  TextFormField(
+                    controller: _schemeIdController,
+                    decoration: InputDecoration(
+                      labelText: 'Enter Scheme ID',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a scheme ID';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // Scheme Name field
-                TextField(
-                  controller: _schemeNameController,
-                  decoration: InputDecoration(
-                    labelText: 'Enter Scheme Name',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
+                  // Scheme Name field
+                  TextFormField(
+                    controller: _schemeNameController,
+                    decoration: InputDecoration(
+                      labelText: 'Enter Scheme Name',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a scheme name';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // Row with Loan Amount, Collection Mode, and No. of Weeks/Days
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _loanAmountController,
-                        decoration: InputDecoration(
-                          labelText: 'Amount',
-                          labelStyle: const TextStyle(color: Colors.black),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedCollectionMode,
-                        items: _collectionModes
-                            .map((mode) => DropdownMenuItem(
-                                  value: mode,
-                                  child: Text(mode),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            _updateTextFieldLabel(value);
-                          }
-                        },
-                        decoration: InputDecoration(
-                          labelStyle: const TextStyle(color: Colors.black),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: _weeksDaysController,
-                        decoration: InputDecoration(
-                          labelText: _textFieldLabel,
-                          labelStyle: const TextStyle(color: Colors.black),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        onChanged: _generateRows,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-
-                // Table Header
-                if (_tableData.isNotEmpty)
-                  Container(
-                    color: Colors.grey[300], // Updated header background color
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'S.No',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                  // Row with Loan Amount, Collection Mode, and No. of Weeks/Days
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _loanAmountController,
+                          decoration: InputDecoration(
+                            labelText: 'Amount',
+                            labelStyle: const TextStyle(color: Colors.black),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
                             ),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the amount';
+                            }
+                            if (double.tryParse(value) == null) {
+                              return 'Please enter a valid number';
+                            }
+                            return null;
+                          },
                         ),
-                        Container(
-                          width: 1, // Width of the divider
-                          color: Colors.black, // Divider color
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedCollectionMode,
+                          items: _collectionModes
+                              .map((mode) => DropdownMenuItem(
+                                    value: mode,
+                                    child: Text(mode),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              _updateTextFieldLabel(value);
+                            }
+                          },
+                          decoration: InputDecoration(
+                            labelStyle: const TextStyle(color: Colors.black),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please select a collection mode';
+                            }
+                            return null;
+                          },
                         ),
-                        Expanded(
-                          child: Text(
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _weeksDaysController,
+                          decoration: InputDecoration(
+                            labelText: _textFieldLabel,
+                            labelStyle: const TextStyle(color: Colors.black),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the number of $_textFieldLabel';
+                            }
+                            if (int.tryParse(value) == null) {
+                              return 'Please enter a valid number';
+                            }
+                            return null;
+                          },
+                          onChanged: _generateRows,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Table Header
+                  if (_tableData.isNotEmpty)
+                    Container(
+                      color: Colors.grey[300],
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'S.No',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          ...[
                             'Principal Amount',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 0.5, // Reduced width for the separator
-                          color: Colors.black,
-                        ),
-                        Expanded(
-                          child: Text(
                             'Interest Amount',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 0.5, // Reduced width for the separator
-                          color: Colors.black,
-                        ),
-                        Expanded(
-                          child: Text(
                             'Savings Amount',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                            'Total Collection'
+                          ]
+                              .map((header) => Expanded(
+                                    child: Text(
+                                      header,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ))
+                              .toList(),
+                        ],
+                      ),
+                    ),
+
+                  // Table Rows
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.black12),
+                    ),
+                    child: Column(
+                      children: _tableData.map((row) {
+                        return Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 4.0),
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xFF4A90E2),
+                                            Color(0xFF50E3C2)
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        border:
+                                            Border.all(color: Colors.black26),
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: Text(
+                                        '${row['sNo']}',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  ...[
+                                    'principalAmount',
+                                    'interestAmount',
+                                    'savingsAmount'
+                                  ]
+                                      .map((key) => Expanded(
+                                            child: TextFormField(
+                                              initialValue: row[key].toString(),
+                                              decoration: const InputDecoration(
+                                                border: InputBorder.none,
+                                              ),
+                                              keyboardType: TextInputType
+                                                  .numberWithOptions(
+                                                      decimal: true),
+                                              textAlign: TextAlign.center,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  row[key] =
+                                                      double.tryParse(value) ??
+                                                          0.0;
+                                                  _updateTotalCollection(
+                                                      _tableData.indexOf(row));
+                                                });
+                                              },
+                                              validator: (value) {
+                                                if (value == null ||
+                                                    value.isEmpty) {
+                                                  return 'Required';
+                                                }
+                                                if (double.tryParse(value) ==
+                                                    null) {
+                                                  return 'Invalid number';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ))
+                                      .toList(),
+                                  Expanded(
+                                    child: Text(
+                                      row['totalCollection'].toString(),
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Divider(),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Create Scheme button
+                  SizedBox(
+                    height: 50,
+                    width: double.infinity,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(
+                          width: 150,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState?.validate() ?? false) {
+                                _createScheme();
+                                // Save the scheme
+                                print('Scheme is valid and saved');
+                              }
+                            },
+                            child: const Text(
+                              'Save',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                        Container(
-                          width: 1,
-                          color: Colors.black,
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Total Collection',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                        SizedBox(
+                          width: 150,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SchemeListPage(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                // Table Rows
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.black12),
-                  ),
-                  child: Column(
-                    children: _tableData.map((row) {
-                      return Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0), // Space above and below rows
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal:
-                                            4.0), // Space between columns
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Color(0xFF4A90E2),
-                                          Color(0xFF50E3C2)
-                                        ], // Gradient colors
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      border: Border.all(color: Colors.black26),
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Text(
-                                      '${row['sNo']}',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors
-                                            .white, // Ensures text is readable on a gradient
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal:
-                                            4.0), // Space between columns
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 4.0),
-                                    height: 38,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black12),
-                                    ),
-                                    child: TextFormField(
-                                      initialValue:
-                                          row['principalAmount'].toString(),
-                                      decoration: const InputDecoration(
-                                        hintText: 'Principal Amount',
-                                        border: InputBorder.none,
-                                      ),
-                                      keyboardType:
-                                          TextInputType.numberWithOptions(
-                                              decimal: true),
-                                      textAlign: TextAlign.center,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          row['principalAmount'] =
-                                              double.tryParse(value) ?? 0.0;
-                                          _updateTotalCollection(
-                                              _tableData.indexOf(row));
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal:
-                                            4.0), // Space between columns
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 5.0),
-                                    height: 38,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black12),
-                                    ),
-                                    child: TextFormField(
-                                      initialValue:
-                                          row['interestAmount'].toString(),
-                                      decoration: const InputDecoration(
-                                        hintText: 'Interest Amount',
-                                        border: InputBorder.none,
-                                      ),
-                                      keyboardType:
-                                          TextInputType.numberWithOptions(
-                                              decimal: true),
-                                      textAlign: TextAlign.center,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          row['interestAmount'] =
-                                              double.tryParse(value) ?? 0.0;
-                                          _updateTotalCollection(
-                                              _tableData.indexOf(row));
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal:
-                                            2.0), // Reduced horizontal space for width control
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal:
-                                            4.0), // Adjusted padding for reduced height
-                                    height:
-                                        38, // Set a fixed height for the container to control height
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.black12),
-                                    ),
-                                    child: TextFormField(
-                                      initialValue:
-                                          row['savingsAmount'].toString(),
-                                      decoration: const InputDecoration(
-                                        hintText: 'Savings Amount',
-                                        border: InputBorder.none,
-                                        contentPadding: EdgeInsets.symmetric(
-                                            vertical: 0.0,
-                                            horizontal:
-                                                4.0), // Reduce internal padding to match height and width
-                                      ),
-                                      keyboardType:
-                                          TextInputType.numberWithOptions(
-                                              decimal: true),
-                                      textAlign: TextAlign.center,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          row['savingsAmount'] =
-                                              double.tryParse(value) ?? 0.0;
-                                          _updateTotalCollection(
-                                              _tableData.indexOf(row));
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal:
-                                            4.0), // Space between columns
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        // Apply gradient background
-                                        colors: [
-                                          Color(0xFF4A90E2),
-                                          Color(0xFF50E3C2)
-                                        ],
-                                      ),
-                                      border: Border.all(color: Colors.black12),
-                                    ),
-                                    child: Text(
-                                      row['totalCollection'].toString(),
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Divider(),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 30),
-
-                // Create Scheme button
-                SizedBox(
-                  height: 50,
-                  width: double.infinity,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: 150, // Adjust the width as needed
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'Save',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 150, // Adjust the width as needed
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SchemeListPage(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

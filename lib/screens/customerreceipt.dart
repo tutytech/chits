@@ -42,6 +42,7 @@ class _ReceiptState extends State<Receipt> {
   String? selectedStaff;
   String? selectedStaff1;
   String? selectedCenter;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final List<String> centers = [
     'Center A',
@@ -104,6 +105,9 @@ class _ReceiptState extends State<Receipt> {
   }
 
   Future<void> _createBranch() async {
+    if (!(_formKey.currentState?.validate() ?? true)) {
+      return; // Exit the method if validation fails
+    }
     final String apiUrl = 'https://chits.tutytech.in/receipt.php';
 
     try {
@@ -234,352 +238,425 @@ class _ReceiptState extends State<Receipt> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _detailsController,
-                    decoration: InputDecoration(
-                      labelText: 'Customer Details',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onChanged: (value) {
-                      _searchCustomer(value);
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _customerNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Customer Name',
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    readOnly: true,
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _mobileNoController,
-                    decoration: InputDecoration(
-                      labelText: 'Mobile No',
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    readOnly: true,
-                  ),
-                  const SizedBox(height: 20),
-                  // Branch Name field
-                  TextField(
-                    controller:
-                        _loanamountController, // This controller will hold the balance
-                    // Makes the text field read-only
-                    decoration: InputDecoration(
-                      labelText: 'Loan/Chits/Savings',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.grey[
-                          200], // Optional: gives a light grey background for better visibility
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller:
-                        _receivedamountController, // This controller will hold the balance
-                    // Makes the text field read-only
-                    decoration: InputDecoration(
-                      labelText: 'Received Amount',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.grey[
-                          200], // Optional: gives a light grey background for better visibility
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Opening Date field
-                  // Opening Date field
-
-                  TextField(
-                    controller: _depositamountController,
-                    decoration: InputDecoration(
-                      labelText: 'Deposit Amount',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  DropdownButtonFormField<String>(
-                    value: selectedStaff1,
-                    decoration: InputDecoration(
-                      labelText: 'Type of Payment',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    items: areas.map((branch) {
-                      return DropdownMenuItem<String>(
-                        value: branch,
-                        child: Text(branch),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedStaff1 = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _chequenoController,
-                    decoration: InputDecoration(
-                      labelText: 'Cheque No',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _chequedateController,
-                    readOnly:
-                        true, // Makes the field non-editable so date can only be picked from calendar
-                    decoration: InputDecoration(
-                      labelText: 'Cheque Date',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today,
-                            color: Colors.grey),
-                        onPressed: () async {
-                          DateTime? pickedDate = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
-                          );
-                          if (pickedDate != null) {
-                            setState(() {
-                              _chequedateController.text =
-                                  DateFormat('dd/MM/yyyy').format(pickedDate);
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _banknameController,
-                    decoration: InputDecoration(
-                      labelText: 'Bank Name',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _remarksController,
-                    decoration: InputDecoration(
-                      labelText: 'Remarks',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Create Branch button
-                  SizedBox(
-                    height: 50,
-                    width: double.infinity,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          width: 150, // Adjust the width as needed
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            child: const Text(
-                              'Save',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+            child: Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 30),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _detailsController,
+                      decoration: InputDecoration(
+                        labelText: 'Customer Details',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        SizedBox(
-                          width: 150, // Adjust the width as needed
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => receiptListPage(),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  const Text(
-                    "Receipt Report",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Start Date Text Field
-                  DropdownButtonFormField<String>(
-                    value: selectedCenter,
-                    decoration: InputDecoration(
-                      labelText: 'Select Center',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
                       ),
-                    ),
-                    items: centers.map((center) {
-                      return DropdownMenuItem<String>(
-                        value: center,
-                        child: Text(center),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCenter = value;
-                        _selectcenterController.text = value ?? '';
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // End Date Text Field
-                  TextField(
-                    controller: _dateController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'dd/MM/yyyy',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today,
-                            color: Colors.grey),
-                        onPressed: () async {
-                          DateTime? pickedDate = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
-                          );
-                          if (pickedDate != null) {
-                            setState(() {
-                              _dateController.text =
-                                  DateFormat('dd/MM/yyyy').format(pickedDate);
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Collection Print Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditCompany(),
-                          ),
-                        );
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter customer details';
+                        }
+                        return null;
                       },
-                      child: const Text(
-                        'Collection Print',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                      onChanged: (value) {
+                        _searchCustomer(value);
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _customerNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Customer Name',
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Customer name cannot be empty';
+                        }
+                        return null;
+                      },
+                      readOnly: true,
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _mobileNoController,
+                      decoration: InputDecoration(
+                        labelText: 'Mobile No',
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Mobile number cannot be empty';
+                        } else if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                          return 'Enter a valid 10-digit mobile number';
+                        }
+                        return null;
+                      },
+                      readOnly: true,
+                    ),
+                    const SizedBox(height: 20),
+                    // Branch Name field
+                    TextFormField(
+                      controller:
+                          _loanamountController, // This controller will hold the balance
+                      // Makes the text field read-only
+                      decoration: InputDecoration(
+                        labelText: 'Loan/Chits/Savings',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.grey[
+                            200], // Optional: gives a light grey background for better visibility
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Loan/chits/savings cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller:
+                          _receivedamountController, // This controller will hold the balance
+                      // Makes the text field read-only
+                      decoration: InputDecoration(
+                        labelText: 'Received Amount',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.grey[
+                            200], // Optional: gives a light grey background for better visibility
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Received Amount cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Opening Date field
+                    // Opening Date field
+
+                    TextFormField(
+                      controller: _depositamountController,
+                      decoration: InputDecoration(
+                        labelText: 'Deposit Amount',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Deposit Amount cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                    DropdownButtonFormField<String>(
+                      value: selectedStaff1,
+                      decoration: InputDecoration(
+                        labelText: 'Type of Payment',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Payment is required';
+                        }
+                        return null;
+                      },
+                      items: areas.map((branch) {
+                        return DropdownMenuItem<String>(
+                          value: branch,
+                          child: Text(branch),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedStaff1 = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _chequenoController,
+                      decoration: InputDecoration(
+                        labelText: 'Cheque No',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Cheque No cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _chequedateController,
+                      readOnly:
+                          true, // Makes the field non-editable so date can only be picked from calendar
+                      decoration: InputDecoration(
+                        labelText: 'Cheque Date',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.calendar_today,
+                              color: Colors.grey),
+                          onPressed: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (pickedDate != null) {
+                              setState(() {
+                                _chequedateController.text =
+                                    DateFormat('dd/MM/yyyy').format(pickedDate);
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Cheque Date cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _banknameController,
+                      decoration: InputDecoration(
+                        labelText: 'Bank Name',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Bank Name cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _remarksController,
+                      decoration: InputDecoration(
+                        labelText: 'Remarks',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Remarks cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Create Branch button
+                    SizedBox(
+                      height: 50,
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {
+                                _createBranch();
+                              },
+                              child: const Text(
+                                'Save',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => receiptListPage(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    const Text(
+                      "Receipt Report",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Start Date Text Field
+                    DropdownButtonFormField<String>(
+                      value: selectedCenter,
+                      decoration: InputDecoration(
+                        labelText: 'Select Center',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      items: centers.map((center) {
+                        return DropdownMenuItem<String>(
+                          value: center,
+                          child: Text(center),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCenter = value;
+                          _selectcenterController.text = value ?? '';
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // End Date Text Field
+                    TextField(
+                      controller: _dateController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'dd/MM/yyyy',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.calendar_today,
+                              color: Colors.grey),
+                          onPressed: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (pickedDate != null) {
+                              setState(() {
+                                _dateController.text =
+                                    DateFormat('dd/MM/yyyy').format(pickedDate);
+                              });
+                            }
+                          },
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 70),
-                ],
+                    const SizedBox(height: 30),
+
+                    // Collection Print Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditCompany(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Collection Print',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 70),
+                  ],
+                ),
               ),
             ),
           ),

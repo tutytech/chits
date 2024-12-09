@@ -24,6 +24,7 @@ class _CreateStaffState extends State<CreateStaff> {
   final TextEditingController _receiptNoController = TextEditingController();
   final TextEditingController _companyIdController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? selectedBranch;
   String? selectedRights;
 
@@ -46,6 +47,10 @@ class _CreateStaffState extends State<CreateStaff> {
   ];
 
   Future<void> _createStaff() async {
+    // Check if the form is valid
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return; // Exit the method if validation fails
+    }
     final String apiUrl = 'https://chits.tutytech.in/staff.php';
 
     try {
@@ -146,13 +151,14 @@ class _CreateStaffState extends State<CreateStaff> {
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               child: Form(
+                key: _formKey,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-                      TextField(
+                      TextFormField(
                         controller: _staffIdController,
                         decoration: InputDecoration(
                           labelText: 'Enter Staff ID',
@@ -164,9 +170,15 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your staff id';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
-                      TextField(
+                      TextFormField(
                         controller: _staffNameController,
                         decoration: InputDecoration(
                           labelText: 'Enter Staff Name',
@@ -178,9 +190,15 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your staff name';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
-                      TextField(
+                      TextFormField(
                         controller: _companyIdController,
                         decoration: InputDecoration(
                           labelText: 'CompanyID',
@@ -192,9 +210,15 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your companyid';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
-                      TextField(
+                      TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
                           labelText: 'Email',
@@ -206,9 +230,15 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
-                      TextField(
+                      TextFormField(
                         controller: _addressController,
                         decoration: InputDecoration(
                           labelText: 'Enter Address',
@@ -220,9 +250,15 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your address';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 30),
-                      TextField(
+                      TextFormField(
                         controller: _mobileNoController,
                         decoration: InputDecoration(
                           labelText: 'Enter Mobile No',
@@ -234,9 +270,15 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your mobileno';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 30),
-                      TextField(
+                      TextFormField(
                         controller: _userNameController,
                         decoration: InputDecoration(
                           labelText: 'Enter User Name',
@@ -248,9 +290,15 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your username';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 30),
-                      TextField(
+                      TextFormField(
                         controller: _passwordController,
                         decoration: InputDecoration(
                           labelText: 'Enter Password',
@@ -262,6 +310,12 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 30),
                       DropdownButtonFormField<String>(
@@ -276,6 +330,12 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your branch';
+                          }
+                          return null;
+                        },
                         items: branches.map((branch) {
                           return DropdownMenuItem<String>(
                             value: branch,
@@ -289,7 +349,7 @@ class _CreateStaffState extends State<CreateStaff> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      TextField(
+                      TextFormField(
                         controller: _branchCodeController,
                         decoration: InputDecoration(
                           labelText: 'Enter Branch Code',
@@ -301,9 +361,15 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your branch code';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 30),
-                      TextField(
+                      TextFormField(
                         controller: _receiptNoController,
                         decoration: InputDecoration(
                           labelText: 'Enter Receipt No',
@@ -315,6 +381,12 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your receiptno';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 30),
                       DropdownButtonFormField<String>(
@@ -329,6 +401,12 @@ class _CreateStaffState extends State<CreateStaff> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your rights';
+                          }
+                          return null;
+                        },
                         items: rights.map((rights) {
                           return DropdownMenuItem<String>(
                             value: rights,

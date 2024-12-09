@@ -18,7 +18,8 @@ class _EditCompanyState extends State<EditCompany> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  String selectedlogo = 'No file chosen';
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String selectedLogo = 'No file chosen';
 
   @override
   void initState() {
@@ -28,18 +29,14 @@ class _EditCompanyState extends State<EditCompany> {
 
   void _pickFileForLogo() async {
     try {
-      // Open file picker for selecting files
       final result = await FilePicker.platform.pickFiles();
-
-      // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
         setState(() {
-          selectedlogo = result.files.first.name; // Get the file name
+          selectedLogo = result.files.first.name;
         });
       } else {
-        // No file selected
         setState(() {
-          selectedlogo = 'No file chosen';
+          selectedLogo = 'No file chosen';
         });
       }
     } catch (e) {
@@ -47,7 +44,6 @@ class _EditCompanyState extends State<EditCompany> {
     }
   }
 
-  // Method to load company data from SharedPreferences
   Future<void> _loadCompanyData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -56,47 +52,41 @@ class _EditCompanyState extends State<EditCompany> {
       _emailController.text = prefs.getString('email') ?? '';
       _phoneNumberController.text = prefs.getString('phoneNumber') ?? '';
     });
-    print('$_companyNameController.text');
-    print('$_gstinController.text');
-    print('$_emailController.text');
-    print('$_phoneNumberController.text');
   }
 
-  // Method to save (update) company data to SharedPreferences
   Future<void> _saveCompanyData() async {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SmsSettings(),
-      ),
-    );
-    final prefs = await SharedPreferences.getInstance();
+    if (_formKey.currentState?.validate() ?? false) {
+      final prefs = await SharedPreferences.getInstance();
 
-    // Save updated company details
-    await prefs.setString('companyName', _companyNameController.text);
-    await prefs.setString('gstin', _gstinController.text);
-    await prefs.setString('email', _emailController.text);
-    await prefs.setString('phoneNumber', _phoneNumberController.text);
+      await prefs.setString('companyName', _companyNameController.text);
+      await prefs.setString('gstin', _gstinController.text);
+      await prefs.setString('email', _emailController.text);
+      await prefs.setString('phoneNumber', _phoneNumberController.text);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Company details updated successfully!')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Company details updated successfully!')),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SmsSettings()),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Set the key here
+      key: _scaffoldKey,
       appBar: CustomAppBar(
         title: 'Edit Company',
         onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+          _scaffoldKey.currentState?.openDrawer();
         },
       ),
       drawer: CustomDrawer(),
       body: Stack(
         children: [
-          // Background Gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -106,147 +96,168 @@ class _EditCompanyState extends State<EditCompany> {
               ),
             ),
           ),
-          // Main Content
           Padding(
             padding: const EdgeInsets.only(bottom: 100),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // App Logo
-                  const SizedBox(height: 100),
-                  TextField(
-                    controller: _companyNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Company Name',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // GSTIN Input
-                  TextField(
-                    controller: _gstinController,
-                    decoration: InputDecoration(
-                      labelText: 'Address',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Email Input
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Mail ID',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Phone Number Input
-                  TextField(
-                    controller: _phoneNumberController,
-                    decoration: InputDecoration(
-                      labelText: 'Phone No.',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Text(
-                        'Upload Logo',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Stack(
-                    alignment: Alignment.centerLeft,
-                    children: [
-                      // The disabled text field to hold the button and text
-                      TextField(
-                        enabled: false,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.only(
-                              left:
-                                  120), // Adjust the padding to fit the button
-                          hintText: selectedlogo,
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                      // Positioned Choose File button inside the text field
-                      Positioned(
-                        left: 8,
-                        child: ElevatedButton(
-                          onPressed: _pickFileForLogo,
-                          child: const Text('Choose File'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-                  // Update Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        // Save updated company details to SharedPreferences
-                        await _saveCompanyData();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 221, 226, 240),
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 30),
-                        shape: RoundedRectangleBorder(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 100),
+                    TextFormField(
+                      controller: _companyNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Company Name',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
                         ),
                       ),
-                      child: const Text(
-                        'Update Company',
-                        style: TextStyle(fontSize: 16),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the company name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _gstinController,
+                      decoration: InputDecoration(
+                        labelText: 'Address',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the address';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Mail ID',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the email address';
+                        } else if (!RegExp(
+                                r"^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
+                            .hasMatch(value)) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _phoneNumberController,
+                      decoration: InputDecoration(
+                        labelText: 'Phone No.',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the phone number';
+                        } else if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
+                          return 'Please enter a valid 10-digit phone number';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const Text(
+                          'Upload Logo',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Stack(
+                      alignment: Alignment.centerLeft,
+                      children: [
+                        TextField(
+                          enabled: false,
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.only(left: 120),
+                            hintText: selectedLogo,
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 8,
+                          child: ElevatedButton(
+                            onPressed: _pickFileForLogo,
+                            child: const Text('Choose File'),
+                            style: ElevatedButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 40),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _saveCompanyData,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 221, 226, 240),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 30),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Update Company',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-          // Footer Section
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
