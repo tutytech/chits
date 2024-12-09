@@ -51,6 +51,10 @@ class _CreateCustomerState extends State<CreateCustomer> {
   String selectedBondSheetFileName = 'No file chosen';
   String selectedImagesFileName = 'No file chosen';
   Uint8List? _imageBytes;
+  String? selectedBranchName;
+  String? selectedBranchId;
+  String? selectedCenterId;
+  String? selectedCenterName;
 // Variables to hold file bytes for each selected document
   Uint8List? selectedAadhaarFileBytes;
 
@@ -80,6 +84,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
   Uint8List? selectedImage;
   List<String> branchNames = [];
   List<String> centerNames = [];
+  List<Map<String, String>> centerData = [];
+
+  List<Map<String, String>> branchData = [];
   final TextEditingController _customerIdController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -123,7 +130,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          'type': 'select', // Replace with the correct type for listing centers
+          'type': 'select', // Type for listing centers
         },
       );
 
@@ -133,23 +140,25 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
         final responseData = json.decode(response.body);
 
-        // Log decoded response to check structure
-        print("Decoded Response Data: $responseData");
-
+        // Parse centers from response
+        List<Map<String, String>> centers = [];
         for (var center in responseData) {
-          if (center['centername'] != null) {
-            centers.add(center['centername']);
+          if (center['id'] != null && center['centername'] != null) {
+            centers.add({
+              'id': center['id'].toString(),
+              'name': center['centername'],
+            });
           }
         }
 
         if (centers.isEmpty) {
-          _showSnackBar('Centers were not found in the response data.');
+          _showSnackBar('No centers were found in the response data.');
         } else {
           setState(() {
-            centerNames = centers;
+            centerData = centers; // Update the state with center data
           });
 
-          print('Center Names: $centers');
+          print('Center Data: $centers');
         }
       } else {
         _showSnackBar(
@@ -187,8 +196,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
       request.fields['phoneNo'] = _phoneNoController.text.trim();
       request.fields['aadharNo'] =
           _aadharNoController.text.trim(); // Ensure this is passed as a string
-      request.fields['branch'] = selectedBranch ?? '';
-      request.fields['center'] = selectedCenter ?? '';
+      request.fields['branch'] = selectedBranchName ?? '';
+      request.fields['center'] = selectedCenterName ?? '';
 
       // Add file names for uploaded documents if available
       request.fields['uploadAadhar'] = selectedAadhaarFileName ?? '';
@@ -471,62 +480,31 @@ class _CreateCustomerState extends State<CreateCustomer> {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          'type': 'select', // Assuming 'list' type fetches all branches
+          'type': 'select',
         },
       );
 
-      // Print the response for debugging
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200 && response.body.isNotEmpty) {
-        try {
-          final responseData = json.decode(response.body);
-
-          if (responseData is List) {
-            // Check if the response is a list
-            List<String> branches = [];
-
-            for (var branch in responseData) {
-              if (branch is Map && branch['branchname'] != null) {
-                branches.add(branch['branchname']);
-              }
-            }
-
-            setState(() {
-              branchNames = branches;
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        List<Map<String, String>> branches = [];
+        for (var branch in responseData) {
+          if (branch['id'] != null && branch['branchname'] != null) {
+            branches.add({
+              'id': branch['id'].toString(),
+              'name': branch['branchname'],
             });
-
-            // Print the branch names to the terminal
-            print("Branch Names: $branches");
-          } else {
-            // Handle unexpected response structure
-            print('Unexpected JSON structure: $responseData');
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Unexpected JSON structure received.')),
-            );
           }
-        } catch (e) {
-          // Handle JSON decoding errors
-          print('JSON decode error: $e');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Invalid JSON response: $e')),
-          );
         }
+
+        setState(() {
+          branchData = branches;
+        });
       } else {
-        // Handle cases where the response is not OK or empty
-        print(
-            'Failed to fetch branches or empty response. Status code: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text(
-                  'Failed to fetch branches or received an empty response.')),
+          const SnackBar(content: Text('Failed to fetch branches.')),
         );
       }
     } catch (e) {
-      // Handle any other errors
-      print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
@@ -994,18 +972,20 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
                       // Branch Dropdown validation
                       DropdownButtonFormField<String>(
-                        value: branchNames.contains(selectedBranch)
-                            ? selectedBranch
-                            : null,
+                        value: selectedBranchId,
                         onChanged: (newValue) {
                           setState(() {
-                            selectedBranch = newValue;
+                            selectedBranchId = newValue;
+                            selectedBranchName = branchData.firstWhere(
+                                    (branch) => branch['id'] == newValue)[
+                                'name']; // Fetch branch name
                           });
                         },
-                        items: branchNames
-                            .map((branchName) => DropdownMenuItem<String>(
-                                  value: branchName,
-                                  child: Text(branchName),
+                        items: branchData
+                            .map((branch) => DropdownMenuItem<String>(
+                                  value: branch['id'], // Use branch ID as value
+                                  child: Text(
+                                      branch['name']!), // Display branch name
                                 ))
                             .toList(),
                         decoration: InputDecoration(
@@ -1029,23 +1009,22 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
                       // Center Dropdown validation
                       DropdownButtonFormField<String>(
-                        value: centerNames.contains(selectedCenter)
-                            ? selectedCenter
-                            : null,
+                        value: selectedCenterId,
                         onChanged: (newValue) {
                           setState(() {
-                            selectedCenter = newValue;
+                            selectedCenterId = newValue;
+                            selectedCenterName = centerData.firstWhere(
+                                (center) => center['id'] == newValue)['name'];
                           });
                         },
-                        items: centerNames
-                            .map((centerName) => DropdownMenuItem<String>(
-                                  value: centerName,
-                                  child: Text(centerName),
+                        items: centerData
+                            .map((center) => DropdownMenuItem<String>(
+                                  value: center['id'],
+                                  child: Text(center['name']!),
                                 ))
                             .toList(),
                         decoration: InputDecoration(
                           labelText: 'Select Center',
-                          labelStyle: const TextStyle(color: Colors.black),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -1053,12 +1032,6 @@ class _CreateCustomerState extends State<CreateCustomer> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please select a center';
-                          }
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 20),
                       // Upload Aadhaar Field
