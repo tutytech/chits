@@ -42,7 +42,10 @@ class _ReceiptState extends State<Receipt> {
   String? selectedStaff;
   String? selectedStaff1;
   String? selectedCenter;
+  String? selectedCenterId;
+  String? selectedCenterName;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  List<Map<String, String>> centerData = [];
 
   final List<String> centers = [
     'Center A',
@@ -67,6 +70,62 @@ class _ReceiptState extends State<Receipt> {
   void initState() {
     super.initState();
     _loadCustomers();
+    _fetchCenters();
+  }
+
+  Future<void> _fetchCenters() async {
+    final String apiUrl = 'https://chits.tutytech.in/center.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'select', // Type for listing centers
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Log response for debugging
+        print("Response Body: ${response.body}");
+
+        final responseData = json.decode(response.body);
+
+        // Parse centers from response
+        List<Map<String, String>> centers = [];
+        for (var center in responseData) {
+          if (center['id'] != null && center['centername'] != null) {
+            centers.add({
+              'id': center['id'].toString(),
+              'name': center['centername'],
+            });
+          }
+        }
+
+        if (centers.isEmpty) {
+          _showSnackBar('No centers were found in the response data.');
+        } else {
+          setState(() {
+            centerData = centers; // Update the state with center data
+          });
+
+          print('Center Data: $centers');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to fetch centers. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showSnackBar('An error occurred: $e');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   Future<void> _loadCustomers() async {
@@ -570,10 +629,22 @@ class _ReceiptState extends State<Receipt> {
 
                     // Start Date Text Field
                     DropdownButtonFormField<String>(
-                      value: selectedCenter,
+                      value: selectedCenterId,
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedCenterId = newValue;
+                          selectedCenterName = centerData.firstWhere(
+                              (center) => center['id'] == newValue)['name'];
+                        });
+                      },
+                      items: centerData
+                          .map((center) => DropdownMenuItem<String>(
+                                value: center['id'],
+                                child: Text(center['name']!),
+                              ))
+                          .toList(),
                       decoration: InputDecoration(
                         labelText: 'Select Center',
-                        labelStyle: const TextStyle(color: Colors.black),
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -581,18 +652,6 @@ class _ReceiptState extends State<Receipt> {
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      items: centers.map((center) {
-                        return DropdownMenuItem<String>(
-                          value: center,
-                          child: Text(center),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCenter = value;
-                          _selectcenterController.text = value ?? '';
-                        });
-                      },
                     ),
                     const SizedBox(height: 20),
 
