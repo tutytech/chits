@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:chitfunds/screens/createcenter.dart';
 import 'package:flutter/material.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
+import 'package:http/http.dart' as http;
 
 class SmsSettings extends StatefulWidget {
   const SmsSettings({Key? key}) : super(key: key);
@@ -11,37 +15,134 @@ class SmsSettings extends StatefulWidget {
 
 class _SmsSettingsState extends State<SmsSettings> {
   final TextEditingController _branchNameController = TextEditingController();
-  final TextEditingController _fullBranchNameController =
-      TextEditingController();
-  final TextEditingController _registerCompanyNameController =
-      TextEditingController();
-  final TextEditingController _openingBalanceController =
-      TextEditingController();
-  final TextEditingController _openingDateController = TextEditingController();
+  List<Map<String, String>> branchData = [];
+  final TextEditingController BranchNameController = TextEditingController();
+  final TextEditingController presmsController = TextEditingController();
+  final TextEditingController postsmsController = TextEditingController();
+  final TextEditingController midsmsController = TextEditingController();
 
   String? selectedBranch;
   String? selectedDayOrder;
+  String? selectedBranchName;
+  String? selectedBranchId;
   String? selectedTiming;
   String? selectedFieldOfficer;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final GlobalKey<FormState> _formKey =
       GlobalKey<FormState>(); // Added form key
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchBranches();
+  }
 
-  // Sample data for dropdowns
-  final List<String> branches = ['Branch 1', 'Branch 2', 'Branch 3'];
-  final List<String> dayOrders = ['Morning', 'Afternoon', 'Evening'];
-  final List<String> timings = ['9:00 AM', '10:00 AM', '11:00 AM'];
-  final List<String> fieldOfficers = ['Officer A', 'Officer B', 'Officer C'];
+  Future<void> _createsms() async {
+    if (!(_formKey.currentState?.validate() ?? true)) {
+      return; // Exit the method if validation fails
+    }
+
+    final String apiUrl = 'https://chits.tutytech.in/sms.php';
+
+    // Prepare request body
+    final body = {
+      'type': 'insert',
+      'presmslink': presmsController.text,
+      'midsmslink': midsmsController.text,
+      'postsmslink': postsmsController.text,
+      'branch': selectedBranchName,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData[0]['id'] != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('SMS created successfully!')),
+          );
+
+          // Fetch the list of all branches
+          await _fetchBranches();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateCenter(),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${responseData[0]['error']}')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to create branch.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  Future<void> _fetchBranches() async {
+    final String apiUrl = 'https://chits.tutytech.in/branch.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'select',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        List<Map<String, String>> branches = [];
+        for (var branch in responseData) {
+          if (branch['id'] != null && branch['branchname'] != null) {
+            branches.add({
+              'id': branch['id'].toString(),
+              'name': branch['branchname'],
+            });
+          }
+        }
+
+        setState(() {
+          branchData = branches;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to fetch branches.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Set the key here
+      key: _scaffoldKey,
       appBar: CustomAppBar(
         title: 'SMS Settings',
         onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
+          _scaffoldKey.currentState?.openDrawer();
         },
       ),
       drawer: CustomDrawer(),
@@ -63,7 +164,7 @@ class _SmsSettingsState extends State<SmsSettings> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 100),
                 child: Form(
-                  key: _formKey, // Wrap your form fields with Form widget
+                  key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -71,7 +172,7 @@ class _SmsSettingsState extends State<SmsSettings> {
 
                       // Branch Name field
                       TextFormField(
-                        controller: _branchNameController,
+                        controller: presmsController,
                         decoration: InputDecoration(
                           labelText: 'Pre SMS Link',
                           labelStyle: const TextStyle(color: Colors.black),
@@ -93,7 +194,7 @@ class _SmsSettingsState extends State<SmsSettings> {
 
                       // Full Branch Name field
                       TextFormField(
-                        controller: _fullBranchNameController,
+                        controller: midsmsController,
                         decoration: InputDecoration(
                           labelText: 'Mid SMS Link',
                           labelStyle: const TextStyle(color: Colors.black),
@@ -113,9 +214,8 @@ class _SmsSettingsState extends State<SmsSettings> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Post SMS Link field (same as fullBranchNameController, you may change this field logic)
                       TextFormField(
-                        controller: _fullBranchNameController,
+                        controller: postsmsController,
                         decoration: InputDecoration(
                           labelText: 'Post SMS Link',
                           labelStyle: const TextStyle(color: Colors.black),
@@ -137,18 +237,20 @@ class _SmsSettingsState extends State<SmsSettings> {
 
                       // Select Branch dropdown
                       DropdownButtonFormField<String>(
-                        value: selectedBranch,
-                        items: branches.map((branch) {
-                          return DropdownMenuItem(
-                            value: branch,
-                            child: Text(branch),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
+                        value: selectedBranchId,
+                        onChanged: (newValue) {
                           setState(() {
-                            selectedBranch = value;
+                            selectedBranchId = newValue;
+                            selectedBranchName = branchData.firstWhere(
+                                (branch) => branch['id'] == newValue)['name'];
                           });
                         },
+                        items: branchData
+                            .map((branch) => DropdownMenuItem<String>(
+                                  value: branch['id'],
+                                  child: Text(branch['name']!),
+                                ))
+                            .toList(),
                         decoration: InputDecoration(
                           labelText: 'Select Branch',
                           labelStyle: const TextStyle(color: Colors.black),
@@ -168,6 +270,19 @@ class _SmsSettingsState extends State<SmsSettings> {
                       ),
                       const SizedBox(height: 20),
 
+                      // Note Section
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 10.0),
+                        child: Text(
+                          'Note: Sample SMS Link:\nhttp://sms.tutytech.com/api/smsapi?key=32800508fc3a191ea2f7fcb92d1500b3&route=2&sender=TUTECH&number=\$mobile&templateid=1607100000000199136&sms=\$message',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
                       // Create Save button
                       SizedBox(
                         height: 50,
@@ -181,7 +296,7 @@ class _SmsSettingsState extends State<SmsSettings> {
                                 onPressed: () {
                                   if (_formKey.currentState?.validate() ??
                                       false) {
-                                    // Form is valid
+                                    _createsms();
                                   }
                                 },
                                 child: const Text(

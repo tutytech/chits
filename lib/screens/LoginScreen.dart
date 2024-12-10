@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:chitfunds/screens/companycreation.dart';
 import 'package:chitfunds/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'registration.dart';
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -43,13 +46,155 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Dashboard()),
-      );
+      final url = 'https://chits.tutytech.in/staff.php';
+
+      try {
+        final body = {
+          'type': 'login',
+          'userName': _emailController.text,
+          'password': _passwordController.text,
+        };
+
+        print('Request URL: $url');
+        print('Request Body: $body');
+
+        final response = await http.post(
+          Uri.parse(url),
+          body: body,
+        );
+
+        print('Response Status Code: ${response.statusCode}');
+        print('Response Body: ${response.body}');
+
+        final responseData = json.decode(response.body);
+
+        if (response.statusCode == 200) {
+          if (responseData['success'] == true) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Dashboard()),
+            );
+          } else {
+            // Show a popup for account creation
+            _showNoAccountDialog();
+          }
+        } else {
+          // Show a popup for account creation
+          _showNoAccountDialog();
+        }
+      } catch (e) {
+        print('Error: $e');
+        // Show a popup for account creation
+        _showNoAccountDialog();
+      }
     }
+  }
+
+  void _showNoAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12), // Rounded corners for dialog
+        ),
+        titlePadding: EdgeInsets.zero, // Remove default title padding
+        title: Container(
+          alignment: Alignment.center, // Center-align text within container
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A90E2), Color(0xFF50E3C2)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(12), // Match dialog shape for smooth corners
+            ),
+          ),
+          child: const Padding(
+            padding:
+                EdgeInsets.symmetric(vertical: 16), // Proper vertical spacing
+            child: Text(
+              'No Account Found',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // White text color for contrast
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20, vertical: 12), // Adjust content spacing
+        content: const Text(
+          ' Create Your Account ',
+          style: TextStyle(fontSize: 16, color: Colors.black),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly, // Space buttons evenly
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 24, vertical: 12), // Add padding to buttons
+              backgroundColor: Color(0xFF4A90E2), // Button background color
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8), // Rounded corners
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop(); // Close the dialog
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const RegistrationScreen()),
+              );
+            },
+            child: const Text(
+              'Sign Up',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 24, vertical: 12), // Add padding to buttons
+              backgroundColor: Colors.grey[300], // Button background color
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8), // Rounded corners
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop(); // Close the dialog
+            },
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -104,7 +249,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        validator: _validateEmail,
+                        // validator: _validateEmail,
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -120,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderSide: BorderSide.none,
                           ),
                         ),
-                        validator: _validatePassword,
+                        // validator: _validatePassword,
                       ),
                       const SizedBox(height: 20),
                       SizedBox(
