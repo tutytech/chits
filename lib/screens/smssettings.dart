@@ -274,7 +274,7 @@ class _SmsSettingsState extends State<SmsSettings> {
                       const Padding(
                         padding: EdgeInsets.only(bottom: 10.0),
                         child: Text(
-                          'Note: Sample SMS Link:\nhttp://sms.tutytech.com/api/smsapi?key=32800508fc3a191ea2f7fcb92d1500b3&route=2&sender=TUTECH&number=\$mobile&templateid=1607100000000199136&sms=\$message',
+                          'Sample SMS Link:\nhttp://sms.tutytech.com/api/smsapi?key=32800508fc3a191ea2f7fcb92d1500b3&route=2&sender=TUTECH&number=\$mobile&templateid=1607100000000199136&sms=\$message',
                           style: TextStyle(
                             color: Colors.red,
                             fontSize: 14,
