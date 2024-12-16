@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/screens/loanlist.dart';
+import 'package:chitfunds/screens/printpage.dart';
 import 'package:chitfunds/screens/receiptlist.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -584,6 +585,12 @@ class _ReceiptState extends State<Receipt> {
                             child: ElevatedButton(
                               onPressed: () {
                                 _createBranch();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          BluetoothDeviceListScreen()),
+                                );
                               },
                               child: const Text(
                                 'Save',
