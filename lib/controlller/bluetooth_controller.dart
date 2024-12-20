@@ -17,7 +17,7 @@ class BluetoothController extends GetxController {
 
       // Stop scanning after the timeout
       await Future.delayed(const Duration(seconds: 5));
-      FlutterBluePlus.stopScan();
+      // FlutterBluePlus.stopScan();
     } catch (e) {
       print('Error while scanning devices: $e');
     }

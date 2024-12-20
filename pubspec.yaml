@@ -6,7 +6,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.5.3
-
+  flutter: ">=2.5.0"
 dependencies:
   flutter:
     sdk: flutter
@@ -23,10 +23,12 @@ dependencies:
   image:   # Specify a version
 
   permission_handler: 
-  flutter_bluetooth_printer: ^2.17.1
+ 
   
-  flutter_blue_plus: ^1.34.5
+  
   get: ^4.6.6
+  esc_pos_printer: ^4.1.0
+  flutter_blue_plus: ^1.34.5
 
 dev_dependencies:
   flutter_test:
@@ -38,10 +40,4 @@ flutter:
 
   assets:
     - assets/
-  plugin:
-    platforms:
-      android:
-        package: com.peoplewareinnovations.bluetooth_thermal_printer
-        pluginClass: BluetoothThermalPrinterPlugin
-      ios:
-        pluginClass: BluetoothThermalPrinterPlugin
+ 

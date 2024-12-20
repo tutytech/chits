@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/screens/loanlist.dart';
 import 'package:chitfunds/screens/printpage.dart';
 import 'package:chitfunds/screens/receiptlist.dart';
+import 'package:chitfunds/screens/scan_screen.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:intl/intl.dart';
 
 import '../wigets/customappbar.dart';
@@ -19,6 +22,16 @@ class Receipt extends StatefulWidget {
 }
 
 class _ReceiptState extends State<Receipt> {
+  BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
+
+  late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
+
+  @override
+  void dispose() {
+    _adapterStateStateSubscription.cancel();
+    super.dispose();
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _creditopeningbalController =
       TextEditingController();
@@ -70,6 +83,13 @@ class _ReceiptState extends State<Receipt> {
   @override
   void initState() {
     super.initState();
+    _adapterStateStateSubscription =
+        FlutterBluePlus.adapterState.listen((state) {
+      _adapterState = state;
+      if (mounted) {
+        setState(() {});
+      }
+    });
     _loadCustomers();
     _fetchCenters();
   }
@@ -588,8 +608,7 @@ class _ReceiptState extends State<Receipt> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          BluetoothDeviceListScreen()),
+                                      builder: (context) => ScanScreen()),
                                 );
                               },
                               child: const Text(
