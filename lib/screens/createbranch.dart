@@ -1,5 +1,6 @@
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/createcenter.dart';
+import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:chitfunds/wigets/inputwidget.dart';
@@ -28,6 +29,21 @@ class _CreateBranchState extends State<CreateBranch> {
   final dobController = TextEditingController();
   final dojController = TextEditingController();
   final domController = TextEditingController();
+  final TextEditingController _staffIdController = TextEditingController();
+  final TextEditingController _staffNameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _mobileNoController = TextEditingController();
+  final TextEditingController _userNameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _branchCodeController = TextEditingController();
+  final TextEditingController _receiptNoController = TextEditingController();
+  final TextEditingController _companyIdController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  String? selectedBranch;
+  String? selectedRights;
+  String? selectedBranchName;
+  String? _staffId;
+
   Future<void> _selectMarriage(BuildContext context, String label) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -62,6 +78,86 @@ class _CreateBranchState extends State<CreateBranch> {
     }
   }
 
+  Future<void> _createStaff() async {
+    // Check if the form is valid
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return; // Exit the method if validation fails
+    }
+    final String apiUrl = 'https://chits.tutytech.in/staff.php';
+
+    try {
+      // Print the request URL and body for debugging
+      print('Request URL: $apiUrl');
+      print('Request body: ${{
+        'type': 'insert',
+        'staffId': _staffIdController.text,
+        'staffName': _staffNameController.text,
+        'address': _addressController.text,
+        'mobileNo': _mobileNoController.text,
+        'userName': _userNameController.text,
+        'password': _passwordController.text,
+        'branch': selectedBranchName,
+        'branchCode': _branchCodeController.text,
+        'receiptNo': _receiptNoController.text,
+        'rights': selectedRights,
+      }}');
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'insert',
+          'staffId': _staffIdController.text,
+          'staffName': _staffNameController.text,
+          'address': _addressController.text,
+          'mobileNo': _mobileNoController.text,
+          'userName': _userNameController.text,
+          'password': _passwordController.text,
+          'branch': selectedBranchName,
+          'branchCode': _branchCodeController.text,
+          'receiptNo': _receiptNoController.text,
+          'rights': selectedRights,
+          'companyid': _companyIdController.text,
+          'email': _emailController.text,
+        },
+      );
+
+      // Print the response body for debugging
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData[0]['id'] != null) {
+          _staffId = responseData[0]['id'];
+          _showSnackBar('Staff created successfully!');
+        } else {
+          _showSnackBar('Error: ${responseData[0]['error']}');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to create center. Status code: ${response.statusCode}');
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CreateCustomer(),
+        ),
+      );
+    } catch (e) {
+      // Print the error for debugging
+      print('Error: $e');
+      _showSnackBar('An error occurred: $e');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> _createBranch() async {
     if (!(_formKey.currentState?.validate() ?? true)) {
       return; // Exit the method if validation fails
@@ -79,7 +175,8 @@ class _CreateBranchState extends State<CreateBranch> {
           'branchname': _branchNameController.text,
           'openingbalance': _openingBalanceController.text,
           'openingdate': dobController.text,
-          'entryid': '123', // Replace with a real entry ID if needed
+          'entryid':
+              _staffId.toString(), // Replace with a real entry ID if needed
         },
       );
 

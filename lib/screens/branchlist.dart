@@ -1,4 +1,5 @@
 import 'package:chitfunds/screens/createbranch.dart';
+import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,22 @@ class _BranchListPageState extends State<BranchListPage> {
   List<Map<String, dynamic>> _filteredBranches = [];
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _staffIdController = TextEditingController();
+  final TextEditingController _staffNameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _mobileNoController = TextEditingController();
+  final TextEditingController _userNameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _branchCodeController = TextEditingController();
+  final TextEditingController _receiptNoController = TextEditingController();
+  final TextEditingController _companyIdController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String? selectedBranch;
+  String? selectedRights;
+  String? selectedBranchName;
   List<String> branchNames = [];
+  String? _staffId; // Declare a nullable variable to hold staffId
 
   @override
   void initState() {
@@ -79,34 +95,121 @@ class _BranchListPageState extends State<BranchListPage> {
     });
   }
 
-  Future<void> deleteBranch(String branchId) async {
-    const String _baseUrl = 'https://chits.tutytech.in/branch.php';
+  Future<void> _createStaff() async {
+    // Check if the form is valid
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return; // Exit the method if validation fails
+    }
+    final String apiUrl = 'https://chits.tutytech.in/staff.php';
+
     try {
+      // Print the request URL and body for debugging
+      print('Request URL: $apiUrl');
+      print('Request body: ${{
+        'type': 'insert',
+        'staffId': _staffIdController.text,
+        'staffName': _staffNameController.text,
+        'address': _addressController.text,
+        'mobileNo': _mobileNoController.text,
+        'userName': _userNameController.text,
+        'password': _passwordController.text,
+        'branch': selectedBranchName,
+        'branchCode': _branchCodeController.text,
+        'receiptNo': _receiptNoController.text,
+        'rights': selectedRights,
+      }}');
+
       final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {'type': 'delete', 'branchid': branchId},
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'insert',
+          'staffId': _staffIdController.text,
+          'staffName': _staffNameController.text,
+          'address': _addressController.text,
+          'mobileNo': _mobileNoController.text,
+          'userName': _userNameController.text,
+          'password': _passwordController.text,
+          'branch': selectedBranchName,
+          'branchCode': _branchCodeController.text,
+          'receiptNo': _receiptNoController.text,
+          'rights': selectedRights,
+          'companyid': _companyIdController.text,
+          'email': _emailController.text,
+        },
       );
 
-      if (response.statusCode != 200) {
-        throw Exception('Failed to delete branch');
+      // Print the response body for debugging
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData[0]['id'] != null) {
+          _staffId = responseData[0]['id'];
+          _showSnackBar('Staff created successfully!');
+        } else {
+          _showSnackBar('Error: ${responseData[0]['error']}');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to create center. Status code: ${response.statusCode}');
       }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CreateCustomer(),
+        ),
+      );
     } catch (e) {
-      throw Exception('Error: $e');
+      // Print the error for debugging
+      print('Error: $e');
+      _showSnackBar('An error occurred: $e');
     }
   }
 
-  Future<void> _deleteBranch(String branchId) async {
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  Future<void> deleteBranch(String branchId) async {
+    const String apiUrl = 'https://chits.tutytech.in/branch.php';
+
     try {
-      await deleteBranch(branchId);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Branch deleted successfully')),
+      // Send the POST request with form data
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'type': 'delete',
+          'id': branchId,
+          'delid': _staffId.toString(),
+        },
       );
-      _refreshBranchList();
+
+      // Print the response status and body for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      // Check if the response is successful (HTTP status 200)
+      if (response.statusCode == 200) {
+        // Parse the response body as JSON
+        final responseData = jsonDecode(response.body);
+
+        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
+          print('Branch deleted successfully: ${responseData[0]['message']}');
+          // Optionally, fetch updated branches or perform other actions here
+        } else {
+          print('Failed to delete branch: ${responseData[0]['message']}');
+        }
+      } else {
+        print('Failed to delete branch. Status code: ${response.statusCode}');
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting branch: $e')),
-      );
+      print('Error occurred: $e');
     }
   }
 
@@ -306,8 +409,14 @@ class _BranchListPageState extends State<BranchListPage> {
                                       IconButton(
                                         icon: const Icon(Icons.delete,
                                             color: Colors.red),
-                                        onPressed: () =>
-                                            _deleteBranch(branch['id']),
+                                        onPressed: () {
+                                          // Print the branch id before calling the _deleteBranch method
+                                          print(
+                                              'Deleting branch with id: ${branch['id']}');
+
+                                          // Call the _deleteBranch method with the branch id
+                                          deleteBranch(branch['id']);
+                                        },
                                       ),
                                     ],
                                   ),
