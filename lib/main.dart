@@ -66,8 +66,9 @@ class _FlutterBlueAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       color: Colors.lightBlue,
-      home: LoginScreen(),
+      home: CreateCustomer(),
       navigatorObservers: [BluetoothAdapterStateObserver()],
     );
   }

@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/screens/loanlist.dart';
-import 'package:chitfunds/screens/printpage.dart';
+
 import 'package:chitfunds/screens/receiptlist.dart';
 import 'package:chitfunds/screens/scan_screen.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';

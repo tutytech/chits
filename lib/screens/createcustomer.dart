@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:chitfunds/controlller/home_controller.dart';
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/customerlist.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
@@ -8,9 +9,12 @@ import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:get/get.dart';
 
 class CreateCustomer extends StatefulWidget {
   const CreateCustomer({Key? key}) : super(key: key);
@@ -20,6 +24,7 @@ class CreateCustomer extends StatefulWidget {
 }
 
 class _CreateCustomerState extends State<CreateCustomer> {
+  final HomeController controller = Get.put(HomeController());
   final TextEditingController _branchNameController = TextEditingController();
   final TextEditingController _fullBranchNameController =
       TextEditingController();
@@ -29,6 +34,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
       TextEditingController();
   final TextEditingController _openingDateController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _latitudeController = TextEditingController();
+  final TextEditingController _longitudeController = TextEditingController();
 
   String? selectedBranch;
   String? selectedDayOrder;
@@ -85,6 +92,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
   List<String> branchNames = [];
   List<String> centerNames = [];
   List<Map<String, String>> centerData = [];
+  bool _isLoading = false;
 
   List<Map<String, String>> branchData = [];
   final TextEditingController _customerIdController = TextEditingController();
@@ -118,6 +126,46 @@ class _CreateCustomerState extends State<CreateCustomer> {
     // super.didChangeDependencies();
     _fetchBranches();
     _fetchCenters(); // Fetch branches when the widget dependencies change
+  }
+
+  Future<void> _fetchAndSaveLocation() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Check location permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception("Location permissions are denied");
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception("Location permissions are permanently denied");
+      }
+
+      // Get current location
+      Position position = await Geolocator.getCurrentPosition();
+
+      setState(() {
+        _latitudeController.text = position.latitude.toString();
+        _longitudeController.text = position.longitude.toString();
+      });
+
+      // Send location to the server
+      // await _saveLocationToServer(position.latitude, position.longitude);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _fetchCenters() async {
@@ -215,7 +263,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
       request.fields['uploadGasBill'] = selectedGasBillFileName ?? '';
       request.fields['uploadChequeLeaf'] = selectedChequeLeafFileName ?? '';
       request.fields['uploadBondSheet'] = selectedBondSheetFileName ?? '';
-
+      request.fields['latitude'] = controller.latitude.value;
+      request.fields['longitude'] = controller.longitude.value;
       // Add image file
       request.files.add(
         http.MultipartFile.fromBytes(
@@ -945,6 +994,93 @@ class _CreateCustomerState extends State<CreateCustomer> {
                         },
                       ),
                       const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          // Latitude TextFormField
+                          Obx(
+                            () => Expanded(
+                              child: TextFormField(
+                                controller: TextEditingController(
+                                  text: controller.latitude.value,
+                                ),
+                                decoration: InputDecoration(
+                                  labelText: 'Latitude value',
+                                  labelStyle:
+                                      const TextStyle(color: Colors.black),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                                readOnly:
+                                    true, // Make it non-editable since it's a live value
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Latitude value is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(
+                              width:
+                                  10), // Space between latitude and longitude
+
+                          // Longitude TextFormField
+                          Obx(
+                            () => Expanded(
+                              child: TextFormField(
+                                controller: TextEditingController(
+                                  text: controller.longitude.value,
+                                ),
+                                decoration: InputDecoration(
+                                  labelText: 'Longitude value',
+                                  labelStyle:
+                                      const TextStyle(color: Colors.black),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                                readOnly:
+                                    true, // Make it non-editable since it's a live value
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Longitude value is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          ElevatedButton(
+                            onPressed: () async {
+                              await controller.getLocation();
+                            },
+                            child: const Text(
+                              'Get Location',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20), // Space below the row
+
+                      // Address TextFormField (same as before)
+                      // Space below the address field
+
+                      // Location Button
 
                       // Aadhaar No validation
                       TextFormField(
