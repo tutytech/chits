@@ -19,6 +19,7 @@ class _BranchListPageState extends State<LoanListPage> {
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+  String? _staffId;
 
   @override
   void initState() {
@@ -33,6 +34,44 @@ class _BranchListPageState extends State<LoanListPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> deleteLoan(String branchId) async {
+    const String apiUrl = 'https://chits.tutytech.in/loan.php';
+
+    try {
+      // Send the POST request with form data
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'type': 'delete',
+          'id': branchId,
+          'delid': _staffId.toString(),
+        },
+      );
+
+      // Print the response status and body for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      // Check if the response is successful (HTTP status 200)
+      if (response.statusCode == 200) {
+        // Parse the response body as JSON
+        final responseData = jsonDecode(response.body);
+
+        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
+          print('Branch deleted successfully: ${responseData[0]['message']}');
+          // Optionally, fetch updated branches or perform other actions here
+        } else {
+          print('Failed to delete branch: ${responseData[0]['message']}');
+        }
+      } else {
+        print('Failed to delete branch. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchLoans() async {
@@ -368,7 +407,7 @@ class _BranchListPageState extends State<LoanListPage> {
                                         icon: const Icon(Icons.delete,
                                             color: Colors.red),
                                         onPressed: () =>
-                                            _deleteBranch(branch['id']),
+                                            deleteLoan(branch['id']),
                                       ),
                                     ],
                                   ),

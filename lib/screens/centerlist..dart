@@ -19,6 +19,7 @@ class _BranchListPageState extends State<CenterListPage> {
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+  String? _staffId;
 
   @override
   void initState() {
@@ -80,26 +81,47 @@ class _BranchListPageState extends State<CenterListPage> {
     });
   }
 
-  Future<void> deleteBranch(String branchId) async {
-    const String _baseUrl = 'https://chits.tutytech.in/center.php';
+  Future<void> deleteCenter(String branchId) async {
+    const String apiUrl = 'https://chits.tutytech.in/center.php';
+
     try {
+      // Send the POST request with form data
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {'type': 'delete', 'branchid': branchId},
+        body: {
+          'type': 'delete',
+          'id': branchId,
+          'delid': _staffId.toString(),
+        },
       );
 
-      if (response.statusCode != 200) {
-        throw Exception('Failed to delete branch');
+      // Print the response status and body for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      // Check if the response is successful (HTTP status 200)
+      if (response.statusCode == 200) {
+        // Parse the response body as JSON
+        final responseData = jsonDecode(response.body);
+
+        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
+          print('Center deleted successfully: ${responseData[0]['message']}');
+          // Optionally, fetch updated branches or perform other actions here
+        } else {
+          print('Failed to delete center: ${responseData[0]['message']}');
+        }
+      } else {
+        print('Failed to delete center. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error: $e');
+      print('Error occurred: $e');
     }
   }
 
-  Future<void> _deleteBranch(String branchId) async {
+  Future<void> _deleteCenter(String branchId) async {
     try {
-      await deleteBranch(branchId);
+      await deleteCenter(branchId);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Branch deleted successfully')),
       );
@@ -140,191 +162,195 @@ class _BranchListPageState extends State<CenterListPage> {
         ),
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Search bar container
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2), // Shadow position
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Search bar container
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2), // Shadow position
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      labelText: 'Search Centers',
+                      border: InputBorder.none,
+                      prefixIcon: Icon(Icons.search),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreateCenter(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // Button background color
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0, vertical: 12.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(8.0), // Rounded corners
+                        ),
+                      ),
+                      child: const Text(
+                        'Add Center',
+                        style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.white), // Text styling
+                      ),
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: const InputDecoration(
-                    labelText: 'Search Centers',
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.search),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                const SizedBox(
+                    height: 10.0), // Space between search bar and data table
+
+                // Fetched data container
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2), // Shadow position
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 10.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CreateCenter(),
+                  padding: const EdgeInsets.all(16.0),
+                  child: FutureBuilder<List<Map<String, dynamic>>>(
+                    future: _branchListFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No branches found'));
+                      }
+
+                      _allCenters = snapshot.data!;
+                      _filteredCenters = _searchController.text.isEmpty
+                          ? _allCenters
+                          : _filteredCenters;
+
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                              minWidth: MediaQuery.of(context).size.width),
+                          child: DataTable(
+                            headingRowColor: MaterialStateColor.resolveWith(
+                              (states) => Colors
+                                  .grey[200]!, // Light background for headers
+                            ),
+                            columns: [
+                              DataColumn(
+                                label: Text(
+                                  'Center Name',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Center Code',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Branch ID',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Actions',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            rows: _filteredCenters.map((branch) {
+                              return DataRow(
+                                cells: [
+                                  DataCell(Text(branch['centername'] ?? 'N/A')),
+                                  DataCell(Text(branch['centercode'] ?? '0')),
+                                  DataCell(Text(branch['branchid'] ?? 'N/A')),
+                                  DataCell(
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit,
+                                              color: Colors.blue),
+                                          onPressed: () {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Edit feature not implemented'),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete,
+                                              color: Colors.red),
+                                          onPressed: () =>
+                                              _deleteCenter(branch['id']),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue, // Button background color
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24.0, vertical: 12.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(8.0), // Rounded corners
-                      ),
-                    ),
-                    child: const Text(
-                      'Add Center',
-                      style: TextStyle(
-                          fontSize: 16.0, color: Colors.white), // Text styling
-                    ),
                   ),
-                ],
-              ),
-              const SizedBox(
-                  height: 10.0), // Space between search bar and data table
-
-              // Fetched data container
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2), // Shadow position
-                    ),
-                  ],
                 ),
-                padding: const EdgeInsets.all(16.0),
-                child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: _branchListFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No branches found'));
-                    }
-
-                    _allCenters = snapshot.data!;
-                    _filteredCenters = _searchController.text.isEmpty
-                        ? _allCenters
-                        : _filteredCenters;
-
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                            minWidth: MediaQuery.of(context).size.width),
-                        child: DataTable(
-                          headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors
-                                .grey[200]!, // Light background for headers
-                          ),
-                          columns: [
-                            DataColumn(
-                              label: Text(
-                                'Center Name',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(
-                                      0xFF4A90E2), // Blue color to match gradient theme
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Center Code',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Branch ID',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Actions',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                          ],
-                          rows: _filteredCenters.map((branch) {
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(branch['centername'] ?? 'N/A')),
-                                DataCell(Text(branch['centercode'] ?? '0')),
-                                DataCell(Text(branch['branchid'] ?? 'N/A')),
-                                DataCell(
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit,
-                                            color: Colors.blue),
-                                        onPressed: () {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Edit feature not implemented'),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete,
-                                            color: Colors.red),
-                                        onPressed: () =>
-                                            _deleteBranch(branch['id']),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Align(

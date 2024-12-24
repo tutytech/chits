@@ -20,6 +20,7 @@ class _BranchListPageState extends State<CustomerList> {
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+  String? _staffId;
 
   @override
   void initState() {
@@ -34,6 +35,44 @@ class _BranchListPageState extends State<CustomerList> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> deleteCustomer(String branchId) async {
+    const String apiUrl = 'https://chits.tutytech.in/customer.php';
+
+    try {
+      // Send the POST request with form data
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'type': 'delete',
+          'id': branchId,
+          'delid': _staffId.toString(),
+        },
+      );
+
+      // Print the response status and body for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      // Check if the response is successful (HTTP status 200)
+      if (response.statusCode == 200) {
+        // Parse the response body as JSON
+        final responseData = jsonDecode(response.body);
+
+        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
+          print('Center deleted successfully: ${responseData[0]['message']}');
+          // Optionally, fetch updated branches or perform other actions here
+        } else {
+          print('Failed to delete center: ${responseData[0]['message']}');
+        }
+      } else {
+        print('Failed to delete center. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchCustomers() async {
@@ -105,26 +144,9 @@ class _BranchListPageState extends State<CustomerList> {
     });
   }
 
-  Future<void> deleteBranch(String branchId) async {
-    const String _baseUrl = 'https://chits.tutytech.in/customer.php';
-    try {
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {'type': 'delete', 'branchid': branchId},
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to delete branch');
-      }
-    } catch (e) {
-      throw Exception('Error: $e');
-    }
-  }
-
   Future<void> _deleteBranch(String branchId) async {
     try {
-      await deleteBranch(branchId);
+      await deleteCustomer(branchId);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Branch deleted successfully')),
       );
@@ -381,7 +403,7 @@ class _BranchListPageState extends State<CustomerList> {
                                           icon: const Icon(Icons.delete,
                                               color: Colors.red),
                                           onPressed: () =>
-                                              _deleteBranch(branch['id']),
+                                              deleteCustomer(branch['id']),
                                         ),
                                       ],
                                     ),
