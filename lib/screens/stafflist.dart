@@ -20,6 +20,7 @@ class _BranchListPageState extends State<staffListPage> {
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+  String? _staffId;
 
   @override
   void initState() {
@@ -34,6 +35,44 @@ class _BranchListPageState extends State<staffListPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> deleteStaff(String branchId) async {
+    const String apiUrl = 'https://chits.tutytech.in/staff.php';
+
+    try {
+      // Send the POST request with form data
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'type': 'delete',
+          'id': branchId,
+          'delid': _staffId.toString(),
+        },
+      );
+
+      // Print the response status and body for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      // Check if the response is successful (HTTP status 200)
+      if (response.statusCode == 200) {
+        // Parse the response body as JSON
+        final responseData = jsonDecode(response.body);
+
+        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
+          print('Branch deleted successfully: ${responseData[0]['message']}');
+          // Optionally, fetch updated branches or perform other actions here
+        } else {
+          print('Failed to delete branch: ${responseData[0]['message']}');
+        }
+      } else {
+        print('Failed to delete branch. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchBranches() async {
@@ -156,269 +195,273 @@ class _BranchListPageState extends State<staffListPage> {
         ),
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Search bar container
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2), // Shadow position
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Search bar container
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2), // Shadow position
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      labelText: 'Search Staffs',
+                      border: InputBorder.none,
+                      prefixIcon: Icon(Icons.search),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreateStaff(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // Button background color
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0, vertical: 12.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(8.0), // Rounded corners
+                        ),
+                      ),
+                      child: const Text(
+                        'Add Staff',
+                        style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.white), // Text styling
+                      ),
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: const InputDecoration(
-                    labelText: 'Search Staffs',
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.search),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                const SizedBox(height: 10.0),
+                // Fetched data container
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2), // Shadow position
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 10.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CreateStaff(),
+                  padding: const EdgeInsets.all(16.0),
+                  child: FutureBuilder<List<Map<String, dynamic>>>(
+                    future: _branchListFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No branches found'));
+                      }
+
+                      _allBranches = snapshot.data!;
+                      _filteredBranches = _searchController.text.isEmpty
+                          ? _allBranches
+                          : _filteredBranches;
+
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                              minWidth: MediaQuery.of(context).size.width),
+                          child: DataTable(
+                            headingRowColor: MaterialStateColor.resolveWith(
+                              (states) => Colors
+                                  .grey[200]!, // Light background for headers
+                            ),
+                            columns: [
+                              DataColumn(
+                                label: Text(
+                                  'Staff ID',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Staff Name',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Address',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'MobileNo',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'UserName',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Branch',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Password',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'BranchCode',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'ReceiptNo',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Rights',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Actions',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            rows: _filteredBranches.map((branch) {
+                              return DataRow(
+                                cells: [
+                                  DataCell(Text(branch['staffId'] ?? 'N/A')),
+                                  DataCell(Text(branch['staffName'] ?? '0')),
+                                  DataCell(Text(branch['address'] ?? 'N/A')),
+                                  DataCell(Text(branch['mobileNo'] ?? 'N/A')),
+                                  DataCell(Text(branch['userName'] ?? 'N/A')),
+                                  DataCell(Text(branch['password'] ?? 'N/A')),
+                                  DataCell(Text(branch['branch'] ?? 'N/A')),
+                                  DataCell(Text(branch['branchCode'] ?? 'N/A')),
+                                  DataCell(Text(branch['receiptNo'] ?? 'N/A')),
+                                  DataCell(Text(branch['rights'] ?? 'N/A')),
+                                  DataCell(
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit,
+                                              color: Colors.blue),
+                                          onPressed: () {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Edit feature not implemented'),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete,
+                                              color: Colors.red),
+                                          onPressed: () =>
+                                              deleteStaff(branch['staffId']),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue, // Button background color
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24.0, vertical: 12.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(8.0), // Rounded corners
-                      ),
-                    ),
-                    child: const Text(
-                      'Add Staff',
-                      style: TextStyle(
-                          fontSize: 16.0, color: Colors.white), // Text styling
-                    ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 10.0),
-              // Fetched data container
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2), // Shadow position
-                    ),
-                  ],
                 ),
-                padding: const EdgeInsets.all(16.0),
-                child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: _branchListFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No branches found'));
-                    }
-
-                    _allBranches = snapshot.data!;
-                    _filteredBranches = _searchController.text.isEmpty
-                        ? _allBranches
-                        : _filteredBranches;
-
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                            minWidth: MediaQuery.of(context).size.width),
-                        child: DataTable(
-                          headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors
-                                .grey[200]!, // Light background for headers
-                          ),
-                          columns: [
-                            DataColumn(
-                              label: Text(
-                                'Staff ID',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(
-                                      0xFF4A90E2), // Blue color to match gradient theme
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Staff Name',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Address',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'MobileNo',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'UserName',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Branch',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Password',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'BranchCode',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'ReceiptNo',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Rights',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Actions',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                          ],
-                          rows: _filteredBranches.map((branch) {
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(branch['staffId'] ?? 'N/A')),
-                                DataCell(Text(branch['staffName'] ?? '0')),
-                                DataCell(Text(branch['address'] ?? 'N/A')),
-                                DataCell(Text(branch['mobileNo'] ?? 'N/A')),
-                                DataCell(Text(branch['userName'] ?? 'N/A')),
-                                DataCell(Text(branch['password'] ?? 'N/A')),
-                                DataCell(Text(branch['branch'] ?? 'N/A')),
-                                DataCell(Text(branch['branchCode'] ?? 'N/A')),
-                                DataCell(Text(branch['receiptNo'] ?? 'N/A')),
-                                DataCell(Text(branch['rights'] ?? 'N/A')),
-                                DataCell(
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit,
-                                            color: Colors.blue),
-                                        onPressed: () {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Edit feature not implemented'),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete,
-                                            color: Colors.red),
-                                        onPressed: () =>
-                                            _deleteBranch(branch['id']),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    );
-                  },
+                SizedBox(
+                  height: 10,
                 ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Align(

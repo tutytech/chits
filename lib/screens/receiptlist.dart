@@ -20,6 +20,7 @@ class _BranchListPageState extends State<receiptListPage> {
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+  String? _staffId;
 
   @override
   void initState() {
@@ -34,6 +35,44 @@ class _BranchListPageState extends State<receiptListPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> deleteLoan(String branchId) async {
+    const String apiUrl = 'https://chits.tutytech.in/receipt.php';
+
+    try {
+      // Send the POST request with form data
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'type': 'delete',
+          'id': branchId,
+          'delid': _staffId.toString(),
+        },
+      );
+
+      // Print the response status and body for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      // Check if the response is successful (HTTP status 200)
+      if (response.statusCode == 200) {
+        // Parse the response body as JSON
+        final responseData = jsonDecode(response.body);
+
+        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
+          print('Branch deleted successfully: ${responseData[0]['message']}');
+          // Optionally, fetch updated branches or perform other actions here
+        } else {
+          print('Failed to delete branch: ${responseData[0]['message']}');
+        }
+      } else {
+        print('Failed to delete branch. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchBranches() async {
@@ -158,271 +197,277 @@ class _BranchListPageState extends State<receiptListPage> {
         ),
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Search bar container
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2), // Shadow position
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Search bar container
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2), // Shadow position
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      labelText: 'Search Receipts',
+                      border: InputBorder.none,
+                      prefixIcon: Icon(Icons.search),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Receipt(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // Button background color
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0, vertical: 12.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(8.0), // Rounded corners
+                        ),
+                      ),
+                      child: const Text(
+                        'Add Receipts',
+                        style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.white), // Text styling
+                      ),
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: const InputDecoration(
-                    labelText: 'Search Receipts',
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.search),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                const SizedBox(height: 10.0),
+                // Fetched data container
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2), // Shadow position
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 10.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Receipt(),
+                  padding: const EdgeInsets.all(16.0),
+                  child: FutureBuilder<List<Map<String, dynamic>>>(
+                    future: _branchListFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No branches found'));
+                      }
+
+                      _allBranches = snapshot.data!;
+                      _filteredBranches = _searchController.text.isEmpty
+                          ? _allBranches
+                          : _filteredBranches;
+
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                              minWidth: MediaQuery.of(context).size.width),
+                          child: DataTable(
+                            headingRowColor: MaterialStateColor.resolveWith(
+                              (states) => Colors
+                                  .grey[200]!, // Light background for headers
+                            ),
+                            columns: [
+                              DataColumn(
+                                label: Text(
+                                  'Customer Name',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Mobile No',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Loan Amount',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Received Amount',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Deposit Amount',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Payment Type',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Cheque No',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Cheque Date',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Bank Name',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Remarks',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Actions',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            rows: _filteredBranches.map((branch) {
+                              return DataRow(
+                                cells: [
+                                  DataCell(
+                                      Text(branch['customername'] ?? 'N/A')),
+                                  DataCell(Text(branch['mobileno'] ?? '0')),
+                                  DataCell(Text(branch['loanamount'] ?? 'N/A')),
+                                  DataCell(
+                                      Text(branch['receivedamount'] ?? 'N/A')),
+                                  DataCell(
+                                      Text(branch['depositamount'] ?? 'N/A')),
+                                  DataCell(
+                                      Text(branch['paymenttype'] ?? 'N/A')),
+                                  DataCell(Text(branch['chequeno'] ?? 'N/A')),
+                                  DataCell(Text(branch['chequedate'] ?? 'N/A')),
+                                  DataCell(Text(branch['bankname'] ?? 'N/A')),
+                                  DataCell(Text(branch['remarks'] ?? 'N/A')),
+                                  DataCell(
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit,
+                                              color: Colors.blue),
+                                          onPressed: () {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Edit feature not implemented'),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete,
+                                              color: Colors.red),
+                                          onPressed: () =>
+                                              deleteLoan(branch['id']),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue, // Button background color
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24.0, vertical: 12.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(8.0), // Rounded corners
-                      ),
-                    ),
-                    child: const Text(
-                      'Add Receipts',
-                      style: TextStyle(
-                          fontSize: 16.0, color: Colors.white), // Text styling
-                    ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 10.0),
-              // Fetched data container
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2), // Shadow position
-                    ),
-                  ],
                 ),
-                padding: const EdgeInsets.all(16.0),
-                child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: _branchListFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No branches found'));
-                    }
-
-                    _allBranches = snapshot.data!;
-                    _filteredBranches = _searchController.text.isEmpty
-                        ? _allBranches
-                        : _filteredBranches;
-
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                            minWidth: MediaQuery.of(context).size.width),
-                        child: DataTable(
-                          headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors
-                                .grey[200]!, // Light background for headers
-                          ),
-                          columns: [
-                            DataColumn(
-                              label: Text(
-                                'Customer Name',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(
-                                      0xFF4A90E2), // Blue color to match gradient theme
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Mobile No',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Loan Amount',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Received Amount',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Deposit Amount',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Payment Type',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Cheque No',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Cheque Date',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Bank Name',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Remarks',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Actions',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF4A90E2),
-                                ),
-                              ),
-                            ),
-                          ],
-                          rows: _filteredBranches.map((branch) {
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(branch['customername'] ?? 'N/A')),
-                                DataCell(Text(branch['mobileno'] ?? '0')),
-                                DataCell(Text(branch['loanamount'] ?? 'N/A')),
-                                DataCell(
-                                    Text(branch['receivedamount'] ?? 'N/A')),
-                                DataCell(
-                                    Text(branch['depositamount'] ?? 'N/A')),
-                                DataCell(Text(branch['paymenttype'] ?? 'N/A')),
-                                DataCell(Text(branch['chequeno'] ?? 'N/A')),
-                                DataCell(Text(branch['chequedate'] ?? 'N/A')),
-                                DataCell(Text(branch['bankname'] ?? 'N/A')),
-                                DataCell(Text(branch['remarks'] ?? 'N/A')),
-                                DataCell(
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit,
-                                            color: Colors.blue),
-                                        onPressed: () {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Edit feature not implemented'),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete,
-                                            color: Colors.red),
-                                        onPressed: () =>
-                                            _deleteBranch(branch['id']),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    );
-                  },
+                SizedBox(
+                  height: 10,
                 ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Align(

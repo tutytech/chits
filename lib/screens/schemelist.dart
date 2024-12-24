@@ -19,6 +19,7 @@ class _BranchListPageState extends State<SchemeListPage> {
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+  String? _staffId;
 
   @override
   void initState() {
@@ -33,6 +34,44 @@ class _BranchListPageState extends State<SchemeListPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> deleteBranch(String branchId) async {
+    const String apiUrl = 'https://chits.tutytech.in/scheme.php';
+
+    try {
+      // Send the POST request with form data
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'type': 'delete',
+          'id': '123',
+          'delid': _staffId.toString(),
+        },
+      );
+
+      // Print the response status and body for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      // Check if the response is successful (HTTP status 200)
+      if (response.statusCode == 200) {
+        // Parse the response body as JSON
+        final responseData = jsonDecode(response.body);
+
+        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
+          print('Branch deleted successfully: ${responseData[0]['message']}');
+          // Optionally, fetch updated branches or perform other actions here
+        } else {
+          print('Failed to delete branch: ${responseData[0]['message']}');
+        }
+      } else {
+        print('Failed to delete branch. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchSchemes() async {
@@ -78,37 +117,6 @@ class _BranchListPageState extends State<SchemeListPage> {
             .toList();
       }
     });
-  }
-
-  Future<void> deleteBranch(String branchId) async {
-    const String _baseUrl = 'https://chits.tutytech.in/center.php';
-    try {
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {'type': 'delete', 'branchid': branchId},
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to delete branch');
-      }
-    } catch (e) {
-      throw Exception('Error: $e');
-    }
-  }
-
-  Future<void> _deleteBranch(String branchId) async {
-    try {
-      await deleteBranch(branchId);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Branch deleted successfully')),
-      );
-      _refreshBranchList();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting branch: $e')),
-      );
-    }
   }
 
   void _refreshBranchList() {
@@ -322,8 +330,27 @@ class _BranchListPageState extends State<SchemeListPage> {
                                         IconButton(
                                           icon: const Icon(Icons.delete,
                                               color: Colors.red),
-                                          onPressed: () =>
-                                              _deleteBranch(branch['id']),
+                                          onPressed: () {
+                                            // Debugging: Print branch data
+                                            print('Branch data: $branch');
+
+                                            // Check if ID exists
+                                            if (branch['id'] == null) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                      'Branch ID is missing. Cannot delete.'),
+                                                ),
+                                              );
+                                              return;
+                                            }
+
+                                            // Proceed with deletion
+                                            print(
+                                                'Deleting branch with id: ${branch['id']}');
+                                            deleteBranch(branch['schemeid']);
+                                          },
                                         ),
                                       ],
                                     ),
