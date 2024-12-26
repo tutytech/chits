@@ -232,15 +232,12 @@ class _CreateCustomerState extends State<CreateCustomer> {
       _showSnackBar('Please select an image.');
       return;
     }
-
     try {
-      // Create the MultipartRequest
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(apiUrl),
       );
 
-      // Add all fields from the controllers
       request.fields['type'] = 'insert';
       request.fields['customerId'] = _customerIdController.text.trim();
       request.fields['name'] = _nameController.text.trim();
