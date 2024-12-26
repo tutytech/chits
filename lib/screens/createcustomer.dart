@@ -276,7 +276,6 @@ class _CreateCustomerState extends State<CreateCustomer> {
         ),
       );
 
-      // Add any other document files if applicable
       if (selectedAadhaarFileBytes != null && selectedAadhaarFileName != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
