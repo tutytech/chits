@@ -4,6 +4,7 @@ import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateStaff extends StatefulWidget {
   const CreateStaff({Key? key}) : super(key: key);
@@ -95,10 +96,14 @@ class _CreateStaffState extends State<CreateStaff> {
   }
 
   Future<void> _createStaff() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
+
     // Check if the form is valid
     if (!(_formKey.currentState?.validate() ?? false)) {
       return; // Exit the method if validation fails
     }
+
     final String apiUrl = 'https://chits.tutytech.in/staff.php';
 
     try {
@@ -137,6 +142,7 @@ class _CreateStaffState extends State<CreateStaff> {
           'rights': selectedRights,
           'companyid': _companyIdController.text,
           'email': _emailController.text,
+          'entryid': staffId,
         },
       );
 
@@ -144,15 +150,16 @@ class _CreateStaffState extends State<CreateStaff> {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData[0]['id'] != null) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        if (responseData['id'] != null) {
           _showSnackBar('Staff created successfully!');
         } else {
-          _showSnackBar('Error: ${responseData[0]['error']}');
+          _showSnackBar('Error: ${responseData['message']}');
         }
       } else {
         _showSnackBar(
-            'Failed to create center. Status code: ${response.statusCode}');
+            'Failed to create staff. Status code: ${response.statusCode}');
       }
       Navigator.push(
         context,

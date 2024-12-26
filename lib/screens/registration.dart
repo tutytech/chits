@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -36,6 +37,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<void> _createStaff() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
     // Check if the form is valid
     if (!(_formKey.currentState?.validate() ?? false)) {
       return; // Exit the method if validation fails
@@ -69,6 +72,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           'password': passwordController.text,
           'email': emailController.text,
           'companyid': companyIdController.text,
+          'entryid': staffId.toString(),
         },
       );
 
@@ -77,7 +81,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        if (responseData[0]['id'] != null) {
+
+        // Access responseData directly as a Map
+        if (responseData['id'] != null) {
           _showSnackBar('Staff created successfully!');
           // Navigate only if staff creation succeeds
           Navigator.push(
@@ -87,7 +93,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ),
           );
         } else {
-          _showSnackBar('Error: ${responseData[0]['error']}');
+          _showSnackBar('Error: ${responseData['message']}');
         }
       } else {
         _showSnackBar(

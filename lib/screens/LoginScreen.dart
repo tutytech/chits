@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:chitfunds/screens/companycreation.dart';
 import 'package:chitfunds/screens/dashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'registration.dart';
 import 'package:http/http.dart' as http;
 
@@ -72,22 +73,38 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (response.statusCode == 200) {
           if (responseData['success'] == true) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Dashboard()),
-            );
+            final staffId = responseData['staffId'];
+            if (staffId != null) {
+              // Save staffId to SharedPreferences
+              final SharedPreferences prefs =
+                  await SharedPreferences.getInstance();
+              await prefs.setString(
+                  'staffId', responseData['staffId'].toString());
+
+              print('Staff ID saved to SharedPreferences: $staffId');
+
+              // Navigate to Dashboard
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Dashboard()),
+              );
+            } else {
+              print('Error: staffId is null in the response.');
+              _showErrorDialog(
+                  'Invalid response from server. Please try again.');
+            }
           } else {
-            // Show a popup for account creation
+            print('Error: ${responseData['message'] ?? 'Unknown error'}');
             _showNoAccountDialog();
           }
         } else {
-          // Show a popup for account creation
+          print('Error: Received non-200 status code from server.');
           _showNoAccountDialog();
         }
       } catch (e) {
         print('Error: $e');
-        // Show a popup for account creation
-        _showNoAccountDialog();
+        _showErrorDialog(
+            'An error occurred. Please check your connection and try again.');
       }
     }
   }

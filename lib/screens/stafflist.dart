@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class staffListPage extends StatefulWidget {
   const staffListPage({Key? key}) : super(key: key);
 
@@ -38,6 +40,8 @@ class _BranchListPageState extends State<staffListPage> {
   }
 
   Future<void> deleteStaff(String branchId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
     const String apiUrl = 'https://chits.tutytech.in/staff.php';
 
     try {
@@ -48,7 +52,7 @@ class _BranchListPageState extends State<staffListPage> {
         body: {
           'type': 'delete',
           'id': branchId,
-          'delid': _staffId.toString(),
+          'delid': staffId,
         },
       );
 
@@ -58,14 +62,15 @@ class _BranchListPageState extends State<staffListPage> {
 
       // Check if the response is successful (HTTP status 200)
       if (response.statusCode == 200) {
+        await fetchBranches();
         // Parse the response body as JSON
-        final responseData = jsonDecode(response.body);
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
 
-        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
-          print('Branch deleted successfully: ${responseData[0]['message']}');
+        if (responseData['status'] == 'success') {
+          print('Staff deleted successfully: ${responseData['message']}');
           // Optionally, fetch updated branches or perform other actions here
         } else {
-          print('Failed to delete branch: ${responseData[0]['message']}');
+          print('Failed to delete branch: ${responseData['message']}');
         }
       } else {
         print('Failed to delete branch. Status code: ${response.statusCode}');

@@ -5,6 +5,7 @@ import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateScheme extends StatefulWidget {
   const CreateScheme({Key? key}) : super(key: key);
@@ -42,6 +43,8 @@ class _CreateSchemeState extends State<CreateScheme> {
   }
 
   Future<void> _createScheme() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
     final String apiUrl = 'https://chits.tutytech.in/scheme.php';
 
     try {
@@ -73,6 +76,7 @@ class _CreateSchemeState extends State<CreateScheme> {
           'amount': _loanAmountController.text,
           'collectiontype': _weeksDaysController.text,
           'schemedetails': schemeDetailsJson,
+          'entryid': staffId,
         },
       );
 

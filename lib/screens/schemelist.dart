@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class SchemeListPage extends StatefulWidget {
   const SchemeListPage({Key? key}) : super(key: key);
 
@@ -37,6 +39,8 @@ class _BranchListPageState extends State<SchemeListPage> {
   }
 
   Future<void> deleteBranch(String branchId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
     const String apiUrl = 'https://chits.tutytech.in/scheme.php';
 
     try {
@@ -47,7 +51,7 @@ class _BranchListPageState extends State<SchemeListPage> {
         body: {
           'type': 'delete',
           'id': '123',
-          'delid': _staffId.toString(),
+          'delid': staffId,
         },
       );
 

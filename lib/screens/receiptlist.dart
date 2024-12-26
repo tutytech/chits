@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class receiptListPage extends StatefulWidget {
   const receiptListPage({Key? key}) : super(key: key);
 
@@ -38,6 +40,8 @@ class _BranchListPageState extends State<receiptListPage> {
   }
 
   Future<void> deleteLoan(String branchId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
     const String apiUrl = 'https://chits.tutytech.in/receipt.php';
 
     try {
@@ -48,7 +52,7 @@ class _BranchListPageState extends State<receiptListPage> {
         body: {
           'type': 'delete',
           'id': branchId,
-          'delid': _staffId.toString(),
+          'delid': staffId,
         },
       );
 

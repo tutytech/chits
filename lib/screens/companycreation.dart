@@ -38,6 +38,8 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
     await prefs.setString('mailid', _emailController.text);
     await prefs.setString('phoneno', _phoneNumberController.text);
 
+    final String? staffId = prefs.getString('staffId');
+
     try {
       final uri = Uri.parse('https://chits.tutytech.in/company.php');
       final response = await http.post(
@@ -48,7 +50,7 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
           'address': _gstinController.text,
           'phoneno': _phoneNumberController.text,
           'mailid': _emailController.text,
-          'entryid': '12345', // Replace this with the actual value
+          'entryid': staffId, // Replace this with the actual value
           'entrydate': DateTime.now().toIso8601String().split('T').first,
         },
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},

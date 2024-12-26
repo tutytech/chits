@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class CenterListPage extends StatefulWidget {
   const CenterListPage({Key? key}) : super(key: key);
 
@@ -24,7 +26,7 @@ class _BranchListPageState extends State<CenterListPage> {
   @override
   void initState() {
     super.initState();
-    _branchListFuture = fetchBranches();
+    _branchListFuture = fetchCenters();
     _searchController.addListener(() {
       _filterBranches(_searchController.text);
     });
@@ -36,7 +38,7 @@ class _BranchListPageState extends State<CenterListPage> {
     super.dispose();
   }
 
-  Future<List<Map<String, dynamic>>> fetchBranches() async {
+  Future<List<Map<String, dynamic>>> fetchCenters() async {
     const String _baseUrl = 'https://chits.tutytech.in/center.php';
     try {
       final response = await http.post(
@@ -59,7 +61,7 @@ class _BranchListPageState extends State<CenterListPage> {
           };
         }).toList();
       } else {
-        throw Exception('Failed to fetch branches');
+        throw Exception('Failed to fetch centers');
       }
     } catch (e) {
       throw Exception('Error: $e');
@@ -82,6 +84,8 @@ class _BranchListPageState extends State<CenterListPage> {
   }
 
   Future<void> deleteCenter(String branchId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
     const String apiUrl = 'https://chits.tutytech.in/center.php';
 
     try {
@@ -92,7 +96,7 @@ class _BranchListPageState extends State<CenterListPage> {
         body: {
           'type': 'delete',
           'id': branchId,
-          'delid': _staffId.toString(),
+          'delid': staffId,
         },
       );
 
@@ -123,7 +127,7 @@ class _BranchListPageState extends State<CenterListPage> {
     try {
       await deleteCenter(branchId);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Branch deleted successfully')),
+        const SnackBar(content: Text('Center deleted successfully')),
       );
       _refreshBranchList();
     } catch (e) {
@@ -135,7 +139,7 @@ class _BranchListPageState extends State<CenterListPage> {
 
   void _refreshBranchList() {
     setState(() {
-      _branchListFuture = fetchBranches();
+      _branchListFuture = fetchCenters();
     });
   }
 

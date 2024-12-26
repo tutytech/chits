@@ -5,6 +5,7 @@ import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateCenter extends StatefulWidget {
   final List<String>? branches;
@@ -126,6 +127,8 @@ class _CreateCenterState extends State<CreateCenter> {
   }
 
   Future<void> _createCenter() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
     if (!_formKey.currentState!.validate()) {
       return; // If form is not valid, exit early
     }
@@ -139,7 +142,7 @@ class _CreateCenterState extends State<CreateCenter> {
         'centername': _centerNameController.text,
         'centercode': _centeridController.text,
         'branchname': selectedBranchName ?? '1',
-        'entryid': '123',
+        'entryid': staffId,
       };
 
       // Print request URL and body

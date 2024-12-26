@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class CustomerList extends StatefulWidget {
   CustomerList({Key? key}) : super(key: key);
 
@@ -38,7 +40,17 @@ class _BranchListPageState extends State<CustomerList> {
   }
 
   Future<void> deleteCustomer(String branchId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
+
+    // Check if staffId is null
+    if (staffId == null || staffId.isEmpty) {
+      print('Error: staffId is null or empty');
+      return; // Exit the method early if staffId is not available
+    }
+
     const String apiUrl = 'https://chits.tutytech.in/customer.php';
+    print('------------------$staffId');
 
     try {
       // Send the POST request with form data
@@ -48,7 +60,7 @@ class _BranchListPageState extends State<CustomerList> {
         body: {
           'type': 'delete',
           'id': branchId,
-          'delid': _staffId.toString(),
+          'delid': staffId,
         },
       );
 
@@ -59,16 +71,16 @@ class _BranchListPageState extends State<CustomerList> {
       // Check if the response is successful (HTTP status 200)
       if (response.statusCode == 200) {
         // Parse the response body as JSON
-        final responseData = jsonDecode(response.body);
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
 
-        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
-          print('Center deleted successfully: ${responseData[0]['message']}');
-          // Optionally, fetch updated branches or perform other actions here
+        if (responseData['status'] == 'success') {
+          print('Customer deleted successfully: ${responseData['message']}');
+          // Optionally, fetch updated customers or perform other actions here
         } else {
-          print('Failed to delete center: ${responseData[0]['message']}');
+          print('Failed to delete customer: ${responseData['message']}');
         }
       } else {
-        print('Failed to delete center. Status code: ${response.statusCode}');
+        print('Failed to delete customer. Status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error occurred: $e');

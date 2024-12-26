@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateBranch extends StatefulWidget {
   const CreateBranch({Key? key}) : super(key: key);
@@ -100,6 +101,8 @@ class _CreateBranchState extends State<CreateBranch> {
         'branchCode': _branchCodeController.text,
         'receiptNo': _receiptNoController.text,
         'rights': selectedRights,
+        'companyid': _companyIdController.text,
+        'email': _emailController.text,
       }}');
 
       final response = await http.post(
@@ -129,22 +132,31 @@ class _CreateBranchState extends State<CreateBranch> {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        if (responseData[0]['id'] != null) {
-          _staffId = responseData[0]['id'];
-          _showSnackBar('Staff created successfully!');
+
+        // Check if responseData contains staffId
+        if (responseData is List && responseData.isNotEmpty) {
+          _staffId =
+              responseData[0]['id']; // Assuming 'id' is the field for staffId
+          if (_staffId != null) {
+            print('Extracted staffId: $_staffId'); // Debugging
+            _showSnackBar('Staff created successfully! ID: $_staffId');
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) =>
+            //         CreateCustomer(staffId: staffId), // Pass staffId
+            //   ),
+            // );
+          } else {
+            _showSnackBar('Error: Staff ID is null.');
+          }
         } else {
-          _showSnackBar('Error: ${responseData[0]['error']}');
+          _showSnackBar('Error: Invalid response format.');
         }
       } else {
         _showSnackBar(
-            'Failed to create center. Status code: ${response.statusCode}');
+            'Failed to create staff. Status code: ${response.statusCode}');
       }
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CreateCustomer(),
-        ),
-      );
     } catch (e) {
       // Print the error for debugging
       print('Error: $e');
@@ -159,9 +171,26 @@ class _CreateBranchState extends State<CreateBranch> {
   }
 
   Future<void> _createBranch() async {
+    // Fetch the staffId from SharedPreferences
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId =
+        prefs.getString('staffId'); // Retrieve staffId as a string
+
+    if (staffId == null) {
+      // Handle the case where staffId is not available
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Staff ID is missing. Please log in again.')),
+      );
+      return;
+    }
+
+    print('Staff ID: $staffId');
+
     if (!(_formKey.currentState?.validate() ?? true)) {
       return; // Exit the method if validation fails
     }
+
     final String apiUrl = 'https://chits.tutytech.in/branch.php';
 
     try {
@@ -175,8 +204,8 @@ class _CreateBranchState extends State<CreateBranch> {
           'branchname': _branchNameController.text,
           'openingbalance': _openingBalanceController.text,
           'openingdate': dobController.text,
-          'entryid':
-              _staffId.toString(), // Replace with a real entry ID if needed
+          'entryid': staffId,
+          // Use the staffId from SharedPreferences
         },
       );
 

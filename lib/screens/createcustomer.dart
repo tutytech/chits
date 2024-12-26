@@ -15,6 +15,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateCustomer extends StatefulWidget {
   const CreateCustomer({Key? key}) : super(key: key);
@@ -218,6 +219,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
   }
 
   Future<void> _createCustomer() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
+    print('-------------$staffId');
     if (_formKey.currentState!.validate()) {
       return;
     }
@@ -265,7 +269,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       request.fields['uploadBondSheet'] = selectedBondSheetFileName ?? '';
       request.fields['latitude'] = controller.latitude.value;
       request.fields['longitude'] = controller.longitude.value;
-      // Add image file
+      request.fields['entryid'] = staffId.toString(); // Add image file
       request.files.add(
         http.MultipartFile.fromBytes(
           'customerPhoto',

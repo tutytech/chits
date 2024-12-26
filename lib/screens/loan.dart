@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Loan extends StatefulWidget {
   const Loan({Key? key}) : super(key: key);
@@ -140,6 +141,8 @@ class _CreateBranchState extends State<Loan> {
   }
 
   Future<void> _submitLoanForm() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
     // Validate the form first
     if (_formKey.currentState?.validate() != true) {
       // If the form is invalid, stop further execution
@@ -159,6 +162,7 @@ class _CreateBranchState extends State<Loan> {
       'amount': amountController.text,
       'scheme': selectedBranch ?? '',
       'remarks': remarksController.text,
+      'entryid': staffId.toString(),
     };
 
     try {

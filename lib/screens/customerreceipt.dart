@@ -10,6 +10,7 @@ import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../wigets/customappbar.dart';
 import 'package:http/http.dart' as http;
@@ -185,6 +186,8 @@ class _ReceiptState extends State<Receipt> {
   }
 
   Future<void> _createBranch() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
     if (!(_formKey.currentState?.validate() ?? true)) {
       return; // Exit the method if validation fails
     }
@@ -208,6 +211,7 @@ class _ReceiptState extends State<Receipt> {
           'chequedate': _chequedateController.text,
           'bankname': _banknameController.text,
           'remarks': _remarksController.text,
+          'entryid': staffId,
           // Replace with a real entry ID if needed
         },
       );
