@@ -152,7 +152,6 @@ class _EditCenterState extends State<EditCenter> {
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
-      // Check if response is empty or not in valid JSON format
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           final responseBody = json.decode(response.body);
