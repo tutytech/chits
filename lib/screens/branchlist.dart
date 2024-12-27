@@ -1,5 +1,6 @@
 import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/screens/createcustomer.dart';
+import 'package:chitfunds/screens/editbranch.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class BranchListPage extends StatefulWidget {
 
 class _BranchListPageState extends State<BranchListPage> {
   late Future<List<Map<String, dynamic>>> _branchListFuture;
+
   List<Map<String, dynamic>> _allBranches = [];
   List<Map<String, dynamic>> _filteredBranches = [];
   final TextEditingController _searchController = TextEditingController();
@@ -406,6 +408,13 @@ class _BranchListPageState extends State<BranchListPage> {
                                           icon: const Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EditBranch(
+                                                          id: branch['id'])),
+                                            );
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               const SnackBar(

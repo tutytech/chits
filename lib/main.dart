@@ -68,7 +68,7 @@ class _FlutterBlueAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       color: Colors.lightBlue,
-      home: CreateCustomer(),
+      home: BranchListPage(),
       navigatorObservers: [BluetoothAdapterStateObserver()],
     );
   }
