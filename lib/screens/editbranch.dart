@@ -29,39 +29,37 @@ class _EditBranchState extends State<EditBranch> {
   void initState() {
     super.initState();
     if (widget.id != null) {
-      _fetchBranchData();
+      _fetchBranchData(widget.id!);
     } else {
       _showError('Invalid branch ID provided.');
     }
   }
 
-  Future<void> _fetchBranchData() async {
+  Future<void> _fetchBranchData(String branchId) async {
     try {
       final response = await http.post(
         Uri.parse('https://chits.tutytech.in/branch.php'),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'type': 'select',
-          'id': widget.id.toString(), // Pass the specific branch ID
-        },
+        body: {'type': 'select'},
       );
+      debugPrint('Response: ${response.body}');
 
       if (response.statusCode == 200) {
-        final branchData = json.decode(response.body);
+        final List<dynamic> branchData = json.decode(response.body);
 
-        // Assuming branchData is a list and we need the first element
-        if (branchData.isNotEmpty && branchData[0] != null) {
-          if (mounted) {
-            setState(() {
-              _branchNameController.text = branchData[0]['branchname'] ?? '';
-              _openingBalanceController.text =
-                  branchData[0]['openingbalance']?.toString() ?? '';
-              dobController.text = branchData[0]['openingdate'] ?? '';
-              isLoading = false;
-            });
-          }
+        // Find the branch with the matching ID
+        final branch = branchData.firstWhere(
+          (branch) => branch['id'].toString() == branchId,
+          orElse: () => null,
+        );
+
+        if (branch != null) {
+          setState(() {
+            _updateBranchFields(branch);
+            isLoading = false;
+          });
         } else {
-          _showError('No branch data found for the given ID.');
+          _showError('No branch found with ID $branchId.');
         }
       } else {
         _showError('Failed to load branch data: ${response.body}');
@@ -71,13 +69,18 @@ class _EditBranchState extends State<EditBranch> {
     }
   }
 
+  void _updateBranchFields(Map<String, dynamic> branch) {
+    _branchNameController.text = branch['branchname'] ?? '';
+    _openingBalanceController.text = branch['openingbalance']?.toString() ?? '';
+    dobController.text = branch['openingdate'] ?? '';
+  }
+
   Future<void> _updateBranchData() async {
     try {
-      // Construct the request URL and log it
       final url = Uri.parse('https://chits.tutytech.in/branch.php');
       final requestBody = {
         'type': 'update',
-        'id': widget.id.toString(),
+        'id': widget.id.toString(), // Pass the correct ID
         'branchname': _branchNameController.text.trim(),
         'openingbalance': _openingBalanceController.text.trim(),
         'openingdate': dobController.text.trim(),
@@ -91,12 +94,10 @@ class _EditBranchState extends State<EditBranch> {
         body: requestBody,
       );
 
-      // Log the response
       debugPrint('Response Code: ${response.statusCode}');
       debugPrint('Response Body: ${response.body}');
       if (response.statusCode == 200) {
         final result = json.decode(response.body);
-        // Check if status is '1' or '0' (as String)
         if (result[0]['status'] == '0') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Branch updated successfully!')),
