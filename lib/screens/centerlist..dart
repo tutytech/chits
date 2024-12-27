@@ -1,4 +1,5 @@
 import 'package:chitfunds/screens/createcenter.dart';
+import 'package:chitfunds/screens/editcenter.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -326,12 +327,13 @@ class _BranchListPageState extends State<CenterListPage> {
                                           icon: const Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    'Edit feature not implemented'),
-                                              ),
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EditCenter(
+                                                          centerId:
+                                                              branch['id'])),
                                             );
                                           },
                                         ),
