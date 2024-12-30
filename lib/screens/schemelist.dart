@@ -1,4 +1,5 @@
 import 'package:chitfunds/screens/createscheme.dart';
+import 'package:chitfunds/screens/editscheme.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -322,6 +323,14 @@ class _BranchListPageState extends State<SchemeListPage> {
                                           icon: const Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EditScheme(
+                                                          id: branch[
+                                                              'schemeid'])),
+                                            );
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               const SnackBar(

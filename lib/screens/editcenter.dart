@@ -127,26 +127,43 @@ class _EditCenterState extends State<EditCenter> {
   }
 
   Future<void> updateCenter() async {
-    if (!_formKey.currentState!.validate()) {
+    // Validate user inputs before sending
+    if (_centerNameController.text.trim().isEmpty) {
+      showErrorSnackBar('Center name is required');
+      return;
+    }
+    if (_centerIdController.text.trim().isEmpty) {
+      showErrorSnackBar('Center code is required');
+      return;
+    }
+    if (selectedBranchId == null || selectedBranchId!.isEmpty) {
+      showErrorSnackBar('Branch ID is required');
       return;
     }
 
+    // Print the values of centername, centercode, and branchid
+    print('Center Name: ${_centerNameController.text.trim()}');
+    print('Center Code: ${_centerIdController.text.trim()}');
+    print('Branch ID: $selectedBranchId');
+
+    // Prepare data to be sent
     final centerData = {
       'type': 'update',
-      'id': widget.centerId,
-      'centername': _centerNameController.text,
-      'centercode': _centerIdController.text,
+      'id': widget.centerId?.toString() ?? '',
+      'centername': _centerNameController.text.trim(),
+      'centercode': _centerIdController.text.trim(),
+      'branchid': selectedBranchId,
     };
 
     try {
-      final url = 'https://chits.tutytech.in/center.php';
+      final url = Uri.parse('https://chits.tutytech.in/center.php');
       print('Request URL: $url');
-      print('Request Body: ${json.encode(centerData)}');
+      print('Request Body: $centerData');
 
       final response = await http.post(
-        Uri.parse(url),
-        body: json.encode(centerData),
-        headers: {'Content-Type': 'application/json'},
+        url,
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: centerData,
       );
 
       print('Response Status Code: ${response.statusCode}');
@@ -154,32 +171,25 @@ class _EditCenterState extends State<EditCenter> {
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
-          final responseBody = json.decode(response.body);
-          if (responseBody is List && responseBody.isNotEmpty) {
-            final status = responseBody[0]['status'];
-            final message = responseBody[0]['message'];
-
-            if (status == 0) {
-              showSuccessSnackBar(message);
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => CenterListPage()),
-              );
-            } else {
-              showErrorSnackBar('Error: $message');
-            }
+          final result = json.decode(response.body);
+          if (result[0]['status'] == '0') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Center updated successfully!')),
+            );
+            Navigator.pop(context, true); // Return to the previous screen
           } else {
-            showErrorSnackBar('Error: Unexpected response format');
+            showErrorSnackBar(
+                result[0]['message'] ?? 'Failed to update center.');
           }
         } else {
-          showErrorSnackBar('Error: Empty response from the server');
+          showErrorSnackBar('No response received from the server.');
         }
       } else {
-        showErrorSnackBar('Error: ${response.body}');
+        showErrorSnackBar('Failed to update center: ${response.body}');
       }
-    } catch (e) {
-      print('Exception: $e');
-      showErrorSnackBar('Error updating center: $e');
+    } catch (error) {
+      print('Error: $error');
+      showErrorSnackBar('An error occurred: $error');
     }
   }
 
@@ -298,39 +308,44 @@ class _EditCenterState extends State<EditCenter> {
                             },
                           ),
                           const SizedBox(height: 30),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                updateCenter();
-                              },
-                              child: const Text(
-                                'Save',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CenterListPage(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                width: 200,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    updateCenter();
+                                  },
+                                  child: const Text(
+                                    'Save',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                );
-                              },
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 200,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => CenterListPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
