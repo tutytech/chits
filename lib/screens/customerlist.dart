@@ -1,5 +1,6 @@
 import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/screens/createcustomer.dart';
+import 'package:chitfunds/screens/editcustomer.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -402,6 +403,18 @@ class _BranchListPageState extends State<CustomerList> {
                                           icon: const Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
+                                            // Print the branch ID for debugging
+                                            print('Branch ID: ${branch['id']}');
+
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditCustomer(
+                                                        id: branch['id']),
+                                              ),
+                                            );
+
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               const SnackBar(

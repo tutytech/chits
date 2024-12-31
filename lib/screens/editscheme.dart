@@ -32,6 +32,16 @@ class _CreateSchemeState extends State<EditScheme> {
   final List<String> _collectionModes = ['Weekly', 'Monthly', 'Daily'];
   List<Map<String, dynamic>> _tableData = []; // Data for table rows
   bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.id != null) {
+      fetchSchemes(widget.id!);
+    } else {
+      _showError('Invalid branch ID provided.');
+    }
+  }
 
   void _initializeTableData() {
     _tableData = [
@@ -45,17 +55,59 @@ class _CreateSchemeState extends State<EditScheme> {
     ];
   }
 
+  void _updateBranchFields(Map<String, dynamic> branch) {
+    _schemeIdController.text = branch['schemeid'] ?? '';
+    _schemeNameController.text = branch['schemename']?.toString() ?? '';
+    _loanAmountController.text = branch['amount'] ?? '';
+    _weeksDaysController.text = branch['collectiontype'] ?? '';
+  }
+
+  Future<void> fetchSchemes(String id) async {
+    const String _baseUrl = 'https://chits.tutytech.in/scheme.php';
+    try {
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'type': 'select'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> branchData = json.decode(response.body);
+
+        // Find the branch with the matching ID
+        final branch = branchData.firstWhere(
+          (branch) => branch['id'].toString() == id,
+          orElse: () => null,
+        );
+
+        if (branch != null) {
+          setState(() {
+            _updateBranchFields(branch);
+            isLoading = false;
+          });
+        } else {
+          _showError('No branch found with ID $id.');
+        }
+      } else {
+        throw Exception('Failed to fetch branches');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
   Future<void> _updateSchemeData() async {
-    print('---------------$widget.id');
+    print('---------------${widget.id}');
     try {
       final url = Uri.parse('https://chits.tutytech.in/scheme.php');
 
       final requestBody = {
         'type': 'update',
-        'id': widget.id.toString(), // Pass the correct ID
+        'id': widget.id.toString(),
         'schemeid': _schemeIdController.text.trim(),
         'schemename': _schemeNameController.text.trim(),
         'amount': _loanAmountController.text.trim(),
+        'collectiontype': _weeksDaysController.text.trim(),
       };
 
       // Debugging prints
@@ -66,9 +118,9 @@ class _CreateSchemeState extends State<EditScheme> {
         url,
         headers: {
           'Content-Type':
-              'application/x-www-form-urlencoded', // Ensure content-type is application/json
+              'application/x-www-form-urlencoded', // Ensure the server expects JSON
         },
-        body: json.encode(requestBody), // Send as JSON
+        body: requestBody, // Send as JSON
       );
 
       debugPrint('Response Code: ${response.statusCode}');
@@ -76,7 +128,7 @@ class _CreateSchemeState extends State<EditScheme> {
 
       if (response.statusCode == 200) {
         final result = json.decode(response.body);
-        if (result[0]['status'] == '0') {
+        if (result[0]['status'] == 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Scheme updated successfully!')),
           );
@@ -94,11 +146,9 @@ class _CreateSchemeState extends State<EditScheme> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-    setState(() {
-      isLoading = false;
-    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override

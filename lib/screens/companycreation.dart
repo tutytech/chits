@@ -42,19 +42,29 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
 
     try {
       final uri = Uri.parse('https://chits.tutytech.in/company.php');
+      final requestBody = {
+        'type': 'insert',
+        'companyname': _companyNameController.text,
+        'address': _gstinController.text,
+        'phoneno': _phoneNumberController.text,
+        'mailid': _emailController.text,
+        'entryid': staffId, // Replace this with the actual value
+        'entrydate': DateTime.now().toIso8601String().split('T').first,
+      };
+
+      // Print request URL and body
+      print('Request URL: $uri');
+      print('Request Body: $requestBody');
+
       final response = await http.post(
         uri,
-        body: {
-          'type': 'insert',
-          'companyname': _companyNameController.text,
-          'address': _gstinController.text,
-          'phoneno': _phoneNumberController.text,
-          'mailid': _emailController.text,
-          'entryid': staffId, // Replace this with the actual value
-          'entrydate': DateTime.now().toIso8601String().split('T').first,
-        },
+        body: requestBody,
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       );
+
+      // Print response details
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final List<dynamic> responseData = jsonDecode(response.body);
@@ -79,6 +89,7 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
         );
       }
     } catch (e) {
+      print('Error: $e'); // Print error details
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );

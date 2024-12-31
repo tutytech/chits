@@ -1,42 +1,91 @@
-import 'package:chitfunds/screens/smssettings.dart';
-import 'package:chitfunds/wigets/customappbar.dart';
-import 'package:chitfunds/wigets/customdrawer.dart';
+import 'package:chitfunds/screens/amountransfer.dart';
+import 'package:chitfunds/screens/branchlist.dart';
+import 'package:chitfunds/screens/createbranch.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class EditCompany1 extends StatefulWidget {
-  const EditCompany1({Key? key}) : super(key: key);
+class EditCompany extends StatefulWidget {
+  const EditCompany({Key? key}) : super(key: key);
 
   @override
-  _EditCompanyState createState() => _EditCompanyState();
+  _CompanyCreationScreenState createState() => _CompanyCreationScreenState();
 }
 
-class _EditCompanyState extends State<EditCompany1> {
+class _CompanyCreationScreenState extends State<EditCompany> {
   final TextEditingController _companyNameController = TextEditingController();
   final TextEditingController _gstinController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String selectedLogo = 'No file chosen';
+  bool isLoading = false;
 
-  @override
+  String selectedlogo = 'No file chosen';
   void initState() {
     super.initState();
-    _loadCompanyData(); // Load existing company details on startup
+
+    fetchCompany();
   }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  void _updateBranchFields(Map<String, dynamic> branch) {
+    _companyNameController.text = branch['companyname'] ?? '';
+    _gstinController.text = branch['address']?.toString() ?? '';
+    _emailController.text = branch['mailid'] ?? '';
+    _phoneNumberController.text = branch['phoneno'] ?? '';
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCompany() async {
+    const String _baseUrl = 'https://chits.tutytech.in/company.php';
+    try {
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'type': 'select'},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body) as List<dynamic>;
+
+        // Handle missing keys safely
+        return responseData.map((branch) {
+          return {
+            'id': branch['id'] ?? '',
+            'companyname': branch['companyname'] ?? 'Unknown Branch',
+            'address': branch['address']?.toString() ?? '0',
+            'mailid': branch['mailid'] ?? 'N/A',
+            'phoneno': branch['phoneno'] ?? 'N/A',
+          };
+        }).toList();
+      } else {
+        throw Exception('Failed to fetch branches');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  // Method to save company data to SharedPreferences and call the API
 
   void _pickFileForLogo() async {
     try {
       final result = await FilePicker.platform.pickFiles();
       if (result != null && result.files.isNotEmpty) {
         setState(() {
-          selectedLogo = result.files.first.name;
+          selectedlogo = result.files.first.name;
         });
       } else {
         setState(() {
-          selectedLogo = 'No file chosen';
+          selectedlogo = 'No file chosen';
         });
       }
     } catch (e) {
@@ -44,47 +93,9 @@ class _EditCompanyState extends State<EditCompany1> {
     }
   }
 
-  Future<void> _loadCompanyData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _companyNameController.text = prefs.getString('companyName') ?? '';
-      _gstinController.text = prefs.getString('gstin') ?? '';
-      _emailController.text = prefs.getString('email') ?? '';
-      _phoneNumberController.text = prefs.getString('phoneNumber') ?? '';
-    });
-  }
-
-  Future<void> _saveCompanyData() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final prefs = await SharedPreferences.getInstance();
-
-      await prefs.setString('companyName', _companyNameController.text);
-      await prefs.setString('gstin', _gstinController.text);
-      await prefs.setString('email', _emailController.text);
-      await prefs.setString('phoneNumber', _phoneNumberController.text);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Company details updated successfully!')),
-      );
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SmsSettings()),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
-      appBar: CustomAppBar(
-        title: 'Edit Company',
-        onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-      ),
-      drawer: CustomDrawer(),
       body: Stack(
         children: [
           Container(
@@ -105,7 +116,21 @@ class _EditCompanyState extends State<EditCompany1> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 100),
+                    Image.asset(
+                      'nobglogo.png',
+                      height: 200,
+                      width: 200,
+                      fit: BoxFit.contain,
+                    ),
+                    const Text(
+                      'Edit Company',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
                     TextFormField(
                       controller: _companyNameController,
                       decoration: InputDecoration(
@@ -119,8 +144,8 @@ class _EditCompanyState extends State<EditCompany1> {
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the company name';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Company name is required';
                         }
                         return null;
                       },
@@ -139,8 +164,8 @@ class _EditCompanyState extends State<EditCompany1> {
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the address';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Address is required';
                         }
                         return null;
                       },
@@ -159,12 +184,13 @@ class _EditCompanyState extends State<EditCompany1> {
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the email address';
-                        } else if (!RegExp(
-                                r"^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Email is required';
+                        }
+                        if (!RegExp(
+                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                             .hasMatch(value)) {
-                          return 'Please enter a valid email';
+                          return 'Enter a valid email address';
                         }
                         return null;
                       },
@@ -184,59 +210,20 @@ class _EditCompanyState extends State<EditCompany1> {
                       ),
                       keyboardType: TextInputType.phone,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the phone number';
-                        } else if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
-                          return 'Please enter a valid 10-digit phone number';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Phone number is required';
+                        }
+                        if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                          return 'Enter a valid 10-digit phone number';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        const Text(
-                          'Upload Logo',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(left: 120),
-                            hintText: selectedLogo,
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 8,
-                          child: ElevatedButton(
-                            onPressed: _pickFileForLogo,
-                            child: const Text('Choose File'),
-                            style: ElevatedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _saveCompanyData,
+                        onPressed: () async {},
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 221, 226, 240),
@@ -248,7 +235,7 @@ class _EditCompanyState extends State<EditCompany1> {
                           ),
                         ),
                         child: const Text(
-                          'Update Company',
+                          'Save',
                           style: TextStyle(fontSize: 16),
                         ),
                       ),

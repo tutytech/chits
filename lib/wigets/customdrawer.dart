@@ -9,6 +9,7 @@ import 'package:chitfunds/screens/createstaff.dart';
 import 'package:chitfunds/screens/customerlist.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/editcomapnydetails.dart';
+import 'package:chitfunds/screens/editcompany.dart';
 import 'package:chitfunds/screens/loan.dart';
 import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/stafflist.dart';

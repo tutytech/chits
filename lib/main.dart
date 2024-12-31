@@ -16,6 +16,7 @@ import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/dashboard.dart';
 import 'package:chitfunds/screens/editcenter.dart';
 import 'package:chitfunds/screens/editcomapnydetails.dart';
+import 'package:chitfunds/screens/editcompany.dart';
 import 'package:chitfunds/screens/loan.dart';
 import 'package:chitfunds/screens/loanlist.dart';
 import 'package:chitfunds/screens/receiptlist.dart';
@@ -69,7 +70,7 @@ class _FlutterBlueAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       color: Colors.lightBlue,
-      home: CenterListPage(),
+      home: CustomerList(),
       navigatorObservers: [BluetoothAdapterStateObserver()],
     );
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:chitfunds/screens/editcomapnydetails.dart';
+import 'package:chitfunds/screens/editcompany.dart';
 import 'package:chitfunds/screens/loanlist.dart';
 
 import 'package:chitfunds/screens/receiptlist.dart';

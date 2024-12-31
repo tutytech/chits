@@ -51,7 +51,7 @@ class _BranchListPageState extends State<SchemeListPage> {
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {
           'type': 'delete',
-          'id': '123',
+          'id': branchId.toString(),
           'delid': staffId,
         },
       );
@@ -256,6 +256,17 @@ class _BranchListPageState extends State<SchemeListPage> {
                             columns: [
                               DataColumn(
                                 label: Text(
+                                  'ID',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
                                   'Scheme ID',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
@@ -309,6 +320,7 @@ class _BranchListPageState extends State<SchemeListPage> {
                             rows: _filteredSchemes.map((branch) {
                               return DataRow(
                                 cells: [
+                                  DataCell(Text(branch['id'] ?? 'N/A')),
                                   DataCell(Text(branch['schemeid'] ?? 'N/A')),
                                   DataCell(Text(branch['schemename'] ?? '0')),
                                   DataCell(Text(branch['amount'] ?? 'N/A')),
@@ -328,8 +340,7 @@ class _BranchListPageState extends State<SchemeListPage> {
                                               MaterialPageRoute(
                                                   builder: (context) =>
                                                       EditScheme(
-                                                          id: branch[
-                                                              'schemeid'])),
+                                                          id: branch['id'])),
                                             );
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
@@ -362,7 +373,7 @@ class _BranchListPageState extends State<SchemeListPage> {
                                             // Proceed with deletion
                                             print(
                                                 'Deleting branch with id: ${branch['id']}');
-                                            deleteBranch(branch['schemeid']);
+                                            deleteBranch(branch['id']);
                                           },
                                         ),
                                       ],
