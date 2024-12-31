@@ -447,8 +447,6 @@ class _CreateCustomerState extends State<EditCustomer> {
     // Assuming the response is directly the customer data, not inside 'customerDetails'
     Map<String, dynamic> branch = response;
 
-    // Assign the values to the respective text controllers
-
     _customerIdController.text = branch['customerId']?.toString() ?? '';
     _nameController.text = branch['name']?.toString() ?? '';
     _addressController.text = branch['address']?.toString() ?? '';
