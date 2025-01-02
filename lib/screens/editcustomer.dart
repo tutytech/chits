@@ -174,7 +174,6 @@ class _CreateCustomerState extends State<EditCustomer> {
       request.fields['branch'] = selectedBranchName ?? '';
       request.fields['center'] = selectedCenterName ?? '';
 
-      // Add file names for uploaded documents if available
       request.fields['uploadAadhar'] = selectedAadhaarFileName ?? '';
       request.fields['uploadVoterId'] = selectedVoterIdFileName ?? '';
       request.fields['uploadPan'] = selectedPanFileName ?? '';
