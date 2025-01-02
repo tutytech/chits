@@ -98,6 +98,7 @@ class _CreateStaffState extends State<CreateStaff> {
   Future<void> _createStaff() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = prefs.getString('staffId');
+    final String? companyid = prefs.getString('companyId');
 
     // Check if the form is valid
     if (!(_formKey.currentState?.validate() ?? false)) {
@@ -140,7 +141,7 @@ class _CreateStaffState extends State<CreateStaff> {
           'branchCode': _branchCodeController.text,
           'receiptNo': _receiptNoController.text,
           'rights': selectedRights,
-          'companyid': _companyIdController.text,
+          'companyid': companyid,
           'email': _emailController.text,
           'entryid': staffId,
         },

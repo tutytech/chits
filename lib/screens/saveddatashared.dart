@@ -14,4 +14,15 @@ class PreferencesUtils {
     final prefs = await _getPrefs();
     return prefs.getInt('staffId');
   }
+
+  static Future<void> saveCompanyId(String companyId) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('companyId', companyId);
+  }
+
+  // Get company ID
+  static Future<String?> getCompanyId() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('companyId');
+  }
 }

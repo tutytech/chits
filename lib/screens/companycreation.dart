@@ -68,11 +68,17 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
 
       if (response.statusCode == 200) {
         final List<dynamic> responseData = jsonDecode(response.body);
-        if (responseData.isNotEmpty && responseData[0]['error'] != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${responseData[0]['error']}')),
-          );
-        } else {
+
+        if (responseData.isNotEmpty && responseData[0]['id'] != null) {
+          // Fetch the generated company ID (it's an integer)
+          final int companyId = responseData[0]['id'];
+
+          // Convert the integer companyId to string before saving it
+          await prefs.setString('companyId', companyId.toString());
+
+          // Print saved companyId to confirm
+          print('Saved Company ID: ${companyId.toString()}');
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Company created successfully!')),
           );
@@ -81,6 +87,10 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AmountTransfer()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unexpected response format.')),
           );
         }
       } else {

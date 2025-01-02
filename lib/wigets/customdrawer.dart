@@ -14,6 +14,7 @@ import 'package:chitfunds/screens/loan.dart';
 import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/stafflist.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomDrawer extends StatefulWidget {
   final List<String>? branchNames;
@@ -25,6 +26,22 @@ class CustomDrawer extends StatefulWidget {
 
 class _CustomDrawerState extends State<CustomDrawer> {
   final List<Map<String, dynamic>> _branches = [];
+  String? companyId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCompanyId();
+  }
+
+  Future<void> _loadCompanyId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      companyId = prefs.getString('companyId');
+      print('------------------------------$companyId');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -171,7 +188,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => EditCompany()),
+                      MaterialPageRoute(
+                        builder: (context) => EditCompany(id: companyId!),
+                      ),
                     );
                   },
                 ),

@@ -8,7 +8,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class EditCompany extends StatefulWidget {
-  const EditCompany({Key? key}) : super(key: key);
+  final String? id; // Pass the branch ID to load specific data
+
+  const EditCompany({Key? key, this.id}) : super(key: key);
 
   @override
   _CompanyCreationScreenState createState() => _CompanyCreationScreenState();
@@ -23,10 +25,16 @@ class _CompanyCreationScreenState extends State<EditCompany> {
   bool isLoading = false;
 
   String selectedlogo = 'No file chosen';
+
+  @override
   void initState() {
     super.initState();
 
-    fetchCompany();
+    if (widget.id != null) {
+      fetchCompany(widget.id!);
+    } else {
+      _showError('Invalid branch ID provided.');
+    }
   }
 
   void _showError(String message) {
@@ -44,7 +52,48 @@ class _CompanyCreationScreenState extends State<EditCompany> {
     _phoneNumberController.text = branch['phoneno'] ?? '';
   }
 
-  Future<List<Map<String, dynamic>>> fetchCompany() async {
+  Future<void> _updateCompany() async {
+    try {
+      final url = Uri.parse('https://chits.tutytech.in/company.php');
+      final requestBody = {
+        'type': 'update',
+        'id': widget.id.toString(), // Pass the correct ID
+        'companyname': _companyNameController.text.trim(),
+        'address': _gstinController.text.trim(),
+        'mailid': _emailController.text.trim(),
+        'phoneno': _phoneNumberController.text.trim(),
+      };
+      debugPrint('Request URL: $url');
+      debugPrint('Request Body: $requestBody');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: requestBody,
+      );
+
+      debugPrint('Response Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        if (result[0]['status'] == '0') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Branch updated successfully!')),
+          );
+          Navigator.pop(context, true); // Return to the previous screen
+        } else {
+          _showError(result[0]['message'] ?? 'Failed to update branch.');
+        }
+      } else {
+        _showError('Failed to update branch: ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('Error: $error');
+      _showError('An error occurred: $error');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCompany(String id) async {
     const String _baseUrl = 'https://chits.tutytech.in/company.php';
     try {
       final response = await http.post(
@@ -54,18 +103,25 @@ class _CompanyCreationScreenState extends State<EditCompany> {
       );
 
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body) as List<dynamic>;
+        final List<dynamic> branchData = json.decode(response.body);
 
-        // Handle missing keys safely
-        return responseData.map((branch) {
-          return {
-            'id': branch['id'] ?? '',
-            'companyname': branch['companyname'] ?? 'Unknown Branch',
-            'address': branch['address']?.toString() ?? '0',
-            'mailid': branch['mailid'] ?? 'N/A',
-            'phoneno': branch['phoneno'] ?? 'N/A',
-          };
-        }).toList();
+        // Find the branch with the matching ID
+        final branch = branchData.firstWhere(
+          (branch) => branch['id'].toString() == id,
+          orElse: () => null,
+        );
+
+        if (branch != null) {
+          setState(() {
+            _updateBranchFields(branch);
+            isLoading = false;
+          });
+
+          return [branch]; // Return the found branch as a list
+        } else {
+          _showError('No branch found with ID $id.');
+          return []; // Return an empty list if no branch is found
+        }
       } else {
         throw Exception('Failed to fetch branches');
       }
@@ -223,7 +279,9 @@ class _CompanyCreationScreenState extends State<EditCompany> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () async {},
+                        onPressed: () async {
+                          _updateCompany();
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 221, 226, 240),
