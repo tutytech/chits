@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:chitfunds/controlller/home_controller.dart';
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/customerlist.dart';
@@ -129,6 +128,10 @@ class _CreateCustomerState extends State<CreateCustomer> {
     _fetchCenters(); // Fetch branches when the widget dependencies change
   }
 
+  // Function to pick an image or document for Aadhaar
+  String selectedAadhaarFileName1 =
+      'default_name.jpg'; // Default value for the name
+
   Future<void> _fetchAndSaveLocation() async {
     setState(() {
       _isLoading = true;
@@ -219,20 +222,22 @@ class _CreateCustomerState extends State<CreateCustomer> {
   }
 
   Future<void> _createCustomer() async {
+    print('hello1');
+
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? staffId = prefs.getString('staffId');
+    final String? staffId = await prefs.getString('staffId');
     print('-------------$staffId');
-    if (_formKey.currentState!.validate()) {
-      return;
-    }
+
     final String apiUrl = 'https://chits.tutytech.in/customer.php';
 
     if (_image == null) {
+      print('hello3');
       print("No image selected.");
       _showSnackBar('Please select an image.');
       return;
     }
     try {
+      print('hello4');
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(apiUrl),
@@ -276,18 +281,26 @@ class _CreateCustomerState extends State<CreateCustomer> {
         ),
       );
 
-      if (selectedAadhaarFileBytes != null && selectedAadhaarFileName != null) {
+      print('Aadhaar File Bytes: ${selectedAadhaarFileBytes}');
+      print('Aadhaar File Name: $selectedAadhaarFileName');
+
+      if (selectedAadhaarFileBytes != null &&
+          selectedAadhaarFileBytes!.isNotEmpty) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadAadhar',
             selectedAadhaarFileBytes!,
-            filename: selectedAadhaarFileName!,
-            contentType: MediaType(
-                'application', 'pdf'), // Update content type if needed
+            filename: selectedAadhaarFileName,
+            contentType: MediaType('image', 'jpeg'),
           ),
         );
+      } else {
+        print('No Aadhaar file bytes available.');
+        _showSnackBar('Aadhaar file is missing or empty.');
       }
-      if (selectedVoterIdFileBytes != null && selectedVoterIdFileName != null) {
+
+      // Add files for other documents
+      if (selectedVoterIdFileName != null && selectedVoterIdFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadVoterId',
@@ -297,7 +310,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectedPanFileBytes != null && selectedPanFileName != null) {
+
+      if (selectedPanFileName != null && selectedPanFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadPan',
@@ -307,8 +321,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectedNomineeAadharFileBytes != null &&
-          selectedNomineeAadharFileName != null) {
+
+      if (selectedNomineeAadharFileName != null &&
+          selectedNomineeAadharFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadNomineeAadharCard',
@@ -318,8 +333,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectNomineeVoterIdFileBytes != null &&
-          selectNomineeVoterIdFileName != null) {
+
+      if (selectNomineeVoterIdFileName != null &&
+          selectNomineeVoterIdFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadNomineeVoterId',
@@ -329,8 +345,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectedNomineePanFileBytes != null &&
-          selectedNomineePanFileName != null) {
+
+      if (selectedNomineePanFileName != null &&
+          selectedNomineePanFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadNomineePan',
@@ -340,8 +357,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectedRationCardFileBytes != null &&
-          selectedRationCardFileName != null) {
+
+      if (selectedRationCardFileName != null &&
+          selectedRationCardFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadRationCard',
@@ -351,8 +369,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectedpropertyTaxReceiptFileBytes != null &&
-          selectedpropertyTaxReceiptFileName != null) {
+
+      if (selectedpropertyTaxReceiptFileName != null &&
+          selectedpropertyTaxReceiptFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadPropertyTaxReceipt',
@@ -362,7 +381,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectedEBBillFileBytes != null && selectedEBBillFileName != null) {
+
+      if (selectedEBBillFileName != null && selectedEBBillFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadEbBill',
@@ -372,7 +392,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectedGasBillFileBytes != null && selectedGasBillFileName != null) {
+
+      if (selectedGasBillFileName != null && selectedGasBillFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadGasBill',
@@ -382,8 +403,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectedChequeLeafFileBytes != null &&
-          selectedChequeLeafFileName != null) {
+
+      if (selectedChequeLeafFileName != null &&
+          selectedChequeLeafFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadChequeLeaf',
@@ -393,8 +415,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
           ),
         );
       }
-      if (selectedBondSheetFileBytes != null &&
-          selectedBondSheetFileName != null) {
+
+      if (selectedBondSheetFileName != null &&
+          selectedBondSheetFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadBondSheet',
@@ -482,10 +505,24 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedAadhaarFileName =
-              result.files.first.name; // Get the file name
+          selectedAadhaarFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedAadhaarFileBytes = fileBytes;
+          });
+          print('Aadhaar File Bytes: ${selectedAadhaarFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+          _showSnackBar('Failed to fetch Aadhaar file bytes');
+        }
       } else {
         // No file selected
         setState(() {
@@ -494,6 +531,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       }
     } catch (e) {
       print('Error picking file: $e');
+      _showSnackBar('Error picking file: $e');
     }
   }
 
@@ -504,10 +542,24 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedVoterIdFileName =
-              result.files.first.name; // Get the file name
+          selectedVoterIdFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedVoterIdFileBytes = fileBytes;
+          });
+          print('Voter ID File Bytes: ${selectedVoterIdFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+          _showSnackBar('Failed to fetch Voter ID file bytes');
+        }
       } else {
         // No file selected
         setState(() {
@@ -516,6 +568,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       }
     } catch (e) {
       print('Error picking file: $e');
+      _showSnackBar('Error picking file: $e');
     }
   }
 
@@ -561,16 +614,30 @@ class _CreateCustomerState extends State<CreateCustomer> {
   }
 
   Future<void> _pickFileForPAN() async {
-    // Simulate file picking for Voter ID
     try {
       // Open file picker for selecting files
       final result = await FilePicker.platform.pickFiles();
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedPanFileName = result.files.first.name; // Get the file name
+          selectedPanFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedPanFileBytes = fileBytes;
+          });
+          print('Pan File Bytes: ${selectedPanFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+          _showSnackBar('Failed to fetch Pan file bytes');
+        }
       } else {
         // No file selected
         setState(() {
@@ -579,21 +646,36 @@ class _CreateCustomerState extends State<CreateCustomer> {
       }
     } catch (e) {
       print('Error picking file: $e');
+      _showSnackBar('Error picking file: $e');
     }
   }
 
   Future<void> _pickFileForNomineeAdhaar() async {
-    // Simulate file picking for Voter ID
     try {
       // Open file picker for selecting files
       final result = await FilePicker.platform.pickFiles();
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedNomineeAadharFileName =
-              result.files.first.name; // Get the file name
+          selectedNomineeAadharFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedNomineeAadharFileBytes = fileBytes;
+          });
+          print(
+              'Nominee Aadhaar File Bytes: ${selectedNomineeAadharFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+          _showSnackBar('Failed to fetch Nominee Aadhaar file bytes');
+        }
       } else {
         // No file selected
         setState(() {
@@ -602,6 +684,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       }
     } catch (e) {
       print('Error picking file: $e');
+      _showSnackBar('Error picking file: $e');
     }
   }
 
@@ -612,10 +695,25 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectNomineeVoterIdFileName =
-              result.files.first.name; // Get the file name
+          selectNomineeVoterIdFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectNomineeVoterIdFileBytes = fileBytes;
+          });
+          print(
+              'Nominee Voter Id File Bytes: ${selectNomineeVoterIdFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+          _showSnackBar('Failed to fetch Nominee Voter Id file bytes');
+        }
       } else {
         // No file selected
         setState(() {
@@ -624,6 +722,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       }
     } catch (e) {
       print('Error picking file: $e');
+      _showSnackBar('Error picking file: $e');
     }
   }
 
@@ -634,10 +733,25 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedNomineePanFileName =
-              result.files.first.name; // Get the file name
+          selectedNomineePanFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedNomineePanFileBytes = fileBytes;
+          });
+          print(
+              'Nominee Pan File Bytes: ${selectedNomineePanFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+          _showSnackBar('Failed to fetch Nominee Pan file bytes');
+        }
       } else {
         // No file selected
         setState(() {
@@ -646,6 +760,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       }
     } catch (e) {
       print('Error picking file: $e');
+      _showSnackBar('Error picking file: $e');
     }
   }
 
@@ -656,10 +771,25 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedRationCardFileName =
-              result.files.first.name; // Get the file name
+          selectedRationCardFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedRationCardFileBytes = fileBytes;
+          });
+          print(
+              'Ration Card File Bytes: ${selectedRationCardFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+          _showSnackBar('Failed to fetch Ration Card file bytes');
+        }
       } else {
         // No file selected
         setState(() {
@@ -668,6 +798,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       }
     } catch (e) {
       print('Error picking file: $e');
+      _showSnackBar('Error picking file: $e');
     }
   }
 
@@ -678,10 +809,25 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedpropertyTaxReceiptFileName =
-              result.files.first.name; // Get the file name
+          selectedpropertyTaxReceiptFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedpropertyTaxReceiptFileBytes = fileBytes;
+          });
+          print(
+              'Property Tax Receipt File Bytes: ${selectedpropertyTaxReceiptFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+          _showSnackBar('Failed to fetch Property Tax Receipt file bytes');
+        }
       } else {
         // No file selected
         setState(() {
@@ -690,6 +836,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       }
     } catch (e) {
       print('Error picking file: $e');
+      _showSnackBar('Error picking file: $e');
     }
   }
 
@@ -700,9 +847,23 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedEBBillFileName = result.files.first.name; // Get the file name
+          selectedEBBillFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedEBBillFileBytes = fileBytes;
+          });
+          print('EB Bill File Bytes: ${selectedEBBillFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+        }
       } else {
         // No file selected
         setState(() {
@@ -721,10 +882,23 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedGasBillFileName =
-              result.files.first.name; // Get the file name
+          selectedGasBillFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedGasBillFileBytes = fileBytes;
+          });
+          print('Gas Bill File Bytes: ${selectedGasBillFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+        }
       } else {
         // No file selected
         setState(() {
@@ -743,10 +917,24 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedChequeLeafFileName =
-              result.files.first.name; // Get the file name
+          selectedChequeLeafFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedChequeLeafFileBytes = fileBytes;
+          });
+          print(
+              'Cheque Leaf File Bytes: ${selectedChequeLeafFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+        }
       } else {
         // No file selected
         setState(() {
@@ -765,10 +953,23 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
       // Check if a file was selected
       if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+
+        // Get the file name
         setState(() {
-          selectedBondSheetFileName =
-              result.files.first.name; // Get the file name
+          selectedBondSheetFileName = file.name;
         });
+
+        // Fetch file bytes
+        final fileBytes = file.bytes;
+        if (fileBytes != null && fileBytes.isNotEmpty) {
+          setState(() {
+            selectedBondSheetFileBytes = fileBytes;
+          });
+          print('Bond Sheet File Bytes: ${selectedBondSheetFileBytes?.length}');
+        } else {
+          print('Failed to fetch file bytes or file is empty');
+        }
       } else {
         // No file selected
         setState(() {
@@ -1172,8 +1373,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
                       const SizedBox(height: 20),
                       // Upload Aadhaar Field
                       Row(
-                        children: [
-                          const Text(
+                        children: const [
+                          Text(
                             'Upload Aadhaar',
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
@@ -1198,8 +1399,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
                               ),
                             ),
                             validator: (value) {
-                              if (selectedAadhaarFileName == null ||
-                                  selectedAadhaarFileName!.isEmpty) {
+                              if (selectedAadhaarFileName!.isEmpty) {
                                 return 'Please select an Aadhaar file';
                               }
                               return null;

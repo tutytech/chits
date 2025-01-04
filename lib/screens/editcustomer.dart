@@ -201,18 +201,18 @@ class _CreateCustomerState extends State<EditCustomer> {
         ),
       );
 
-      if (selectedAadhaarFileBytes != null && selectedAadhaarFileName != null) {
+      if (selectedAadhaarFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadAadhar',
             selectedAadhaarFileBytes!,
-            filename: selectedAadhaarFileName!,
+            filename: selectedAadhaarFileName,
             contentType: MediaType(
                 'application', 'pdf'), // Update content type if needed
           ),
         );
       }
-      if (selectedVoterIdFileBytes != null && selectedVoterIdFileName != null) {
+      if (selectedVoterIdFileBytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'uploadVoterId',
@@ -438,38 +438,31 @@ class _CreateCustomerState extends State<EditCustomer> {
   }
 
   Future<void> _updateBranchFields(Map<String, dynamic> response) async {
-    // Log the entire response to check its structure
-    print("API Response: $response");
-
-    // Check if the response contains the customer details (i.e., not null or empty)
-
-    // Assuming the response is directly the customer data, not inside 'customerDetails'
-    Map<String, dynamic> branch = response;
-
-    _customerIdController.text = branch['customerId']?.toString() ?? '';
-    _nameController.text = branch['name']?.toString() ?? '';
-    _addressController.text = branch['address']?.toString() ?? '';
-    _phoneNoController.text = branch['phoneNo']?.toString() ?? '';
-    _aadharNoController.text = branch['aadharNo']?.toString() ?? '';
-    selectedBranchName = branch['branch']?.toString() ?? '';
-    selectedCenterName = branch['center']?.toString() ?? '';
-    selectedAadhaarFileName = branch['uploadAadhar']?.toString() ?? '';
-    selectedVoterIdFileName = branch['uploadVoterId']?.toString() ?? '';
-    selectedPanFileName = branch['uploadPan']?.toString() ?? '';
+    // Populate fields with API response data
+    _customerIdController.text = response['customerId']?.toString() ?? '';
+    _nameController.text = response['name']?.toString() ?? '';
+    _addressController.text = response['address']?.toString() ?? '';
+    _phoneNoController.text = response['phoneNo']?.toString() ?? '';
+    _aadharNoController.text = response['aadharNo']?.toString() ?? '';
+    selectedBranchName = response['branch']?.toString() ?? '';
+    selectedCenterName = response['center']?.toString() ?? '';
+    selectedAadhaarFileName = response['uploadAadhar']?.toString() ?? '';
+    selectedVoterIdFileName = response['uploadVoterId']?.toString() ?? '';
+    selectedPanFileName = response['uploadPan']?.toString() ?? '';
     selectedNomineeAadharFileName =
-        branch['uploadNomineeAadharCard']?.toString() ?? '';
+        response['uploadNomineeAadharCard']?.toString() ?? '';
     selectNomineeVoterIdFileName =
-        branch['uploadNomineeVoterId']?.toString() ?? '';
-    selectedNomineePanFileName = branch['uploadNomineePan']?.toString() ?? '';
-    selectedRationCardFileName = branch['uploadRationCard']?.toString() ?? '';
+        response['uploadNomineeVoterId']?.toString() ?? '';
+    selectedNomineePanFileName = response['uploadNomineePan']?.toString() ?? '';
+    selectedRationCardFileName = response['uploadRationCard']?.toString() ?? '';
     selectedpropertyTaxReceiptFileName =
-        branch['uploadPropertyTaxReceipt']?.toString() ?? '';
-    selectedEBBillFileName = branch['uploadEbBill']?.toString() ?? '';
-    selectedGasBillFileName = branch['uploadGasBill']?.toString() ?? '';
-    selectedChequeLeafFileName = branch['uploadChequeLeaf']?.toString() ?? '';
-    selectedBondSheetFileName = branch['uploadBondSheet']?.toString() ?? '';
-    controller.latitude.value = branch['latitude']?.toString() ?? '';
-    controller.longitude.value = branch['longitude']?.toString() ?? '';
+        response['uploadPropertyTaxReceipt']?.toString() ?? '';
+    selectedEBBillFileName = response['uploadEbBill']?.toString() ?? '';
+    selectedGasBillFileName = response['uploadGasBill']?.toString() ?? '';
+    selectedChequeLeafFileName = response['uploadChequeLeaf']?.toString() ?? '';
+    selectedBondSheetFileName = response['uploadBondSheet']?.toString() ?? '';
+    controller.latitude.value = response['latitude']?.toString() ?? '';
+    controller.longitude.value = response['longitude']?.toString() ?? '';
   }
 
   Future<void> fetchCustomers(String id) async {
@@ -486,12 +479,10 @@ class _CreateCustomerState extends State<EditCustomer> {
         final decodedResponse = json.decode(response.body);
 
         if (decodedResponse is Map) {
-          // The response is a map, extract customerDetails from it
           if (decodedResponse.containsKey('customerDetails')) {
             final List<dynamic> customerData =
                 decodedResponse['customerDetails'];
 
-            print('Customer Data List: $customerData');
             final customer = customerData.firstWhere(
               (customer) => customer['id'].toString() == id,
               orElse: () => null,
@@ -510,7 +501,7 @@ class _CreateCustomerState extends State<EditCustomer> {
             _showError('Response does not contain customerDetails.');
           }
         } else {
-          _showError('Received unexpected response format: $decodedResponse');
+          _showError('Unexpected response format.');
         }
       } else {
         throw Exception('Failed to fetch customers');
