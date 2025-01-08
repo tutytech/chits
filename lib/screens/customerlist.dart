@@ -30,7 +30,7 @@ class _BranchListPageState extends State<CustomerList> {
     super.initState();
     _branchListFuture = fetchCustomers();
     _searchController.addListener(() {
-      fetchCustomers();
+      _filterBranches(_searchController.text);
     });
   }
 
@@ -93,7 +93,6 @@ class _BranchListPageState extends State<CustomerList> {
     final Map<String, String> body = {'type': 'fetch'};
 
     try {
-      // Log request details
       print('Request URL: $_baseUrl');
       print('Request Body: $body');
 
@@ -103,7 +102,6 @@ class _BranchListPageState extends State<CustomerList> {
         body: body,
       );
 
-      // Log response details
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
@@ -112,7 +110,6 @@ class _BranchListPageState extends State<CustomerList> {
 
         if (decodedResponse['success'] == true &&
             decodedResponse['customerDetails'] is List) {
-          // Parse the list of customers
           return List<Map<String, dynamic>>.from(
               decodedResponse['customerDetails'].map((customer) {
             return {
@@ -124,10 +121,26 @@ class _BranchListPageState extends State<CustomerList> {
               'aadharNo': customer['aadharNo'] ?? 'N/A',
               'branch': customer['branch'] ?? 'N/A',
               'center': customer['center'] ?? 'N/A',
+              'latitude': customer['latitude'] ?? 'N/A',
+              'longitude': customer['longitude'] ?? 'N/A',
+              'uploadAadhar': customer['uploadAadhar'] ?? '',
+              'uploadvoterId': customer['uploadvoterId'] ?? '',
+              'uploadPan': customer['uploadPan'] ?? '',
+              'uploadNomineeAadharCard':
+                  customer['uploadNomineeAadharCard'] ?? '',
+              'uploadNomineeVoterId': customer['uploadNomineeVoterId'] ?? '',
+              'uploadNomineePan': customer['uploadNomineePan'] ?? '',
+              'uploadRationCard': customer['uploadRationCard'] ?? '',
+              'uploadbondsheet': customer['uploadbondsheet'] ?? '',
+              'uploadChequeLeaf': customer['uploadChequeLeaf'] ?? '',
+              'uploadGasBill': customer['uploadGasBill'] ?? '',
+              'uploadEbBill': customer['uploadEbBill'] ?? '',
+              'uploadPropertyTaxReceipt':
+                  customer['uploadPropertyTaxReceipt'] ?? '',
+              'customerPhoto': customer['customerPhoto'] ?? '',
             };
           }));
         } else if (decodedResponse['error'] != null) {
-          // Handle API error response
           throw Exception('API Error: ${decodedResponse['error']}');
         } else {
           throw Exception('Unexpected response format');
@@ -140,6 +153,31 @@ class _BranchListPageState extends State<CustomerList> {
       print('Error occurred: $e');
       throw Exception('Error: $e');
     }
+  }
+
+  Widget buildCustomerList(List<Map<String, dynamic>> customers) {
+    return ListView.builder(
+      itemCount: customers.length,
+      itemBuilder: (context, index) {
+        final customer = customers[index];
+        return Card(
+          child: ListTile(
+            title: Text(customer['name']),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Branch: ${customer['branch']}'),
+                Text('Center: ${customer['center']}'),
+                Text('Address: ${customer['address']}'),
+                Text('Phone: ${customer['phoneNo']}'),
+                Text('Aadhar: ${customer['aadharNo']}'),
+              ],
+            ),
+            isThreeLine: true,
+          ),
+        );
+      },
+    );
   }
 
   void _filterBranches(String query) {

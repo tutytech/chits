@@ -444,7 +444,7 @@ class _CreateCustomerState extends State<EditCustomer> {
     _addressController.text = response['address']?.toString() ?? '';
     _phoneNoController.text = response['phoneNo']?.toString() ?? '';
     _aadharNoController.text = response['aadharNo']?.toString() ?? '';
-    selectedBranchName = response['branch']?.toString() ?? '';
+    selectedBranchId = response['branch']?.toString() ?? '';
     selectedCenterName = response['center']?.toString() ?? '';
     selectedAadhaarFileName = response['uploadAadhar']?.toString() ?? '';
     selectedVoterIdFileName = response['uploadVoterId']?.toString() ?? '';
@@ -1267,25 +1267,29 @@ class _CreateCustomerState extends State<EditCustomer> {
 
                       // Branch Dropdown validation
                       DropdownButtonFormField<String>(
-                        value: selectedBranchId,
+                        value: branchData.any(
+                                (branch) => branch['id'] == selectedBranchId)
+                            ? selectedBranchId
+                            : null, // Ensure the value is valid or null
                         onChanged: (newValue) {
                           setState(() {
                             selectedBranchId = newValue;
                             selectedBranchName = branchData.firstWhere(
-                                    (branch) => branch['id'] == newValue)[
-                                'name']; // Fetch branch name
+                              (branch) => branch['id'] == newValue,
+                              orElse: () =>
+                                  {'name': ''}, // Fallback if no match is found
+                            )['name'];
                           });
                         },
                         items: branchData
                             .map((branch) => DropdownMenuItem<String>(
-                                  value: branch['id'], // Use branch ID as value
-                                  child: Text(
-                                      branch['name']!), // Display branch name
+                                  value: branch['id'],
+                                  child: Text(branch['name'] ??
+                                      ''), // Handle null name gracefully
                                 ))
                             .toList(),
                         decoration: InputDecoration(
                           labelText: 'Select Branch',
-                          labelStyle: const TextStyle(color: Colors.black),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -1300,11 +1304,15 @@ class _CreateCustomerState extends State<EditCustomer> {
                           return null;
                         },
                       ),
+
                       const SizedBox(height: 20),
 
                       // Center Dropdown validation
                       DropdownButtonFormField<String>(
-                        value: selectedCenterId,
+                        value: centerData.any(
+                                (center) => center['id'] == selectedCenterId)
+                            ? selectedCenterId
+                            : null, // Ensure value exists in centerData
                         onChanged: (newValue) {
                           setState(() {
                             selectedCenterId = newValue;
@@ -1328,6 +1336,7 @@ class _CreateCustomerState extends State<EditCustomer> {
                           ),
                         ),
                       ),
+
                       const SizedBox(height: 20),
                       // Upload Aadhaar Field
                       Row(
