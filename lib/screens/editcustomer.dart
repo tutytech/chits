@@ -16,6 +16,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EditCustomer extends StatefulWidget {
   final String? id; // Pass the branch ID to load specific data
@@ -136,6 +137,30 @@ class _CreateCustomerState extends State<EditCustomer> {
     } else {
       _showError('Invalid branch ID provided.');
     } // Fetch branches when the widget dependencies change
+  }
+
+  Future<void> _downloadFile(String fileUrl) async {
+    if (fileUrl.isEmpty) {
+      _showError('No file to download.');
+      return;
+    }
+
+    try {
+      // Launch the file URL in the browser to trigger a download
+      if (await canLaunch(fileUrl)) {
+        await launch(fileUrl);
+      } else {
+        _showError('Could not download the file.');
+      }
+    } catch (e) {
+      print('Download Error: $e');
+      _showError('Error while downloading the file.');
+    }
+  }
+
+  void _showSuccess(String message) {
+    print(
+        message); // You can display this message in a dialog or snackbar in your app
   }
 
   void _showError(String message) {
@@ -1401,8 +1426,7 @@ class _CreateCustomerState extends State<EditCustomer> {
                             enabled: false,
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.only(
-                                  left:
-                                      120), // Adjust the padding to fit the button
+                                  left: 120), // Adjust the padding
                               hintText: selectedVoterIdFileName,
                               filled: true,
                               fillColor: Colors.white,
@@ -1424,9 +1448,18 @@ class _CreateCustomerState extends State<EditCustomer> {
                               ),
                             ),
                           ),
+                          // Positioned Download button inside the text field
+                          Positioned(
+                            right: 8,
+                            child: IconButton(
+                              icon: const Icon(Icons.download),
+                              onPressed: () {
+                                _downloadFile(selectedVoterIdFileName);
+                              },
+                            ),
+                          ),
                         ],
                       ),
-
                       const SizedBox(height: 20),
                       const Text(
                         'Upload PAN',
