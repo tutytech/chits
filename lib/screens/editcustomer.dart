@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:chitfunds/controlller/home_controller.dart';
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/customerlist.dart';
@@ -146,12 +147,21 @@ class _CreateCustomerState extends State<EditCustomer> {
     }
 
     try {
-      // Launch the file URL in the browser to trigger a download
-      if (await canLaunch(fileUrl)) {
-        await launch(fileUrl);
-      } else {
-        _showError('Could not download the file.');
-      }
+      // Request permission to write to external storage (only for Android)
+      final directory = await getExternalStorageDirectory();
+      final fileName =
+          fileUrl.split('/').last; // Extract the file name from the URL
+      final savePath = '${directory!.path}/$fileName';
+
+      final taskId = await FlutterDownloader.enqueue(
+        url: fileUrl,
+        savedDir: directory.path,
+        fileName: fileName,
+        showNotification: true, // Show download notification
+        openFileFromNotification: true, // Open file when download is complete
+      );
+
+      print('Download started with taskId: $taskId');
     } catch (e) {
       print('Download Error: $e');
       _showError('Error while downloading the file.');
