@@ -28,9 +28,11 @@ import 'package:chitfunds/screens/stafflist.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
 void main() {
   FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
+  FlutterDownloader.initialize(debug: true);
   runApp(MyApp());
 }
 

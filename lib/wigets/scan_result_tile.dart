@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
@@ -20,11 +20,13 @@ class _ScanResultTileState extends State<ScanResultTile> {
 
   late StreamSubscription<BluetoothConnectionState>
       _connectionStateSubscription;
+  BluetoothCharacteristic? _writeCharacteristic;
 
   @override
   void initState() {
     super.initState();
 
+    // Listen to the connection state of the device
     _connectionStateSubscription =
         widget.result.device.connectionState.listen((state) {
       _connectionState = state;
@@ -40,30 +42,63 @@ class _ScanResultTileState extends State<ScanResultTile> {
     super.dispose();
   }
 
-  String getNiceHexArray(List<int> bytes) {
-    return '[${bytes.map((i) => i.toRadixString(16).padLeft(2, '0')).join(', ')}]';
-  }
+  Future<void> connectAndPrint() async {
+    try {
+      // Connect to the device
+      await widget.result.device.connect();
+      print("Connected to device: ${widget.result.device.remoteId.str}");
 
-  String getNiceManufacturerData(List<List<int>> data) {
-    return data
-        .map((val) => '${getNiceHexArray(val)}')
-        .join(', ')
-        .toUpperCase();
-  }
+      // Discover services
+      List<BluetoothService> services =
+          await widget.result.device.discoverServices();
 
-  String getNiceServiceData(Map<Guid, List<int>> data) {
-    return data.entries
-        .map((v) => '${v.key}: ${getNiceHexArray(v.value)}')
-        .join(', ')
-        .toUpperCase();
-  }
+      // Find the write characteristic
+      for (BluetoothService service in services) {
+        for (BluetoothCharacteristic characteristic
+            in service.characteristics) {
+          if (characteristic.properties.write) {
+            _writeCharacteristic = characteristic;
+            break;
+          }
+        }
+      }
 
-  String getNiceServiceUuids(List<Guid> serviceUuids) {
-    return serviceUuids.join(', ').toUpperCase();
-  }
+      if (_writeCharacteristic != null) {
+        // Prepare receipt data as a list of lines
+        List<String> receiptLines = [
+          "TutyTech.com", // Header
+          "123 Market Street, Cityville, 12345",
+          "Email: email@example.com",
+          "Phone: (123) 456-7890",
+          "------------------------------------",
+          "Receipt No: 12345",
+          "Receipt Date: 10-Jan-2025",
+          "Customer ID: CUST001",
+          "Customer Name: John Doe",
+          "Transaction Type: Purchase",
+          "Amount: \$150.00",
+          "------------------------------------",
+          "Thank you for your business!" // Footer
+        ];
 
-  bool get isConnected {
-    return _connectionState == BluetoothConnectionState.connected;
+        // Send each line separately to the printer
+        for (String line in receiptLines) {
+          String lineWithBreak = line + "\n"; // Add line break
+          await _writeCharacteristic!.write(utf8.encode(lineWithBreak));
+          await Future.delayed(
+              Duration(milliseconds: 100)); // Small delay for processing
+          print("Print data sent: $line");
+        }
+      } else {
+        print("No write characteristic found!");
+      }
+    } catch (e) {
+      print("Error while printing: $e");
+    } finally {
+      // Disconnect from the device
+      await widget.result.device.disconnect();
+      print("Disconnected from device: ${widget.result.device.remoteId.str}");
+    }
   }
 
   Widget _buildTitle(BuildContext context) {
@@ -89,39 +124,21 @@ class _ScanResultTileState extends State<ScanResultTile> {
 
   Widget _buildConnectButton(BuildContext context) {
     return ElevatedButton(
-      child: isConnected ? const Text('OPEN') : const Text('CONNECT'),
+      child: isConnected ? const Text('PRINT') : const Text('CONNECT'),
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),
-      onPressed:
-          (widget.result.advertisementData.connectable) ? widget.onTap : null,
+      onPressed: () {
+        if (widget.result.advertisementData.connectable) {
+          connectAndPrint();
+        }
+      },
     );
   }
 
-  Widget _buildAdvRow(BuildContext context, String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(title, style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(
-            width: 12.0,
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.apply(color: Colors.black),
-              softWrap: true,
-            ),
-          ),
-        ],
-      ),
-    );
+  bool get isConnected {
+    return _connectionState == BluetoothConnectionState.connected;
   }
 
   @override
@@ -132,21 +149,13 @@ class _ScanResultTileState extends State<ScanResultTile> {
       leading: Text(widget.result.rssi.toString()),
       trailing: _buildConnectButton(context),
       children: <Widget>[
-        if (adv.advName.isNotEmpty) _buildAdvRow(context, 'Name', adv.advName),
+        if (adv.advName.isNotEmpty) Text("Name: ${adv.advName}"),
         if (adv.txPowerLevel != null)
-          _buildAdvRow(context, 'Tx Power Level', '${adv.txPowerLevel}'),
+          Text("Tx Power Level: ${adv.txPowerLevel}"),
         if ((adv.appearance ?? 0) > 0)
-          _buildAdvRow(
-              context, 'Appearance', '0x${adv.appearance!.toRadixString(16)}'),
-        if (adv.msd.isNotEmpty)
-          _buildAdvRow(
-              context, 'Manufacturer Data', getNiceManufacturerData(adv.msd)),
+          Text('Appearance: 0x${adv.appearance!.toRadixString(16)}'),
         if (adv.serviceUuids.isNotEmpty)
-          _buildAdvRow(
-              context, 'Service UUIDs', getNiceServiceUuids(adv.serviceUuids)),
-        if (adv.serviceData.isNotEmpty)
-          _buildAdvRow(
-              context, 'Service Data', getNiceServiceData(adv.serviceData)),
+          Text('Service UUIDs: ${adv.serviceUuids.join(', ')}'),
       ],
     );
   }

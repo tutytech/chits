@@ -38,6 +38,7 @@ dependencies:
   pdf: ^3.8.4
   pdf_image_renderer: ^1.0.1
   flutter_downloader: ^1.11.8
+  esc_pos_utils: ^1.1.0
 
 dev_dependencies:
   flutter_test:
