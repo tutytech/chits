@@ -10,6 +10,7 @@ import 'package:chitfunds/screens/customerlist.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/screens/editcompany.dart';
+import 'package:chitfunds/screens/editsms.dart';
 import 'package:chitfunds/screens/loan.dart';
 import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/stafflist.dart';
@@ -27,6 +28,7 @@ class CustomDrawer extends StatefulWidget {
 class _CustomDrawerState extends State<CustomDrawer> {
   final List<Map<String, dynamic>> _branches = [];
   String? companyId;
+  String? id;
 
   @override
   void initState() {
@@ -197,11 +199,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 ListTile(
                   title: const Text('SMS Settings'),
                   onTap: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //       builder: (context) => SMSSettingsPage()),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const EditSmsSettings()),
+                    );
                   },
                 ),
               ],

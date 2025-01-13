@@ -1,21 +1,21 @@
 import 'dart:convert';
-
+import 'dart:math';
 import 'package:chitfunds/screens/createcenter.dart';
-import 'package:chitfunds/screens/editsms.dart';
 import 'package:flutter/material.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SmsSettings extends StatefulWidget {
-  const SmsSettings({Key? key}) : super(key: key);
+class EditSmsSettings extends StatefulWidget {
+  final String? id;
+  const EditSmsSettings({Key? key, this.id}) : super(key: key);
 
   @override
   _SmsSettingsState createState() => _SmsSettingsState();
 }
 
-class _SmsSettingsState extends State<SmsSettings> {
+class _SmsSettingsState extends State<EditSmsSettings> {
   final TextEditingController _branchNameController = TextEditingController();
   List<Map<String, String>> branchData = [];
   final TextEditingController BranchNameController = TextEditingController();
@@ -28,6 +28,7 @@ class _SmsSettingsState extends State<SmsSettings> {
   String? selectedBranchName;
   String? selectedBranchId;
   String? selectedTiming;
+  bool isLoading = true;
   String? selectedFieldOfficer;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -37,82 +38,92 @@ class _SmsSettingsState extends State<SmsSettings> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _fetchBranches();
+
+    if (widget.id != null) {
+      fetchSms(widget.id!);
+    } else {
+      _showError('Invalid branch ID provided.');
+    }
   }
 
-  Future<void> _createsms() async {
-    if (!(_formKey.currentState?.validate() ?? true)) {
-      return; // Exit the method if validation fails
-    }
+  void _updateBranchFields(Map<String, dynamic> branch) {
+    presmsController.text = branch['presmslink'] ?? '';
+    midsmsController.text = branch['midsmslink']?.toString() ?? '';
+    postsmsController.text = branch['postsmslink'] ?? '';
+    selectedBranchName = branch['branch']?.toString() ?? '';
+    print('---------$selectedBranchName');
 
-    final String apiUrl = 'https://chits.tutytech.in/sms.php';
+    // Set the selected value in the dropdown
+    setState(() {
+      selectedBranch =
+          selectedBranchName; // Assuming this variable holds the selected branch value.
+    });
+  }
 
-    // Prepare request body
-    final body = {
-      'type': 'insert',
-      'presmslink': presmsController.text,
-      'midsmslink': midsmsController.text,
-      'postsmslink': postsmsController.text,
-      'branch': selectedBranchName,
-    };
+  Future<void> fetchSms(String id) async {
+    const String _baseUrl = 'https://chits.tutytech.in/sms.php';
+    final requestBody = {'type': 'select'};
 
     try {
-      print('Request URL: $apiUrl');
-      print('Request Body: $body');
+      // Print the request URL and body for debugging
+      print('Request URL: $_baseUrl');
+      print('Request Body: $requestBody');
 
       final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body,
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: requestBody,
       );
 
+      // Print the response status code and body for debugging
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData[0]['id'] != null) {
-          final int smsId = responseData[0]['id'];
+        final List<dynamic> smsData = json.decode(response.body);
 
-          // Save SMS ID and selectedBranchName to SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('smsId', smsId.toString());
-          await prefs.setString('branchName', selectedBranchName.toString());
+        // Find the SMS entry with the matching ID
+        final smsEntry = smsData.firstWhere(
+          (sms) => sms['id'].toString() == id,
+          orElse: () => null,
+        );
 
-          // Debug saved values
-          final savedSmsId = prefs.getString('smsId');
-          final savedBranchName = prefs.getString('branchName');
-          print('Saved SMS ID: $savedSmsId');
-          print('Saved Branch Name: $savedBranchName');
+        if (smsEntry != null) {
+          // Update the branch fields using the fetched SMS entry
+          _updateBranchFields(smsEntry);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('SMS created successfully!')),
-          );
-
-          await _fetchBranches();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EditSmsSettings(id: smsId.toString()),
-            ),
-          );
+          // Extract branch data from the SMS entry
+          final branchName = smsEntry['branch']?.toString();
+          if (branchName != null) {
+            // Set the branch in the dropdown
+            setState(() {
+              selectedBranch = branchName;
+              selectedBranchName = branchName;
+            });
+            print('Selected Branch: $selectedBranchName');
+          } else {
+            print('Branch not found in the SMS entry.');
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${responseData[0]['error']}')),
-          );
+          _showError('No SMS entry found with ID $id.');
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create branch.')),
-        );
+        _showError(
+            'Failed to fetch SMS data. Status code: ${response.statusCode}');
       }
     } catch (e) {
+      // Print the error for debugging
       print('Error occurred: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showError('An error occurred: $e');
     }
+  }
+
+  void _showError(String message) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    });
   }
 
   Future<void> _fetchBranches() async {
@@ -125,13 +136,16 @@ class _SmsSettingsState extends State<SmsSettings> {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          'type': 'select',
+          'type': 'select', // This fetches the existing branches
         },
       );
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
+
+        // Assuming the responseData is a list of branches
         List<Map<String, String>> branches = [];
+
         for (var branch in responseData) {
           if (branch['id'] != null && branch['branchname'] != null) {
             branches.add({
@@ -141,9 +155,38 @@ class _SmsSettingsState extends State<SmsSettings> {
           }
         }
 
-        setState(() {
-          branchData = branches;
-        });
+        if (branches.isNotEmpty) {
+          // Retrieve last saved selectedBranchId
+          final prefs = await SharedPreferences.getInstance();
+          String? lastSavedBranchId = prefs.getString('selectedBranchId');
+
+          setState(() {
+            branchData = branches;
+
+            if (lastSavedBranchId != null &&
+                branches.any((branch) => branch['id'] == lastSavedBranchId)) {
+              // Set the branch to the last saved value
+              selectedBranchId = lastSavedBranchId;
+              selectedBranchName = branches.firstWhere(
+                  (branch) => branch['id'] == lastSavedBranchId)['name']!;
+            } else {
+              // Default to the first branch if no saved branch is found
+              selectedBranchId = branches[0]['id'];
+              selectedBranchName = branches[0]['name']!;
+            }
+          });
+
+          print('Branch Data: $branchData'); // Debug branch data
+          print(
+              'Selected Branch: ID = $selectedBranchId, Name = $selectedBranchName'); // Debug selected branch
+        } else {
+          setState(() {
+            branchData = [];
+            selectedBranchId = null;
+            selectedBranchName = '';
+          });
+          print('No branches available.');
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to fetch branches.')),
@@ -153,6 +196,55 @@ class _SmsSettingsState extends State<SmsSettings> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
+    }
+  }
+
+  Future<void> _updateSmsData() async {
+    print('---------------${widget.id}');
+    try {
+      final url = Uri.parse('https://chits.tutytech.in/sms.php');
+
+      final requestBody = {
+        'type': 'update',
+        'id': widget.id.toString(),
+        'presmslink': presmsController.text.trim(),
+        'midsmslink': midsmsController.text.trim(),
+        'postsmslink': postsmsController.text.trim(),
+        'branch': selectedBranchName,
+      };
+
+      // Debugging prints
+      debugPrint('Request URL: $url');
+      debugPrint('Request Body: ${json.encode(requestBody)}');
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type':
+              'application/x-www-form-urlencoded', // Ensure the server expects JSON
+        },
+        body: requestBody, // Send as JSON
+      );
+
+      debugPrint('Response Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        if (result[0]['status'] == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Scheme updated successfully!')),
+          );
+          Navigator.pop(context, true); // Return to the previous screen
+        } else {
+          _showError(result[0]['message'] ?? 'Failed to update scheme.');
+        }
+      } else {
+        _showError('Failed to update scheme: ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('Error: $error');
+      _showError('An error occurred: $error');
     }
   }
 
@@ -258,7 +350,8 @@ class _SmsSettingsState extends State<SmsSettings> {
 
                       // Select Branch dropdown
                       DropdownButtonFormField<String>(
-                        value: selectedBranchId,
+                        value:
+                            selectedBranchId, // Automatically selects the branch if selectedBranchId is set
                         onChanged: (newValue) {
                           setState(() {
                             selectedBranchId = newValue;
@@ -274,7 +367,6 @@ class _SmsSettingsState extends State<SmsSettings> {
                             .toList(),
                         decoration: InputDecoration(
                           labelText: 'Select Branch',
-                          labelStyle: const TextStyle(color: Colors.black),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -289,6 +381,7 @@ class _SmsSettingsState extends State<SmsSettings> {
                           return null;
                         },
                       ),
+
                       const SizedBox(height: 20),
 
                       // Note Section
@@ -317,7 +410,7 @@ class _SmsSettingsState extends State<SmsSettings> {
                                 onPressed: () {
                                   if (_formKey.currentState?.validate() ??
                                       false) {
-                                    _createsms();
+                                    _updateSmsData();
                                   }
                                 },
                                 child: const Text(

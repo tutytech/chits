@@ -95,4 +95,26 @@ class PreferencesUtils {
     final prefs = await _getPrefs();
     await prefs.clear();
   }
+
+  static Future<void> saveSmsId(String smsId) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('smsId', smsId);
+  }
+
+  // Get SMS ID
+  static Future<String?> getSmsId() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('smsId');
+  }
+
+  static Future<void> saveSmsbranchdrop(String branchName) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('branchName', branchName);
+  }
+
+  // Get SMS ID
+  static Future<String?> getSmsbranchdrop() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('branchName');
+  }
 }
