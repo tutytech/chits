@@ -30,32 +30,32 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-
-    // Save the data locally using SharedPreferences
-    await prefs.setString('companyname', _companyNameController.text);
-    await prefs.setString('address', _gstinController.text);
-    await prefs.setString('mailid', _emailController.text);
-    await prefs.setString('phoneno', _phoneNumberController.text);
-
-    final String? staffId = prefs.getString('staffId');
-
     try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Prepare data for the request
+      final String companyName = _companyNameController.text;
+      final String address = _gstinController.text;
+      final String email = _emailController.text;
+      final String phoneNumber = _phoneNumberController.text;
+      final String? staffId = prefs.getString('staffId');
+
       final uri = Uri.parse('https://chits.tutytech.in/company.php');
       final requestBody = {
         'type': 'insert',
-        'companyname': _companyNameController.text,
-        'address': _gstinController.text,
-        'phoneno': _phoneNumberController.text,
-        'mailid': _emailController.text,
+        'companyname': companyName,
+        'address': address,
+        'phoneno': phoneNumber,
+        'mailid': email,
         'entryid': staffId, // Replace this with the actual value
         'entrydate': DateTime.now().toIso8601String().split('T').first,
       };
 
-      // Print request URL and body
+      // Print request details
       print('Request URL: $uri');
       print('Request Body: $requestBody');
 
+      // Make the API call
       final response = await http.post(
         uri,
         body: requestBody,
@@ -73,11 +73,20 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
           // Fetch the generated company ID (it's an integer)
           final int companyId = responseData[0]['id'];
 
-          // Convert the integer companyId to string before saving it
+          // Save company data to SharedPreferences
+          await prefs.setString('companyname', companyName);
+          await prefs.setString('address', address);
+          await prefs.setString('mailid', email);
+          await prefs.setString('phoneno', phoneNumber);
           await prefs.setString('companyId', companyId.toString());
 
-          // Print saved companyId to confirm
-          print('Saved Company ID: ${companyId.toString()}');
+          // Print confirmation of saved data
+          print('Saved Company Data:');
+          print('Company Name: $companyName');
+          print('Address: $address');
+          print('Email: $email');
+          print('Phone Number: $phoneNumber');
+          print('Company ID: ${companyId.toString()}');
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Company created successfully!')),
