@@ -43,6 +43,7 @@ class _CreateCustomerState extends State<EditCustomer> {
   final TextEditingController _longitudeController = TextEditingController();
 
   String? selectedBranch;
+  String? selectedCenter;
   String? selectedDayOrder;
   String? selectedTiming;
   String? selectedFieldOfficer;
@@ -121,15 +122,15 @@ class _CreateCustomerState extends State<EditCustomer> {
   final TextEditingController _uploadGasBillPath = TextEditingController();
   final TextEditingController _uploadChequeLeafPath = TextEditingController();
   final TextEditingController _uploadBondSheetPath = TextEditingController();
-  String? selectedCenter;
+
   final ImagePicker _picker = ImagePicker();
   bool isLoading = true;
   List<String> centers = [];
   File? _image;
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // super.didChangeDependencies();
+  void initState() {
+    super.initState();
+
     _fetchBranches();
     _fetchCenters();
     print('widget.id: ${widget.id}');
@@ -179,229 +180,6 @@ class _CreateCustomerState extends State<EditCustomer> {
     );
   }
 
-  Future<void> _createCustomer() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? staffId = prefs.getString('staffId');
-    print('-------------$staffId');
-    if (_formKey.currentState!.validate()) {
-      return;
-    }
-    final String apiUrl = 'https://chits.tutytech.in/customer.php';
-
-    if (_image == null) {
-      print("No image selected.");
-      _showSnackBar('Please select an image.');
-      return;
-    }
-    try {
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse(apiUrl),
-      );
-
-      request.fields['type'] = 'insert';
-      request.fields['customerId'] = _customerIdController.text.trim();
-      request.fields['name'] = _nameController.text.trim();
-      request.fields['address'] = _addressController.text.trim();
-      request.fields['phoneNo'] = _phoneNoController.text.trim();
-      request.fields['aadharNo'] =
-          _aadharNoController.text.trim(); // Ensure this is passed as a string
-      request.fields['branch'] = selectedBranchName ?? '';
-      request.fields['center'] = selectedCenterName ?? '';
-
-      request.fields['uploadAadhar'] = selectedAadhaarFileName ?? '';
-      request.fields['uploadVoterId'] = selectedVoterIdFileName ?? '';
-      request.fields['uploadPan'] = selectedPanFileName ?? '';
-      request.fields['uploadNomineeAadharCard'] =
-          selectedNomineeAadharFileName ?? '';
-      request.fields['uploadNomineeVoterId'] =
-          selectNomineeVoterIdFileName ?? '';
-      request.fields['uploadNomineePan'] = selectedNomineePanFileName ?? '';
-      request.fields['uploadRationCard'] = selectedRationCardFileName ?? '';
-      request.fields['uploadPropertyTaxReceipt'] =
-          selectedpropertyTaxReceiptFileName ?? '';
-      request.fields['uploadEbBill'] = selectedEBBillFileName ?? '';
-      request.fields['uploadGasBill'] = selectedGasBillFileName ?? '';
-      request.fields['uploadChequeLeaf'] = selectedChequeLeafFileName ?? '';
-      request.fields['uploadBondSheet'] = selectedBondSheetFileName ?? '';
-      request.fields['latitude'] = controller.latitude.value;
-      request.fields['longitude'] = controller.longitude.value;
-      request.fields['entryid'] = staffId.toString(); // Add image file
-      request.files.add(
-        http.MultipartFile.fromBytes(
-          'customerPhoto',
-          _imageBytes!,
-          filename: _imageFileName ?? 'customer_photo.jpg',
-          contentType: MediaType('image', 'jpeg'),
-        ),
-      );
-
-      if (selectedAadhaarFileBytes != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadAadhar',
-            selectedAadhaarFileBytes!,
-            filename: selectedAadhaarFileName,
-            contentType: MediaType(
-                'application', 'pdf'), // Update content type if needed
-          ),
-        );
-      }
-      if (selectedVoterIdFileBytes != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadVoterId',
-            selectedVoterIdFileBytes!,
-            filename: selectedVoterIdFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectedPanFileBytes != null && selectedPanFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadPan',
-            selectedPanFileBytes!,
-            filename: selectedPanFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectedNomineeAadharFileBytes != null &&
-          selectedNomineeAadharFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadNomineeAadharCard',
-            selectedNomineeAadharFileBytes!,
-            filename: selectedNomineeAadharFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectNomineeVoterIdFileBytes != null &&
-          selectNomineeVoterIdFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadNomineeVoterId',
-            selectNomineeVoterIdFileBytes!,
-            filename: selectNomineeVoterIdFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectedNomineePanFileBytes != null &&
-          selectedNomineePanFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadNomineePan',
-            selectedNomineePanFileBytes!,
-            filename: selectedNomineePanFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectedRationCardFileBytes != null &&
-          selectedRationCardFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadRationCard',
-            selectedRationCardFileBytes!,
-            filename: selectedRationCardFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectedpropertyTaxReceiptFileBytes != null &&
-          selectedpropertyTaxReceiptFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadPropertyTaxReceipt',
-            selectedpropertyTaxReceiptFileBytes!,
-            filename: selectedpropertyTaxReceiptFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectedEBBillFileBytes != null && selectedEBBillFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadEbBill',
-            selectedEBBillFileBytes!,
-            filename: selectedEBBillFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectedGasBillFileBytes != null && selectedGasBillFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadGasBill',
-            selectedGasBillFileBytes!,
-            filename: selectedGasBillFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectedChequeLeafFileBytes != null &&
-          selectedChequeLeafFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadChequeLeaf',
-            selectedChequeLeafFileBytes!,
-            filename: selectedChequeLeafFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-      if (selectedBondSheetFileBytes != null &&
-          selectedBondSheetFileName != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'uploadBondSheet',
-            selectedBondSheetFileBytes!,
-            filename: selectedBondSheetFileName!,
-            contentType: MediaType('application', 'pdf'),
-          ),
-        );
-      }
-
-      // Log request details for debugging
-      print("Request URL: ${request.url}");
-      print("Request Fields: ${request.fields}");
-      print("Request Files: ${request.files}");
-
-      // Send the request
-      final response = await request.send();
-
-      // Handle response
-      if (response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
-        print("Raw Response: $responseBody");
-
-        if (responseBody.isNotEmpty) {
-          print("Customer created successfully: $responseBody");
-          _showSnackBar('Customer created successfully!');
-        } else {
-          print(
-              "Customer created successfully, but no response body returned.");
-          _showSnackBar('Failed to create customer.');
-        }
-      } else {
-        print("Error creating customer: ${response.reasonPhrase}");
-        _showSnackBar('Failed to create customer.');
-      }
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BranchListPage(),
-        ),
-      );
-    } catch (e) {
-      print("Exception: $e");
-      _showSnackBar('An error occurred: $e');
-    }
-  }
-
   Future<void> _updateSchemeData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = prefs.getString('staffId');
@@ -417,24 +195,23 @@ class _CreateCustomerState extends State<EditCustomer> {
         'address': _addressController.text.trim(),
         'phoneNo': _phoneNoController.text.trim(),
         'aadharNo': _aadharNoController.text.trim(),
-        'branch': selectedBranchName ?? '',
-
-        'center': selectedCenterName ?? '',
-        // 'uploadAadhar': selectedAadhaarFileName ?? '',
-        // 'uploadVoterId': selectedVoterIdFileName ?? '',
-        // 'uploadPan': selectedPanFileName ?? '',
-        // 'uploadNomineeAadharCard': selectedNomineeAadharFileName ?? '',
-        // 'uploadNomineeVoterId': selectNomineeVoterIdFileName ?? '',
-        // 'uploadNomineePan': selectedNomineePanFileName ?? '',
-        // 'uploadRationCard': selectedRationCardFileName ?? '',
-        // 'uploadPropertyTaxReceipt': selectedpropertyTaxReceiptFileName ?? '',
-        // 'uploadEbBill': selectedEBBillFileName ?? '',
-        // 'uploadGasBill': selectedGasBillFileName ?? '',
-        // 'uploadChequeLeaf': selectedChequeLeafFileName ?? '',
-        // 'latitude': selectedBondSheetFileName ?? '',
-        // 'uploadBondSheet': controller.latitude.value,
-        // 'uploadBondSheet': controller.longitude.value,
-        // 'uploadBondSheet': staffId.toString(),
+        'branch': selectedBranchId ?? '',
+        'center': selectedCenterId ?? '',
+        'uploadAadhar': selectedAadhaarFileName ?? '',
+        'uploadVoterId': selectedVoterIdFileName ?? '',
+        'uploadPan': selectedPanFileName ?? '',
+        'uploadNomineeAadharCard': selectedNomineeAadharFileName ?? '',
+        'uploadNomineeVoterId': selectNomineeVoterIdFileName ?? '',
+        'uploadNomineePan': selectedNomineePanFileName ?? '',
+        'uploadRationCard': selectedRationCardFileName ?? '',
+        'uploadPropertyTaxReceipt': selectedpropertyTaxReceiptFileName ?? '',
+        'uploadEbBill': selectedEBBillFileName ?? '',
+        'uploadGasBill': selectedGasBillFileName ?? '',
+        'uploadChequeLeaf': selectedChequeLeafFileName ?? '',
+        'latitude': controller.latitude.value,
+        'longitude': controller.longitude.value,
+        'uploadBondSheet': selectedBondSheetFileName ?? '',
+        'entryid': staffId.toString(),
       };
 
       // Debugging prints
@@ -474,13 +251,33 @@ class _CreateCustomerState extends State<EditCustomer> {
 
   Future<void> _updateBranchFields(Map<String, dynamic> response) async {
     // Populate fields with API response data
+
     _customerIdController.text = response['customerId']?.toString() ?? '';
     _nameController.text = response['name']?.toString() ?? '';
     _addressController.text = response['address']?.toString() ?? '';
     _phoneNoController.text = response['phoneNo']?.toString() ?? '';
     _aadharNoController.text = response['aadharNo']?.toString() ?? '';
-    selectedBranchId = response['branch']?.toString() ?? '';
-    selectedCenterName = response['center']?.toString() ?? '';
+
+    setState(() {
+      selectedBranchName = response['branch']?.toString() ?? '';
+      selectedBranch =
+          selectedBranchName; // Sync selectedBranch with the dropdown
+    });
+
+    setState(() {
+      selectedCenterName = response['center']?.toString() ?? '';
+      selectedCenter =
+          selectedCenterName; // Sync selectedBranch with the dropdown
+    });
+    print('$selectedBranch');
+    print('$selectedCenter');
+    // Update other fields (as required)
+    if (!branchData.any((branch) => branch['id'] == selectedBranchId)) {
+      selectedBranchId = null;
+    }
+    if (!centerData.any((center) => center['id'] == selectedCenterId)) {
+      selectedCenterId = null;
+    }
     selectedAadhaarFileName = response['uploadAadhar']?.toString() ?? '';
     selectedVoterIdFileName = response['uploadVoterId']?.toString() ?? '';
     selectedPanFileName = response['uploadPan']?.toString() ?? '';
@@ -624,7 +421,7 @@ class _CreateCustomerState extends State<EditCustomer> {
           setState(() {
             centerData = centers; // Update the state with center data
           });
-
+          print('CenterData--------------------------$centerData');
           print('Center Data: $centers');
         }
       } else {
@@ -742,6 +539,7 @@ class _CreateCustomerState extends State<EditCustomer> {
         setState(() {
           branchData = branches;
         });
+        print('BranchData: -------------------------$branchData');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to fetch branches.')),
@@ -1301,26 +1099,20 @@ class _CreateCustomerState extends State<EditCustomer> {
                       const SizedBox(height: 20),
 
                       // Branch Dropdown validation
+                      // Branch Dropdown
                       DropdownButtonFormField<String>(
-                        value: branchData.any(
-                                (branch) => branch['id'] == selectedBranchId)
-                            ? selectedBranchId
-                            : null, // Ensure the value is valid or null
+                        value: selectedBranch,
                         onChanged: (newValue) {
                           setState(() {
                             selectedBranchId = newValue;
                             selectedBranchName = branchData.firstWhere(
-                              (branch) => branch['id'] == newValue,
-                              orElse: () =>
-                                  {'name': ''}, // Fallback if no match is found
-                            )['name'];
+                                (branch) => branch['id'] == newValue)['name'];
                           });
                         },
                         items: branchData
                             .map((branch) => DropdownMenuItem<String>(
-                                  value: branch['id'],
-                                  child: Text(branch['name'] ??
-                                      ''), // Handle null name gracefully
+                                  value: branch['name'],
+                                  child: Text(branch['name']!),
                                 ))
                             .toList(),
                         decoration: InputDecoration(
@@ -1342,23 +1134,21 @@ class _CreateCustomerState extends State<EditCustomer> {
 
                       const SizedBox(height: 20),
 
-                      // Center Dropdown validation
+// Center Dropdown
                       DropdownButtonFormField<String>(
-                        value: centerData.any(
-                                (center) => center['id'] == selectedCenterId)
-                            ? selectedCenterId
-                            : null, // Ensure value exists in centerData
+                        value: selectedCenter,
+                        // Ensure the value matches or is null
                         onChanged: (newValue) {
                           setState(() {
                             selectedCenterId = newValue;
-                            selectedCenterName = centerData.firstWhere(
+                            selectedBranchName = centerData.firstWhere(
                                 (center) => center['id'] == newValue)['name'];
                           });
                         },
                         items: centerData
                             .map((center) => DropdownMenuItem<String>(
-                                  value: center['id'],
-                                  child: Text(center['name']!),
+                                  value: center['name'],
+                                  child: Text(center['name'] ?? ''),
                                 ))
                             .toList(),
                         decoration: InputDecoration(
@@ -1370,8 +1160,13 @@ class _CreateCustomerState extends State<EditCustomer> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a center';
+                          }
+                          return null;
+                        },
                       ),
-
                       const SizedBox(height: 20),
                       // Upload Aadhaar Field
                       Row(

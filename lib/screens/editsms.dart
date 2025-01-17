@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:chitfunds/screens/createcenter.dart';
+import 'package:chitfunds/screens/saveddatashared.dart';
 import 'package:flutter/material.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
@@ -35,8 +36,8 @@ class _SmsSettingsState extends State<EditSmsSettings> {
   final GlobalKey<FormState> _formKey =
       GlobalKey<FormState>(); // Added form key
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
     _fetchBranches();
 
     if (widget.id != null) {
@@ -47,17 +48,20 @@ class _SmsSettingsState extends State<EditSmsSettings> {
   }
 
   void _updateBranchFields(Map<String, dynamic> branch) {
-    presmsController.text = branch['presmslink'] ?? '';
+    // Update text controllers
+    presmsController.text = branch['presmslink']?.toString() ?? '';
     midsmsController.text = branch['midsmslink']?.toString() ?? '';
-    postsmsController.text = branch['postsmslink'] ?? '';
-    selectedBranchName = branch['branch']?.toString() ?? '';
-    print('---------$selectedBranchName');
+    postsmsController.text = branch['postsmslink']?.toString() ?? '';
 
-    // Set the selected value in the dropdown
+    // Update selectedBranchName and selectedBranch inside setState
     setState(() {
+      selectedBranchName = branch['branch']?.toString() ?? '';
       selectedBranch =
-          selectedBranchName; // Assuming this variable holds the selected branch value.
+          selectedBranchName; // Sync selectedBranch with the dropdown
     });
+
+    // Debugging output
+    print('Selected Branch Name: $selectedBranchName');
   }
 
   Future<void> fetchSms(String id) async {
@@ -126,24 +130,32 @@ class _SmsSettingsState extends State<EditSmsSettings> {
     });
   }
 
+  // Get the saved branch (ID and Name)
+
   Future<void> _fetchBranches() async {
+    print('Starting branch fetch...');
     final String apiUrl = 'https://chits.tutytech.in/branch.php';
 
     try {
+      print('Making API request...');
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          'type': 'select', // This fetches the existing branches
+          'type': 'select', // Fetch existing branches
         },
       );
 
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
+        print('Processing response...');
         final responseData = json.decode(response.body);
 
-        // Assuming the responseData is a list of branches
+        // Assuming responseData is a list of branches
         List<Map<String, String>> branches = [];
 
         for (var branch in responseData) {
@@ -155,44 +167,52 @@ class _SmsSettingsState extends State<EditSmsSettings> {
           }
         }
 
+        print('Branches Parsed: $branches');
+
         if (branches.isNotEmpty) {
-          // Retrieve last saved selectedBranchId
-          final prefs = await SharedPreferences.getInstance();
-          String? lastSavedBranchId = prefs.getString('selectedBranchId');
+          print('Branches fetched successfully.');
+
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          final String? lastSavedBranchId = prefs.getString('branchId');
+          final String? lastSavedBranchName = prefs.getString('branchName');
+          print('--------------------$lastSavedBranchId');
+          print('--------------------$lastSavedBranchName');
 
           setState(() {
             branchData = branches;
 
             if (lastSavedBranchId != null &&
                 branches.any((branch) => branch['id'] == lastSavedBranchId)) {
-              // Set the branch to the last saved value
               selectedBranchId = lastSavedBranchId;
               selectedBranchName = branches.firstWhere(
-                  (branch) => branch['id'] == lastSavedBranchId)['name']!;
+                (branch) => branch['id'] == lastSavedBranchId,
+                orElse: () => {'id': '', 'name': ''},
+              )['name']!;
             } else {
-              // Default to the first branch if no saved branch is found
+              print('No saved branch found, defaulting to first branch...');
               selectedBranchId = branches[0]['id'];
               selectedBranchName = branches[0]['name']!;
             }
           });
 
-          print('Branch Data: $branchData'); // Debug branch data
           print(
-              'Selected Branch: ID = $selectedBranchId, Name = $selectedBranchName'); // Debug selected branch
+              'Selected Branch: ID = $selectedBranchId, Name = $selectedBranchName');
         } else {
+          print('No branches available in the response.');
           setState(() {
             branchData = [];
             selectedBranchId = null;
             selectedBranchName = '';
           });
-          print('No branches available.');
         }
       } else {
+        print('Failed to fetch branches. HTTP error.');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to fetch branches.')),
         );
       }
     } catch (e) {
+      print('Error during branch fetch: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
@@ -350,13 +370,14 @@ class _SmsSettingsState extends State<EditSmsSettings> {
 
                       // Select Branch dropdown
                       DropdownButtonFormField<String>(
-                        value:
-                            selectedBranchId, // Automatically selects the branch if selectedBranchId is set
+                        value: selectedBranchId,
                         onChanged: (newValue) {
                           setState(() {
                             selectedBranchId = newValue;
                             selectedBranchName = branchData.firstWhere(
                                 (branch) => branch['id'] == newValue)['name'];
+                            print('Selected Branch ID: $selectedBranchId');
+                            print('Selected Branch Name: $selectedBranchName');
                           });
                         },
                         items: branchData

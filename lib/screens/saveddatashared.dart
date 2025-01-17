@@ -107,13 +107,12 @@ class PreferencesUtils {
     return prefs.getString('smsId');
   }
 
-  static Future<void> saveSmsbranchdrop(String branchName) async {
+  static Future<void> setbranchname(String branchName) async {
     final prefs = await _getPrefs();
     await prefs.setString('branchName', branchName);
   }
 
-  // Get SMS ID
-  static Future<String?> getSmsbranchdrop() async {
+  static Future<String?> getbranchname() async {
     final prefs = await _getPrefs();
     return prefs.getString('branchName');
   }

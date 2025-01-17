@@ -75,16 +75,28 @@ class _SmsSettingsState extends State<SmsSettings> {
         if (responseData[0]['id'] != null) {
           final int smsId = responseData[0]['id'];
 
-          // Save SMS ID and selectedBranchName to SharedPreferences
+          // Save all values to SharedPreferences
           final prefs = await SharedPreferences.getInstance();
+
+          // Save each field
           await prefs.setString('smsId', smsId.toString());
+          await prefs.setString('presmslink', presmsController.text);
+          await prefs.setString('midsmslink', midsmsController.text);
+          await prefs.setString('postsmslink', postsmsController.text);
           await prefs.setString('branchName', selectedBranchName.toString());
 
-          // Debug saved values
+          // Print saved values for debugging
           final savedSmsId = prefs.getString('smsId');
-          final savedBranchName = prefs.getString('branchName');
+          final savedPresmsLink = prefs.getString('presmslink');
+          final savedMidsmsLink = prefs.getString('midsmslink');
+          final savedPostsmsLink = prefs.getString('postsmslink');
+          final savedBranch = prefs.getString('branchName');
+
           print('Saved SMS ID: $savedSmsId');
-          print('Saved Branch Name: $savedBranchName');
+          print('Saved Pre-SMS Link: $savedPresmsLink');
+          print('Saved Mid-SMS Link: $savedMidsmsLink');
+          print('Saved Post-SMS Link: $savedPostsmsLink');
+          print('Saved Branch Name: $savedBranch');
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('SMS created successfully!')),
