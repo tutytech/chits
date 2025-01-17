@@ -370,7 +370,7 @@ class _SmsSettingsState extends State<EditSmsSettings> {
 
                       // Select Branch dropdown
                       DropdownButtonFormField<String>(
-                        value: selectedBranchId,
+                        value: selectedBranch,
                         onChanged: (newValue) {
                           setState(() {
                             selectedBranchId = newValue;
@@ -382,7 +382,7 @@ class _SmsSettingsState extends State<EditSmsSettings> {
                         },
                         items: branchData
                             .map((branch) => DropdownMenuItem<String>(
-                                  value: branch['id'],
+                                  value: branch['name'],
                                   child: Text(branch['name']!),
                                 ))
                             .toList(),
