@@ -5,6 +5,7 @@ import 'package:chitfunds/screens/amountransfer.dart';
 import 'package:chitfunds/screens/bluetooth_off_screen.dart';
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/centerlist..dart';
+import 'package:chitfunds/screens/closeaccountlist.dart';
 import 'package:chitfunds/screens/companycreation.dart';
 import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/screens/createcenter.dart';
@@ -72,7 +73,7 @@ class _FlutterBlueAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       color: Colors.lightBlue,
-      home: const SmsSettings(),
+      home: const closeAccountList(),
       navigatorObservers: [BluetoothAdapterStateObserver()],
     );
   }

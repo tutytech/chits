@@ -4,6 +4,7 @@ import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -222,37 +223,7 @@ class _BranchListPageState extends State<closeAccountList> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Receipt(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Button background color
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24.0, vertical: 12.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(8.0), // Rounded corners
-                        ),
-                      ),
-                      child: const Text(
-                        'Add CloseAccount',
-                        style: TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.white), // Text styling
-                      ),
-                    ),
-                  ],
-                ),
+
                 const SizedBox(height: 10.0),
                 // Fetched data container
                 Container(
@@ -336,6 +307,16 @@ class _BranchListPageState extends State<closeAccountList> {
                                   ),
                                 ),
                               ),
+                              DataColumn(
+                                label: Text(
+                                  'Actions',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF4A90E2),
+                                  ),
+                                ),
+                              ),
                             ],
                             rows: _filteredBranches.map((branch) {
                               return DataRow(
@@ -344,6 +325,43 @@ class _BranchListPageState extends State<closeAccountList> {
                                   DataCell(Text(branch['userid'] ?? '0')),
                                   DataCell(Text(branch['todaydate'] ?? 'N/A')),
                                   DataCell(Text(branch['closetime'] ?? 'N/A')),
+                                  DataCell(
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        print('press1');
+                                        String currentCloseTime =
+                                            branch['closetime'] ?? '';
+                                        final DateFormat formatter =
+                                            DateFormat('HH:mm');
+                                        DateTime parsedCloseTime =
+                                            formatter.parse(currentCloseTime);
+                                        DateTime newCloseTime = parsedCloseTime
+                                            .add(Duration(minutes: 30));
+                                        String updatedCloseTime =
+                                            formatter.format(newCloseTime);
+                                        // Update the branch data with the new close time (optional)
+                                        branch['closetime'] = updatedCloseTime;
+                                        setState(() {});
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors
+                                            .blue, // Button background color
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 24.0, vertical: 12.0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              8.0), // Rounded corners
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Release',
+                                        style: TextStyle(
+                                            fontSize: 16.0,
+                                            color:
+                                                Colors.white), // Text styling
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               );
                             }).toList(),
