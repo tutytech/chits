@@ -327,24 +327,30 @@ class _BranchListPageState extends State<closeAccountList> {
                                   DataCell(Text(branch['closetime'] ?? 'N/A')),
                                   DataCell(
                                     ElevatedButton(
-                                      onPressed: () {
-                                        print('press1');
-                                        String currentCloseTime =
-                                            branch['closetime'] ?? '';
-                                        final DateFormat formatter =
-                                            DateFormat('HH:mm');
-                                        DateTime parsedCloseTime =
-                                            formatter.parse(currentCloseTime);
-                                        DateTime newCloseTime = parsedCloseTime
-                                            .add(Duration(minutes: 30));
-                                        String updatedCloseTime =
-                                            formatter.format(newCloseTime);
-                                        // Update the branch data with the new close time
-                                        branch['closetime'] = updatedCloseTime;
-                                        // Mark the branch as locked
-                                        branch['isLocked'] = true;
-                                        setState(() {});
-                                      },
+                                      onPressed: branch['isLocked'] == true
+                                          ? null // Disable the button when already locked
+                                          : () {
+                                              print('press1');
+                                              String currentCloseTime =
+                                                  branch['closetime'] ?? '';
+                                              final DateFormat formatter =
+                                                  DateFormat('HH:mm');
+                                              DateTime parsedCloseTime =
+                                                  formatter
+                                                      .parse(currentCloseTime);
+                                              DateTime newCloseTime =
+                                                  parsedCloseTime.add(
+                                                      Duration(minutes: 30));
+                                              String updatedCloseTime =
+                                                  formatter
+                                                      .format(newCloseTime);
+                                              // Update the branch data with the new close time
+                                              branch['closetime'] =
+                                                  updatedCloseTime;
+                                              // Mark the branch as locked to prevent further updates
+                                              branch['isLocked'] = true;
+                                              setState(() {});
+                                            },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: branch['isLocked'] ==
                                                 true
