@@ -339,13 +339,19 @@ class _BranchListPageState extends State<closeAccountList> {
                                             .add(Duration(minutes: 30));
                                         String updatedCloseTime =
                                             formatter.format(newCloseTime);
-                                        // Update the branch data with the new close time (optional)
+                                        // Update the branch data with the new close time
                                         branch['closetime'] = updatedCloseTime;
+                                        // Mark the branch as locked
+                                        branch['isLocked'] = true;
                                         setState(() {});
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors
-                                            .blue, // Button background color
+                                        backgroundColor: branch['isLocked'] ==
+                                                true
+                                            ? Colors
+                                                .grey // Grey color for "Locked" state
+                                            : Colors
+                                                .blue, // Blue color for "Release" state
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 24.0, vertical: 12.0),
                                         shape: RoundedRectangleBorder(
@@ -353,12 +359,14 @@ class _BranchListPageState extends State<closeAccountList> {
                                               8.0), // Rounded corners
                                         ),
                                       ),
-                                      child: const Text(
-                                        'Release',
+                                      child: Text(
+                                        branch['isLocked'] == true
+                                            ? 'Locked' // Display "Locked" if the branch is locked
+                                            : 'Release', // Display "Release" if the branch is not locked
                                         style: TextStyle(
-                                            fontSize: 16.0,
-                                            color:
-                                                Colors.white), // Text styling
+                                          fontSize: 16.0,
+                                          color: Colors.white, // Text color
+                                        ),
                                       ),
                                     ),
                                   ),
