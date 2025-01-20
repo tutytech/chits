@@ -89,6 +89,12 @@ class _CreateSchemeState extends State<CreateScheme> {
         } else {
           _showSnackBar('Error: ${responseData['error']}');
         }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SchemeListPage(),
+          ),
+        );
       } else {
         _showSnackBar(
             'Failed to create scheme. Status code: ${response.statusCode}');

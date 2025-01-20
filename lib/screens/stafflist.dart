@@ -435,11 +435,11 @@ class _BranchListPageState extends State<staffListPage> {
                                           icon: const Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    'Edit feature not implemented'),
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CreateStaff(),
                                               ),
                                             );
                                           },

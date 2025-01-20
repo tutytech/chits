@@ -443,6 +443,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
         if (responseBody.isNotEmpty) {
           print("Customer created successfully: $responseBody");
+
           _showSnackBar('Customer created successfully!');
         } else {
           print(
@@ -456,7 +457,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => BranchListPage(),
+          builder: (context) => CustomerList(),
         ),
       );
     } catch (e) {

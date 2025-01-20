@@ -137,13 +137,13 @@ class _CreateStaffState extends State<CreateStaff> {
           'mobileNo': _mobileNoController.text,
           'userName': _userNameController.text,
           'password': _passwordController.text,
-          'branch': selectedBranchName,
+          'branch': selectedBranchName ?? '', // Use default value if null
           'branchCode': _branchCodeController.text,
           'receiptNo': _receiptNoController.text,
-          'rights': selectedRights,
-          'companyid': companyid,
+          'rights': selectedRights ?? '', // Use default value if null
+          'companyid': companyid ?? '', // Make sure companyid is not null
           'email': _emailController.text,
-          'entryid': staffId,
+          'entryid': staffId ?? '', // Ensure staffId is not null
         },
       );
 
@@ -165,7 +165,7 @@ class _CreateStaffState extends State<CreateStaff> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => CreateCustomer(),
+          builder: (context) => CreateStaff(),
         ),
       );
     } catch (e) {

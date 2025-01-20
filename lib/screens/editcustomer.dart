@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:chitfunds/controlller/home_controller.dart';
@@ -41,7 +42,7 @@ class _CreateCustomerState extends State<EditCustomer> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
-
+  String? customerPhotoUrl;
   String? selectedBranch;
   String? selectedCenter;
   String? selectedDayOrder;
@@ -260,8 +261,8 @@ class _CreateCustomerState extends State<EditCustomer> {
 
     setState(() {
       selectedBranchName = response['branch']?.toString() ?? '';
-      selectedBranch =
-          selectedBranchName; // Sync selectedBranch with the dropdown
+      selectedBranch = selectedBranchName;
+      customerPhotoUrl = response['customerPhoto']?.toString() ?? '';
     });
 
     setState(() {
@@ -857,10 +858,8 @@ class _CreateCustomerState extends State<EditCustomer> {
                           children: [
                             // CircleAvatar with border
                             Container(
-                              width:
-                                  140, // Adjust width according to your needs
-                              height:
-                                  140, // Adjust height according to your needs
+                              width: 140,
+                              height: 140,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
@@ -872,16 +871,17 @@ class _CreateCustomerState extends State<EditCustomer> {
                               child: CircleAvatar(
                                 radius: 70,
                                 backgroundColor: Colors.grey[300],
-                                backgroundImage: _imageBytes != null
-                                    ? MemoryImage(
-                                        _imageBytes!) // Use image bytes to show the picked image
-                                    : null,
-                                child: _imageBytes == null
-                                    ? const Icon(Icons.person,
-                                        size: 40, color: Colors.grey)
-                                    : null,
+                                child: CachedNetworkImage(
+                                  imageUrl: customerPhotoUrl!,
+                                  placeholder: (context, url) =>
+                                      const CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error,
+                                          color: Colors.grey),
+                                ),
                               ),
                             ),
+
                             Positioned(
                               bottom: 0,
                               right: 0,

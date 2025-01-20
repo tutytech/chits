@@ -221,7 +221,7 @@ class _CreateBranchState extends State<CreateBranch> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CreateCenter(),
+              builder: (context) => BranchListPage(),
             ),
           );
         } else {

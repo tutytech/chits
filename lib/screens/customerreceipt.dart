@@ -224,6 +224,12 @@ class _ReceiptState extends State<Receipt> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Receipt created successfully!')),
           );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => receiptListPage(),
+            ),
+          );
 
           // Fetch the list of all branches
           // await _fetchBranches();

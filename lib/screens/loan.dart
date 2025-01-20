@@ -190,6 +190,12 @@ class _CreateBranchState extends State<Loan> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Loan submitted successfully!')),
         );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LoanListPage(),
+          ),
+        );
       } else {
         // HTTP error
         print('HTTP Error: Status Code ${response.statusCode}');

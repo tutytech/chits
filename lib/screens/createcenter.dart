@@ -171,7 +171,7 @@ class _CreateCenterState extends State<CreateCenter> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CreateScheme(),
+            builder: (context) => CenterListPage(),
           ),
         );
       } else {

@@ -12,6 +12,7 @@ import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/screens/editcompany.dart';
 import 'package:chitfunds/screens/editsms.dart';
 import 'package:chitfunds/screens/loan.dart';
+import 'package:chitfunds/screens/receiptlist.dart';
 import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/stafflist.dart';
 import 'package:flutter/material.dart';
@@ -125,7 +126,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Receipt()),
+                MaterialPageRoute(builder: (context) => receiptListPage()),
               );
             },
           ),

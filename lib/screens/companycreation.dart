@@ -1,6 +1,7 @@
 import 'package:chitfunds/screens/amountransfer.dart';
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/createbranch.dart';
+import 'package:chitfunds/screens/editcompany.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -95,7 +96,9 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
           // Navigate to AmountTransfer after success
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AmountTransfer()),
+            MaterialPageRoute(
+              builder: (context) => EditCompany(),
+            ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
