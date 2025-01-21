@@ -1,5 +1,6 @@
 import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
+import 'package:chitfunds/screens/scan_screen.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,64 @@ class _BranchListPageState extends State<receiptListPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _updatePaymentType(String id, String paymentType) async {
+    try {
+      final url = Uri.parse('https://chits.tutytech.in/receipt.php');
+
+      // Request body to send to the API
+      final requestBody = {
+        'type': 'update',
+        'id': id,
+        'paymenttype': paymentType,
+      };
+
+      // Debugging prints
+      debugPrint('Request URL: $url');
+      debugPrint('Request Body: ${json.encode(requestBody)}');
+
+      // Make the HTTP POST request
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: requestBody,
+      );
+
+      debugPrint('Response Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Decode the response body into a Dart object
+        final Map<String, dynamic> result = json.decode(response.body);
+
+        // Ensure the result is not null and contains the required keys
+        if (result != null && result['status'] == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    result['message'] ?? 'Payment type updated successfully!')),
+          );
+        } else {
+          _showError(result['message'] ?? 'Failed to update payment type.');
+        }
+      } else {
+        _showError('Failed to update payment type: ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('Error: $error');
+      _showError('An error occurred: $error');
+    }
+  }
+
+  void _showError(String message) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    });
   }
 
   Future<void> deleteLoan(String branchId) async {
@@ -437,22 +496,66 @@ class _BranchListPageState extends State<receiptListPage> {
                                           MainAxisAlignment.start,
                                       children: [
                                         IconButton(
-                                          icon: const Icon(Icons.edit,
-                                              color: Colors.blue),
+                                          icon: const Icon(Icons.print,
+                                              color: Colors.green),
                                           onPressed: () {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => Receipt(),
-                                              ),
+                                                  builder: (context) =>
+                                                      ScanScreen()),
                                             );
+                                            // Add your print logic here
+                                            print(
+                                                "Print button pressed for branch ID: ${branch['id']}");
                                           },
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.delete,
+                                          icon: const Icon(Icons.cancel,
                                               color: Colors.red),
-                                          onPressed: () =>
-                                              deleteLoan(branch['id']),
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                      "Cancel Receipt"),
+                                                  content: const Text(
+                                                      "Are you sure you want to cancel this receipt?"),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Navigator.of(context)
+                                                            .pop(); // Close the dialog
+                                                      },
+                                                      child: const Text("No"),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () async {
+                                                        Navigator.of(context)
+                                                            .pop(); // Close the dialog
+
+                                                        // Call the function to update paymenttype in the database
+                                                        await _updatePaymentType(
+                                                            branch['id'],
+                                                            "CANCEL");
+
+                                                        // Update the local state to reflect the change
+                                                        setState(() {
+                                                          branch['paymenttype'] =
+                                                              "CANCEL";
+                                                        });
+
+                                                        print(
+                                                            "Receipt canceled for branch ID: ${branch['id']}");
+                                                      },
+                                                      child: const Text("Yes"),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                          },
                                         ),
                                       ],
                                     ),
