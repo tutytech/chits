@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/Reports/collectionreport.dart';
 import 'package:chitfunds/screens/amountransfer.dart';
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/centerlist..dart';
@@ -140,15 +141,27 @@ class _CustomDrawerState extends State<CustomDrawer> {
               );
             },
           ),
-          ListTile(
+          ExpansionTile(
+            tilePadding: EdgeInsets.symmetric(
+                horizontal: 16.0), // Match ListTile padding
             leading: const Icon(Icons.bar_chart),
             title: const Text('Reports'),
-            onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => ReportsPage()),
-              // );
-            },
+            childrenPadding:
+                EdgeInsets.only(left: 32.0), // Indent child items slightly
+            children: [
+              ListTile(
+                leading: const Icon(Icons.arrow_right),
+                title: const Text('Collection Report'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CollectionReport(),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
           ListTile(
             leading: const Icon(Icons.person_add),
