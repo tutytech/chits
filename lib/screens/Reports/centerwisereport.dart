@@ -8,14 +8,14 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class CollectionReport extends StatefulWidget {
-  const CollectionReport({Key? key}) : super(key: key);
+class Centerwisereport extends StatefulWidget {
+  Centerwisereport({Key? key}) : super(key: key);
 
   @override
   _AmountTransferState createState() => _AmountTransferState();
 }
 
-class _AmountTransferState extends State<CollectionReport> {
+class _AmountTransferState extends State<Centerwisereport> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -23,6 +23,17 @@ class _AmountTransferState extends State<CollectionReport> {
   final TextEditingController _transDateController = TextEditingController();
   List<Map<String, String>> branchData = [];
   List<Map<String, String>> centerData = [];
+  final List<String> days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday'
+  ];
+
+  String? selectedDay;
 
   // Dropdown selections
   String? _selectedBranch;
@@ -48,7 +59,7 @@ class _AmountTransferState extends State<CollectionReport> {
     super.dispose();
   }
 
-  Future<void> _createCollectionReport() async {
+  Future<void> _createCenterWiseReport() async {
     // Fetch the staffId from SharedPreferences
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId =
@@ -69,14 +80,15 @@ class _AmountTransferState extends State<CollectionReport> {
       return; // Exit the method if validation fails
     }
 
-    final String apiUrl = 'https://chits.tutytech.in/collectionreport.php';
+    final String apiUrl = 'https://chits.tutytech.in/centerwisereport.php';
 
     // Prepare request body
     final requestBody = {
       'type': 'insert',
       'branch': selectedBranchName,
       'center': selectedCenterName,
-      'transactiondate': _transDateController.text,
+      'date': _transDateController.text,
+      'dayorder': selectedDay,
       'entryid': staffId, // Use the staffId from SharedPreferences
     };
 
@@ -252,7 +264,7 @@ class _AmountTransferState extends State<CollectionReport> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(
-        title: 'Collection Report',
+        title: 'CenterWise Report',
         onMenuPressed: () {
           _scaffoldKey.currentState?.openDrawer();
         },
@@ -315,8 +327,6 @@ class _AmountTransferState extends State<CollectionReport> {
                     },
                   ),
                   SizedBox(height: 16),
-
-                  // Area/Username Dropdown
                   DropdownButtonFormField<String>(
                     value: selectedCenterId,
                     onChanged: (newValue) {
@@ -349,7 +359,7 @@ class _AmountTransferState extends State<CollectionReport> {
                     controller: _transDateController,
                     readOnly: true,
                     decoration: InputDecoration(
-                      labelText: 'Transaction Date',
+                      labelText: 'Date',
                       labelStyle: const TextStyle(color: Colors.black),
                       filled: true,
                       fillColor: Colors.white,
@@ -379,6 +389,33 @@ class _AmountTransferState extends State<CollectionReport> {
                     validator: (value) =>
                         value?.isEmpty ?? true ? 'Select a date' : null,
                   ),
+                  const SizedBox(height: 20),
+                  // Area/Username Dropdown
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: 'Day Order',
+                      labelStyle: const TextStyle(color: Colors.black),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    value: selectedDay,
+                    items: days.map((day) {
+                      return DropdownMenuItem<String>(
+                        value: day,
+                        child: Text(day),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedDay = value;
+                      });
+                    },
+                  ),
+
                   SizedBox(height: 32),
 
                   // Buttons
@@ -402,7 +439,7 @@ class _AmountTransferState extends State<CollectionReport> {
                         width: 100, // Adjust the width as needed
                         child: ElevatedButton(
                           onPressed: () {
-                            _createCollectionReport();
+                            _createCenterWiseReport();
                           },
                           child: const Text(
                             'Submit',
@@ -420,11 +457,11 @@ class _AmountTransferState extends State<CollectionReport> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SizedBox(
-                        width: 150, // Adjust the width as needed
+                        width: 170, // Adjust the width as needed
                         child: ElevatedButton(
                           onPressed: () {},
                           child: const Text(
-                            'Export To Excel',
+                            'Center Wise Excel',
                             style: TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
@@ -437,7 +474,7 @@ class _AmountTransferState extends State<CollectionReport> {
                         child: ElevatedButton(
                           onPressed: () {},
                           child: const Text(
-                            'Export To XML',
+                            'Day Wise Excel',
                             style: TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,

@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/Reports/centerwisereport.dart';
 import 'package:chitfunds/screens/Reports/collectionreport.dart';
 import 'package:chitfunds/screens/amountransfer.dart';
 import 'package:chitfunds/screens/branchlist.dart';
@@ -152,6 +153,18 @@ class _CustomDrawerState extends State<CustomDrawer> {
               ListTile(
                 leading: const Icon(Icons.arrow_right),
                 title: const Text('Collection Report'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Centerwisereport(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.arrow_right),
+                title: const Text('Centerwise Report'),
                 onTap: () {
                   Navigator.push(
                     context,
