@@ -202,6 +202,7 @@ class _ReceiptState extends State<Receipt> {
         },
         body: {
           'type': 'insert',
+          'customerId': _detailsController.text,
           'customername': _customerNameController.text,
           'mobileno': _mobileNoController.text,
           'loanamount': _loanamountController.text,
@@ -616,11 +617,11 @@ class _ReceiptState extends State<Receipt> {
                             child: ElevatedButton(
                               onPressed: () {
                                 _createBranch();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => ScanScreen()),
-                                );
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //       builder: (context) => ScanScreen()),
+                                // );
                               },
                               child: const Text(
                                 'Save',

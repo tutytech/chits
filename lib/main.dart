@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:chitfunds/screens/LoginScreen.dart';
+import 'package:chitfunds/screens/Reports/branchwisereport.dart';
 import 'package:chitfunds/screens/Reports/centerwisereport.dart';
 import 'package:chitfunds/screens/Reports/collectionreport.dart';
+import 'package:chitfunds/screens/Reports/outstandingreport.dart';
+import 'package:chitfunds/screens/Reports/deletereport.dart';
 import 'package:chitfunds/screens/amountransfer.dart';
 import 'package:chitfunds/screens/bluetooth_off_screen.dart';
 import 'package:chitfunds/screens/branchlist.dart';
@@ -75,7 +78,7 @@ class _FlutterBlueAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       color: Colors.lightBlue,
-      home: Centerwisereport(),
+      home: LoginScreen(),
       navigatorObservers: [BluetoothAdapterStateObserver()],
     );
   }

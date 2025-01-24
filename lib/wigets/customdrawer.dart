@@ -1,5 +1,7 @@
 import 'package:chitfunds/screens/Reports/centerwisereport.dart';
 import 'package:chitfunds/screens/Reports/collectionreport.dart';
+import 'package:chitfunds/screens/Reports/outstandingreport.dart';
+import 'package:chitfunds/screens/Reports/deletereport.dart';
 import 'package:chitfunds/screens/amountransfer.dart';
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/centerlist..dart';
@@ -157,7 +159,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Centerwisereport(),
+                      builder: (context) => CollectionReport(),
                     ),
                   );
                 },
@@ -169,7 +171,31 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const CollectionReport(),
+                      builder: (context) => Centerwisereport(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.arrow_right),
+                title: const Text('Outstanding Report'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Outstandingreport(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.arrow_right),
+                title: const Text('Delete Report'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DeleteReport(),
                     ),
                   );
                 },
