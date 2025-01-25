@@ -23,7 +23,8 @@ class _AmountTransferState extends State<CollectionReport> {
   final TextEditingController _transDateController = TextEditingController();
   List<Map<String, String>> branchData = [];
   List<Map<String, String>> centerData = [];
-
+  List<Map<String, dynamic>> _allBranches = [];
+  Future<List<Map<String, dynamic>>>? _branchListFuture;
   // Dropdown selections
   String? _selectedBranch;
   String? _selectedArea;
@@ -31,6 +32,7 @@ class _AmountTransferState extends State<CollectionReport> {
   String? selectedBranchId;
   String? selectedCenterName;
   String? selectedCenterId;
+  bool _isSubmitted = false;
 
   // Sample data for dropdowns
   final List<String> _branches = ['Branch A', 'Branch B', 'Branch C'];
@@ -46,6 +48,56 @@ class _AmountTransferState extends State<CollectionReport> {
   void dispose() {
     _transDateController.dispose();
     super.dispose();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCollectionReports() async {
+    setState(() {
+      _isSubmitted = true; // Set the flag to true on button press
+    });
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
+    const String _baseUrl = 'https://chits.tutytech.in/receipt.php';
+
+    try {
+      // Print the request URL and body
+      print('Request URL: $_baseUrl');
+      print('Request Body: type=join');
+
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'type': 'join'},
+      );
+
+      // Print the response status and body
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body) as List<dynamic>;
+
+        // Handle missing keys safely
+        return responseData.map((branch) {
+          return {
+            'id': branch['id'] ?? '',
+            'customerId': branch['customerId'] ?? '',
+            'customername': branch['customername'] ?? 'Unknown Branch',
+            'receiptno': branch['receiptno']?.toString() ?? '0',
+            'receiptdate': branch['receiptdate'] ?? 'N/A',
+            'phoneNo': branch['phoneNo'] ?? 'N/A',
+            'receivedamount': branch['receivedamount'] ?? 'N/A',
+            'entryid': staffId,
+          };
+        }).toList();
+      } else {
+        throw Exception('Failed to fetch branches');
+      }
+    } catch (e) {
+      // Print the error for debugging
+      print('Error: $e');
+      throw Exception('Error: $e');
+    }
   }
 
   Future<void> _createCollectionReport() async {
@@ -271,184 +323,345 @@ class _AmountTransferState extends State<CollectionReport> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: 50,
-                  ),
-                  // Branch Dropdown
-                  DropdownButtonFormField<String>(
-                    value: selectedBranchId,
-                    onChanged: (newValue) {
-                      setState(() {
-                        selectedBranchId = newValue;
-                        selectedBranchName = branchData.firstWhere((branch) =>
-                            branch['id'] ==
-                            newValue)['name']; // Fetch branch name
-                      });
-                    },
-                    items: branchData
-                        .map((branch) => DropdownMenuItem<String>(
-                              value: branch['id'], // Use branch ID as value
-                              child:
-                                  Text(branch['name']!), // Display branch name
-                            ))
-                        .toList(),
-                    decoration: InputDecoration(
-                      labelText: 'Branch',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 50,
                       ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select a branch';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-
-                  // Area/Username Dropdown
-                  DropdownButtonFormField<String>(
-                    value: selectedCenterId,
-                    onChanged: (newValue) {
-                      setState(() {
-                        selectedCenterId = newValue;
-                        selectedCenterName = centerData.firstWhere(
-                            (center) => center['id'] == newValue)['name'];
-                      });
-                    },
-                    items: centerData
-                        .map((center) => DropdownMenuItem<String>(
-                              value: center['id'],
-                              child: Text(center['name']!),
-                            ))
-                        .toList(),
-                    decoration: InputDecoration(
-                      labelText: 'Center',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-
-                  // Transaction Date with DatePicker
-                  TextFormField(
-                    controller: _transDateController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'Transaction Date',
-                      labelStyle: const TextStyle(color: Colors.black),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today,
-                            color: Colors.grey),
-                        onPressed: () async {
-                          DateTime? pickedDate = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
-                          );
-                          if (pickedDate != null) {
-                            setState(() {
-                              _transDateController.text =
-                                  DateFormat('dd/MM/yyyy').format(pickedDate);
-                            });
+                      // Branch Dropdown
+                      DropdownButtonFormField<String>(
+                        value: selectedBranchId,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedBranchId = newValue;
+                            selectedBranchName = branchData.firstWhere(
+                                    (branch) => branch['id'] == newValue)[
+                                'name']; // Fetch branch name
+                          });
+                        },
+                        items: branchData
+                            .map((branch) => DropdownMenuItem<String>(
+                                  value: branch['id'], // Use branch ID as value
+                                  child: Text(
+                                      branch['name']!), // Display branch name
+                                ))
+                            .toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Branch',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a branch';
                           }
+                          return null;
                         },
                       ),
-                    ),
-                    validator: (value) =>
-                        value?.isEmpty ?? true ? 'Select a date' : null,
-                  ),
-                  SizedBox(height: 32),
+                      SizedBox(height: 16),
 
-                  // Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: 100, // Adjust the width as needed
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'Reset',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      // Area/Username Dropdown
+                      DropdownButtonFormField<String>(
+                        value: selectedCenterId,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedCenterId = newValue;
+                            selectedCenterName = centerData.firstWhere(
+                                (center) => center['id'] == newValue)['name'];
+                          });
+                        },
+                        items: centerData
+                            .map((center) => DropdownMenuItem<String>(
+                                  value: center['id'],
+                                  child: Text(center['name']!),
+                                ))
+                            .toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Center',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
                           ),
                         ),
                       ),
-                      SizedBox(
-                        width: 100, // Adjust the width as needed
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _createCollectionReport();
-                          },
-                          child: const Text(
-                            'Submit',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      SizedBox(height: 16),
+
+                      // Transaction Date with DatePicker
+                      TextFormField(
+                        controller: _transDateController,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          labelText: 'Transaction Date',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.calendar_today,
+                                color: Colors.grey),
+                            onPressed: () async {
+                              DateTime? pickedDate = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2100),
+                              );
+                              if (pickedDate != null) {
+                                setState(() {
+                                  _transDateController.text =
+                                      DateFormat('dd/MM/yyyy')
+                                          .format(pickedDate);
+                                });
+                              }
+                            },
                           ),
                         ),
+                        validator: (value) =>
+                            value?.isEmpty ?? true ? 'Select a date' : null,
+                      ),
+                      SizedBox(height: 32),
+
+                      // Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 100, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Reset',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 100, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isSubmitted = true;
+                                  _branchListFuture = fetchCollectionReports();
+                                });
+                              },
+                              child: const Text(
+                                'Submit',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Export To Excel',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 150, // Adjust the width as needed
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Export To XML',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: 150, // Adjust the width as needed
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'Export To Excel',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(height: 32),
+
+                // Table Section
+                Visibility(
+                  visible: _isSubmitted,
+                  child: Container(
+                    margin: const EdgeInsets.only(
+                        top: 16.0), // Add margin for spacing
+                    padding: const EdgeInsets.all(
+                        16.0), // Add padding for inner spacing
+                    decoration: BoxDecoration(
+                      color: Colors.white, // Set the container background color
+                      borderRadius:
+                          BorderRadius.circular(8.0), // Rounded corners
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2), // Shadow position
+                        ),
+                      ],
+                    ),
+
+                    // Only show this when button is pressed
+                    child: FutureBuilder<List<Map<String, dynamic>>>(
+                      future: _branchListFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return const Center(
+                            child: Text('No loans found'),
+                          );
+                        }
+
+                        _allBranches = snapshot.data!;
+
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minWidth: MediaQuery.of(context).size.width,
+                            ),
+                            child: DataTable(
+                              headingRowColor: MaterialStateColor.resolveWith(
+                                (states) => Colors.grey[200]!,
+                              ),
+                              columns: const [
+                                DataColumn(
+                                    label: Text(
+                                  'Customer No',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                                DataColumn(
+                                    label: Text(
+                                  'Customer Name',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                                DataColumn(
+                                    label: Text(
+                                  'Receipt No',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                                DataColumn(
+                                    label: Text(
+                                  'Receipt Date',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                                DataColumn(
+                                    label: Text(
+                                  'Mobile No',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                                DataColumn(
+                                    label: Text(
+                                  'Receipt Amount',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                                DataColumn(
+                                    label: Text(
+                                  'EntryID',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                              ],
+                              rows: _allBranches.map((branch) {
+                                return DataRow(
+                                  cells: [
+                                    DataCell(
+                                        Text(branch['customerId'] ?? 'N/A')),
+                                    DataCell(
+                                        Text(branch['customername'] ?? '0')),
+                                    DataCell(
+                                        Text(branch['receiptno'] ?? 'N/A')),
+                                    DataCell(
+                                        Text(branch['receiptdate'] ?? 'N/A')),
+                                    DataCell(Text(branch['phoneNo'] ?? 'N/A')),
+                                    DataCell(Text(
+                                        branch['receivedamount'] ?? 'N/A')),
+                                    DataCell(Text(branch['entryid'] ?? 'N/A')),
+                                  ],
+                                );
+                              }).toList(),
                             ),
                           ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 150, // Adjust the width as needed
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'Export To XML',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                        );
+                      },
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

@@ -484,26 +484,28 @@ class _AmountTransferState extends State<DeleteReport> {
                   const SizedBox(height: 32),
 
                   // Table Section
-                  Container(
-                    margin: const EdgeInsets.only(
-                        top: 16.0), // Add margin for spacing
-                    padding: const EdgeInsets.all(
-                        16.0), // Add padding for inner spacing
-                    decoration: BoxDecoration(
-                      color: Colors.white, // Set the container background color
-                      borderRadius:
-                          BorderRadius.circular(8.0), // Rounded corners
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2), // Shadow position
-                        ),
-                      ],
-                    ),
-                    child: Visibility(
-                      visible:
-                          _isSubmitted, // Only show this when button is pressed
+                  Visibility(
+                    visible: _isSubmitted,
+                    child: Container(
+                      margin: const EdgeInsets.only(
+                          top: 16.0), // Add margin for spacing
+                      padding: const EdgeInsets.all(
+                          16.0), // Add padding for inner spacing
+                      decoration: BoxDecoration(
+                        color:
+                            Colors.white, // Set the container background color
+                        borderRadius:
+                            BorderRadius.circular(8.0), // Rounded corners
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2), // Shadow position
+                          ),
+                        ],
+                      ),
+
+                      // Only show this when button is pressed
                       child: FutureBuilder<List<Map<String, dynamic>>>(
                         future: _branchListFuture,
                         builder: (context, snapshot) {
