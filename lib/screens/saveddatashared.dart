@@ -116,4 +116,14 @@ class PreferencesUtils {
     final prefs = await _getPrefs();
     return prefs.getString('branchName');
   }
+
+  static Future<void> setrights(String rights) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('rights', rights);
+  }
+
+  static Future<String?> getrights() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('rights');
+  }
 }

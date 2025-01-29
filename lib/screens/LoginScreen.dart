@@ -74,22 +74,28 @@ class _LoginScreenState extends State<LoginScreen> {
         if (response.statusCode == 200) {
           if (responseData['success'] == true) {
             final staffId = responseData['staffId'];
-            if (staffId != null) {
-              // Save staffId to SharedPreferences
+            final rights = responseData['rights'];
+
+            print('Received Staff ID: $staffId');
+            print('Received Rights: $rights');
+
+            if (staffId != null && rights != null) {
               final SharedPreferences prefs =
                   await SharedPreferences.getInstance();
-              await prefs.setString(
-                  'staffId', responseData['staffId'].toString());
+              await prefs.setString('staffId', staffId.toString());
+              await prefs.setString('rights', rights);
 
-              print('Staff ID saved to SharedPreferences: $staffId');
+              print('Staff ID saved in SharedPreferences: $staffId');
+              print('User Rights saved in SharedPreferences: $rights');
 
-              // Navigate to Dashboard
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Dashboard()),
+                MaterialPageRoute(
+                  builder: (context) => Dashboard(rights: rights),
+                ),
               );
             } else {
-              print('Error: staffId is null in the response.');
+              print('Error: Missing staffId or rights in response.');
               _showErrorDialog(
                   'Invalid response from server. Please try again.');
             }
@@ -103,8 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } catch (e) {
         print('Error: $e');
-        _showErrorDialog(
-            'An error occurred. Please check your connection and try again.');
+        _showErrorDialog('An error occurred. Please check your connection.');
       }
     }
   }

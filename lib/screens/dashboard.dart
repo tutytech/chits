@@ -5,17 +5,17 @@ import 'package:chitfunds/wigets/inputwidget.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:intl/intl.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({Key? key}) : super(key: key);
+  final String rights;
+  const Dashboard({Key? key, required this.rights}) : super(key: key);
 
   @override
-  _CreateBranchState createState() => _CreateBranchState();
+  _DashboardState createState() => _DashboardState();
 }
 
-class _CreateBranchState extends State<Dashboard> {
+class _DashboardState extends State<Dashboard> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
   final TextEditingController _branchNameController = TextEditingController();
@@ -26,37 +26,103 @@ class _CreateBranchState extends State<Dashboard> {
   final dobController = TextEditingController();
   final dojController = TextEditingController();
   final domController = TextEditingController();
-  Future<void> _selectMarriage(BuildContext context, String label) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: label == "DOB"
-          ? dobController.text.isNotEmpty
-              ? DateFormat('yyyy-MM-dd').parse(dobController.text)
-              : DateTime.now()
-          : label == "DOJ"
-              ? dojController.text.isNotEmpty
-                  ? DateFormat('yyyy-MM-dd').parse(dojController.text)
-                  : DateTime.now()
-              : DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+  double cashCollection = 0.0;
+  double chequeCollection = 0.0;
+  double cancelAmount = 0.0;
+  double totalCollection = 0.0;
+  @override
+  void initState() {
+    super.initState();
+    _fetchPaymentDetails();
+  }
+
+  Widget _buildCard(String title, String amount) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8),
+            Text(
+              "₹$amount",
+              style: TextStyle(fontSize: 16, color: Colors.green),
+            ),
+          ],
+        ),
+      ),
     );
+  }
 
-    if (picked != null) {
-      setState(() {
-        String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+  Widget _buildGrid(List<Widget> cards) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      children: cards,
+    );
+  }
 
-        // Update the correct controller based on the label
-        if (label == "DOB") {
-          dobController.text = formattedDate;
-        } else if (label == "DOJ") {
-          dojController.text = formattedDate;
-        } else if (label == "DOM") {
-          domController.text = formattedDate;
-        } else if (label == "EntryDate") {
-          entrydateController.text = formattedDate;
+  Future<void> _fetchPaymentDetails() async {
+    const String _baseUrl =
+        'https://chits.tutytech.in/receipt.php'; // Replace with your API
+
+    try {
+      print('Request URL: $_baseUrl');
+      print('Request Body: type=select');
+
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'type': 'select'},
+      );
+
+      // Debug: Print the response
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Try parsing JSON
+        final List<dynamic> data = json.decode(response.body);
+
+        double cashTotal = 0.0;
+        double chequeTotal = 0.0;
+        double cancelTotal = 0.0;
+
+        for (var item in data) {
+          double amount =
+              double.tryParse(item['receivedamount'].toString()) ?? 0.0;
+          String type = item['paymenttype'].toString().toLowerCase();
+
+          if (type == 'cash') {
+            cashTotal += amount;
+          } else if (type == 'cheque') {
+            chequeTotal += amount;
+          } else if (type == 'cancel') {
+            cancelTotal += amount;
+          }
         }
-      });
+
+        setState(() {
+          cashCollection = cashTotal;
+          chequeCollection = chequeTotal;
+          cancelAmount = cancelTotal;
+          totalCollection = cashTotal + chequeTotal;
+        });
+      } else {
+        print("Failed to load data: HTTP ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
     }
   }
 
@@ -70,7 +136,7 @@ class _CreateBranchState extends State<Dashboard> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(
         children: [
           Container(
@@ -90,7 +156,25 @@ class _CreateBranchState extends State<Dashboard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Payment Details',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 20),
+                    _buildGrid(
+                      [
+                        _buildCard('Total Collection',
+                            totalCollection.toStringAsFixed(2)),
+                        _buildCard('Cash Collection',
+                            cashCollection.toStringAsFixed(2)),
+                        _buildCard('Cheque Collection',
+                            chequeCollection.toStringAsFixed(2)),
+                        _buildCard(
+                            'Cancel Amount', cancelAmount.toStringAsFixed(2)),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -114,37 +198,6 @@ class _CreateBranchState extends State<Dashboard> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMarriageDateField(BuildContext context, String label) {
-    TextEditingController controller;
-
-    // Select the correct controller based on the label
-    if (label == "DOB") {
-      controller = dobController;
-    } else if (label == "DOJ") {
-      controller = dojController;
-    } else if (label == "DOM") {
-      controller = domController;
-    } else if (label == "EntryDate") {
-      controller = entrydateController;
-    } else {
-      throw ArgumentError("Invalid label: $label");
-    }
-
-    return InputWidget(
-      label: label,
-      controller: controller,
-      hintText: "Opening Date",
-      readOnly: true, // Make the field read-only
-      suffixWidget: IconButton(
-        icon: Icon(Icons.calendar_today, color: Colors.grey),
-        onPressed: () => _selectMarriage(
-          context,
-          label,
-        ),
       ),
     );
   }
