@@ -74,11 +74,13 @@ class _CreateSchemeState extends State<CreateScheme> {
           'schemeid': _schemeIdController.text,
           'schemename': _schemeNameController.text,
           'amount': _loanAmountController.text,
-          'collectiontype': _weeksDaysController.text,
+          'collectiontype': _selectedCollectionMode,
+          'noofweeks': _weeksDaysController.text,
           'schemedetails': schemeDetailsJson,
           'entryid': staffId,
         },
       );
+      print('Collection Type: $_selectedCollectionMode');
 
       print('Response body: ${response.body}'); // Debug the response
 
