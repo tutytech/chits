@@ -102,6 +102,9 @@ class _AmountTransferState extends State<Outstandingreport> {
             'amount': branch['amount'] ?? 'N/A',
             'collectiontype': branch['collectiontype'] ?? 'N/A',
             'noofweeks': branch['noofweeks'] ?? 'N/A',
+            'totalcollection': branch['totalcollection'] ?? 'N/A',
+            'totalreceived': branch['totalreceived'] ?? 'N/A',
+            'pendingamount': branch['pendingamount']?.toString() ?? '0',
             'entryid': staffId,
           };
         }).toList();
@@ -612,7 +615,37 @@ class _AmountTransferState extends State<Outstandingreport> {
                                 )),
                                 DataColumn(
                                     label: Text(
-                                  'noofweeks',
+                                  'No of weeks',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                                DataColumn(
+                                    label: Text(
+                                  'Total Installment Amount',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                                DataColumn(
+                                    label: Text(
+                                  'Total Received Amount',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                )),
+                                DataColumn(
+                                    label: Text(
+                                  'Pending Amount',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -636,6 +669,13 @@ class _AmountTransferState extends State<Outstandingreport> {
                                         branch['collectiontype'] ?? 'N/A')),
                                     DataCell(
                                         Text(branch['noofweeks'] ?? 'N/A')),
+                                    DataCell(Text(
+                                        branch['totalcollection'] ?? 'N/A')),
+                                    DataCell(Text(
+                                        branch['totalreceived'].toString() ??
+                                            'N/A')),
+                                    DataCell(
+                                        Text(branch['pendingamount'] ?? 'N/A')),
                                   ],
                                 );
                               }).toList(),
