@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/Reports/branchwisereport.dart';
 import 'package:chitfunds/screens/Reports/centerwisereport.dart';
 import 'package:chitfunds/screens/Reports/collectionreport.dart';
 import 'package:chitfunds/screens/Reports/outstandingreport.dart';
@@ -53,7 +54,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    bool isAdmin = widget.rights?.toLowerCase() == "admin";
+    print('User Rights: ${widget.rights}');
+    bool isAdmin = widget.rights?.trim().toLowerCase() == "admin";
 
     return Drawer(
       child: ListView(
@@ -173,6 +175,18 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => Centerwisereport(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.arrow_right),
+                  title: const Text('Branchwise Report'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Branchwisereport(),
                       ),
                     );
                   },

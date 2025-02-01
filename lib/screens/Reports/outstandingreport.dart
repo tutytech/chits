@@ -1,11 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
+import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Outstandingreport extends StatefulWidget {
@@ -60,6 +63,60 @@ class _AmountTransferState extends State<Outstandingreport> {
   void dispose() {
     _transDateController.dispose();
     super.dispose();
+  }
+
+  Future<void> _exportToExcel() async {
+    var excel = Excel.createExcel();
+    Sheet sheetObject = excel['Loan Data'];
+
+    // Add table headers
+    List<String> headers = [
+      'Loan No',
+      'Loan Date',
+      'Branch',
+      'Center',
+      'Customer Name',
+      'MobileNo',
+      'Loan Amount',
+      'Collectiontype',
+      'No of weeks',
+      'Total Installment Amount',
+      'Total Received Amount',
+      'Pending Amount'
+    ];
+    sheetObject
+        .appendRow(headers.map((header) => TextCellValue(header)).toList());
+
+    // Add table data
+    for (var branch in _allBranches) {
+      sheetObject.appendRow([
+        TextCellValue(branch['loanno'] ?? 'N/A'),
+        TextCellValue(branch['loandate'] ?? 'N/A'),
+        TextCellValue(branch['branch'] ?? 'N/A'),
+        TextCellValue(branch['center'] ?? 'N/A'),
+        TextCellValue(branch['customername'] ?? 'N/A'),
+        TextCellValue(branch['phoneNo'] ?? 'N/A'),
+        TextCellValue(branch['amount'] ?? 'N/A'),
+        TextCellValue(branch['collectiontype'] ?? 'N/A'),
+        TextCellValue(branch['noofweeks'] ?? 'N/A'),
+        TextCellValue(branch['totalcollection'] ?? 'N/A'),
+        TextCellValue(branch['totalreceived'].toString() ?? 'N/A'),
+        TextCellValue(branch['pendingamount'] ?? 'N/A'),
+      ]);
+    }
+
+    // Get directory and save file
+    Directory? directory = await getExternalStorageDirectory();
+    if (directory != null) {
+      String filePath = '${directory.path}/Loan_Data.xlsx';
+      File(filePath)
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(excel.encode()!);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Excel file saved to: $filePath')),
+      );
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchOutstandingReports() async {
@@ -308,11 +365,6 @@ class _AmountTransferState extends State<Outstandingreport> {
     }
   }
 
-  void _exportToExcel() {
-    // Handle export to Excel logic
-    print('Exporting to Excel');
-  }
-
   void _exportToXml() {
     // Handle export to XML logic
     print('Exporting to XML');
@@ -462,7 +514,7 @@ class _AmountTransferState extends State<Outstandingreport> {
                           SizedBox(
                             width: 170, // Adjust the width as needed
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: _exportToExcel,
                               child: const Text(
                                 'Export To Excel',
                                 style: TextStyle(

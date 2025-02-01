@@ -10,7 +10,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerList extends StatefulWidget {
-  CustomerList({Key? key}) : super(key: key);
+  final String? rights;
+  CustomerList({Key? key, this.rights}) : super(key: key);
 
   @override
   _BranchListPageState createState() => _BranchListPageState();
