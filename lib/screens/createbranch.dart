@@ -22,6 +22,7 @@ class _CreateBranchState extends State<CreateBranch> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   List<String> branchNames = [];
+  late Future<List<Map<String, dynamic>>> _branchListFuture;
   final TextEditingController _branchNameController = TextEditingController();
   final TextEditingController _openingBalanceController =
       TextEditingController();
@@ -76,6 +77,35 @@ class _CreateBranchState extends State<CreateBranch> {
           entrydateController.text = formattedDate;
         }
       });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchBranches() async {
+    const String _baseUrl = 'https://chits.tutytech.in/branch.php';
+    try {
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'type': 'select'},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body) as List<dynamic>;
+
+        // Handle missing keys safely
+        return responseData.map((branch) {
+          return {
+            'id': branch['id'] ?? '',
+            'branchname': branch['branchname'] ?? 'Unknown Branch',
+            'openingbalance': branch['openingbalance']?.toString() ?? '0',
+            'openingdate': branch['openingdate'] ?? 'N/A',
+          };
+        }).toList();
+      } else {
+        throw Exception('Failed to fetch branches');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
     }
   }
 
@@ -205,7 +235,6 @@ class _CreateBranchState extends State<CreateBranch> {
           'openingbalance': _openingBalanceController.text,
           'openingdate': dobController.text,
           'entryid': staffId,
-          // Use the staffId from SharedPreferences
         },
       );
 
@@ -216,9 +245,13 @@ class _CreateBranchState extends State<CreateBranch> {
             const SnackBar(content: Text('Branch created successfully!')),
           );
 
-          // Fetch the list of all branches
-          await _fetchBranches();
-          Navigator.push(
+          // Re-fetch the branches and update UI by using setState
+          setState(() {
+            _branchListFuture = fetchBranches(); // Update the branch list
+          });
+
+          // Navigate to the Branch List page
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => BranchListPage(),

@@ -72,14 +72,14 @@ class _BranchListPageState extends State<CustomerList> {
 
       // Check if the response is successful (HTTP status 200)
       if (response.statusCode == 200) {
-        // Parse the response body as JSON
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        // Parse the response body as a list
+        final List<dynamic> responseData = jsonDecode(response.body);
 
-        if (responseData['status'] == 'success') {
-          print('Customer deleted successfully: ${responseData['message']}');
+        if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
+          print('Customer deleted successfully: ${responseData[0]['message']}');
           // Optionally, fetch updated customers or perform other actions here
         } else {
-          print('Failed to delete customer: ${responseData['message']}');
+          print('Failed to delete customer: ${responseData[0]['message']}');
         }
       } else {
         print('Failed to delete customer. Status code: ${response.statusCode}');
@@ -442,25 +442,23 @@ class _BranchListPageState extends State<CustomerList> {
                                           icon: const Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
-                                            // Print the branch ID for debugging
-                                            print('Branch ID: ${branch['id']}');
-
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    EditCustomer(
-                                                        id: branch['id']),
-                                              ),
-                                            );
-
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    'Edit feature not implemented'),
-                                              ),
-                                            );
+                                            if (branch != null &&
+                                                branch['id'] != null) {
+                                              // Print the branch ID for debugging
+                                              print(
+                                                  'Branch ID: ${branch['id']}');
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EditCustomer(
+                                                          id: branch['id']),
+                                                ),
+                                              );
+                                            } else {
+                                              print(
+                                                  'Branch or Branch ID is null');
+                                            }
                                           },
                                         ),
                                         IconButton(

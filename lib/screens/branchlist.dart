@@ -99,6 +99,12 @@ class _BranchListPageState extends State<BranchListPage> {
     });
   }
 
+  void _refreshBranchList() {
+    setState(() {
+      _branchListFuture = fetchBranches();
+    });
+  }
+
   Future<void> _createStaff() async {
     // Check if the form is valid
     if (!(_formKey.currentState?.validate() ?? false)) {
@@ -207,6 +213,7 @@ class _BranchListPageState extends State<BranchListPage> {
 
         if (responseData.isNotEmpty && responseData[0]['status'] == 'success') {
           print('Branch deleted successfully: ${responseData[0]['message']}');
+          _refreshBranchList();
           // Optionally, fetch updated branches or perform other actions here
         } else {
           print('Failed to delete branch: ${responseData[0]['message']}');
@@ -217,12 +224,6 @@ class _BranchListPageState extends State<BranchListPage> {
     } catch (e) {
       print('Error occurred: $e');
     }
-  }
-
-  void _refreshBranchList() {
-    setState(() {
-      _branchListFuture = fetchBranches();
-    });
   }
 
   @override
@@ -414,13 +415,6 @@ class _BranchListPageState extends State<BranchListPage> {
                                                   builder: (context) =>
                                                       EditBranch(
                                                           id: branch['id'])),
-                                            );
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    'Edit feature not implemented'),
-                                              ),
                                             );
                                           },
                                         ),

@@ -131,7 +131,7 @@ class _CreateCustomerState extends State<EditCustomer> {
   @override
   void initState() {
     super.initState();
-
+    print('edit started');
     _fetchBranches();
     _fetchCenters();
     print('widget.id: ${widget.id}');

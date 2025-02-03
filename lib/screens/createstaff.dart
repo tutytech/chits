@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:chitfunds/screens/createcustomer.dart';
+import 'package:chitfunds/screens/stafflist.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -165,7 +166,7 @@ class _CreateStaffState extends State<CreateStaff> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => CreateStaff(),
+          builder: (context) => staffListPage(),
         ),
       );
     } catch (e) {

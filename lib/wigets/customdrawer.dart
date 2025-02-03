@@ -18,6 +18,7 @@ import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/screens/editcompany.dart';
 import 'package:chitfunds/screens/editsms.dart';
 import 'package:chitfunds/screens/loan.dart';
+import 'package:chitfunds/screens/loanlist.dart';
 import 'package:chitfunds/screens/receiptlist.dart';
 import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/stafflist.dart';
@@ -27,7 +28,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class CustomDrawer extends StatefulWidget {
   final String? rights;
   final List<String>? branchNames;
-  const CustomDrawer({this.branchNames, this.rights});
+  final bool? isAdmin;
+  final Function(bool)? onRightsChanged;
+  const CustomDrawer(
+      {this.branchNames, this.rights, this.isAdmin, this.onRightsChanged});
 
   @override
   _CustomDrawerState createState() => _CustomDrawerState();
@@ -125,7 +129,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Loan()),
+                  MaterialPageRoute(builder: (context) => LoanListPage()),
                 );
               },
             ),

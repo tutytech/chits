@@ -1,5 +1,6 @@
 import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/screens/editloan.dart';
+import 'package:chitfunds/screens/loan.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -225,7 +226,7 @@ class _BranchListPageState extends State<LoanListPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CreateBranch(),
+                            builder: (context) => Loan(),
                           ),
                         );
                       },

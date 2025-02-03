@@ -8,8 +8,8 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class Dashboard extends StatefulWidget {
-  final String rights;
-  const Dashboard({Key? key, required this.rights}) : super(key: key);
+  final String? rights;
+  const Dashboard({Key? key, this.rights}) : super(key: key);
 
   @override
   _DashboardState createState() => _DashboardState();
