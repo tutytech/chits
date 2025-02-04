@@ -1,5 +1,7 @@
 import 'package:chitfunds/screens/createbranch.dart';
 import 'package:chitfunds/screens/createstaff.dart';
+import 'package:chitfunds/screens/editloan.dart';
+import 'package:chitfunds/screens/editstaff.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
@@ -435,11 +437,15 @@ class _BranchListPageState extends State<staffListPage> {
                                           icon: const Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
+                                            print(
+                                                'Staff ID: ${branch['staffId']}'); // Print the staff ID before navigating
+
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) =>
-                                                    CreateStaff(),
+                                                builder: (context) => EditStaff(
+                                                    id: branch[
+                                                        'id']), // Pass the staffId
                                               ),
                                             );
                                           },

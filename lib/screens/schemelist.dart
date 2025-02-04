@@ -373,7 +373,7 @@ class _BranchListPageState extends State<SchemeListPage> {
                                             // Proceed with deletion
                                             print(
                                                 'Deleting branch with id: ${branch['id']}');
-                                            deleteBranch(branch['id']);
+                                            deleteBranch(branch['schemeid']);
                                           },
                                         ),
                                       ],
