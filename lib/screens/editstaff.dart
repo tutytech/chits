@@ -127,14 +127,11 @@ class _CreateStaffState extends State<EditStaff> {
 
       if (response.statusCode == 200) {
         final result = json.decode(response.body);
-        if (result[0]['status'] == 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Staff updated successfully!')),
-          );
-          Navigator.pop(context, true); // Return to the previous screen
-        } else {
-          _showError(result[0]['message'] ?? 'Failed to update staff.');
-        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Staff updated successfully!')),
+        );
+        Navigator.pop(context, true); // Return to the previous screen
       } else {
         _showError('Failed to update staff: ${response.body}');
       }

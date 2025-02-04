@@ -253,7 +253,7 @@ class _SmsSettingsState extends State<EditSmsSettings> {
         final result = json.decode(response.body);
         if (result[0]['status'] == 0) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Scheme updated successfully!')),
+            const SnackBar(content: Text('SMS updated successfully!')),
           );
           Navigator.pop(context, true); // Return to the previous screen
         } else {
