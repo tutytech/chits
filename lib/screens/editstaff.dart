@@ -62,17 +62,86 @@ class _CreateStaffState extends State<EditStaff> {
     'System Entry',
     'Field Officer'
   ];
-  void _updateBranchFields(Map<String, dynamic> branch) {
+  Future<void> _updateBranchFields(Map<String, dynamic> branch) async {
+    final SharedPreferences prefs =
+        await SharedPreferences.getInstance(); // Use await to get the instance
+    final String? companyid = prefs.getString('companyId');
+
     _staffIdController.text = branch['staffId'] ?? '';
     _staffNameController.text = branch['staffName']?.toString() ?? '';
     _addressController.text = branch['address'] ?? '';
     _mobileNoController.text = branch['mobileNo'] ?? '';
     _userNameController.text = branch['userName'] ?? '';
     _passwordController.text = branch['password'] ?? '';
-    selectedBranchName = branch['branch'] ?? '';
+
+    setState(() {
+      selectedBranchName = branch['branch']?.toString() ?? '';
+      selectedBranch =
+          selectedBranchName; // Sync selectedBranch with the dropdown
+    });
+
     _branchCodeController.text = branch['branchCode'] ?? '';
     _receiptNoController.text = branch['receiptNo'] ?? '';
     selectedRights = branch['rights'] ?? '';
+    _emailController.text = branch['email'] ?? '';
+    _companyIdController.text = branch['companyid'] ?? '';
+  }
+
+  Future<void> _updateStaff() async {
+    print('---------------${widget.id}');
+    try {
+      final url = Uri.parse('https://chits.tutytech.in/staff.php');
+
+      final requestBody = {
+        'type': 'update',
+        'id': widget.id.toString(),
+        'staffId': _staffIdController.text.trim(),
+        'staffName': _staffNameController.text.trim(),
+        'address': _addressController.text.trim(),
+        'mobileNo': _mobileNoController.text.trim(),
+        'userName': _userNameController.text.trim(),
+        'password': _passwordController.text.trim(),
+        'branch': selectedBranch,
+        'branchCode': _branchCodeController.text.trim(),
+        'receiptNo':
+            _receiptNoController.text.trim(), // Ensure correct key name
+        'rights': selectedRights,
+        'email': _emailController.text.trim(),
+        'companyid': _companyIdController.text.trim(),
+      };
+
+      // Debugging prints
+      debugPrint('Request URL: $url');
+      debugPrint('Request Body: $requestBody');
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: requestBody, // Correctly formatted form data
+      );
+
+      debugPrint('Response Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        if (result[0]['status'] == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Staff updated successfully!')),
+          );
+          Navigator.pop(context, true); // Return to the previous screen
+        } else {
+          _showError(result[0]['message'] ?? 'Failed to update staff.');
+        }
+      } else {
+        _showError('Failed to update staff: ${response.body}');
+      }
+    } catch (error) {
+      debugPrint('Error: $error');
+      _showError('An error occurred: $error');
+    }
   }
 
   Future<void> fetchStaff(String id) async {
@@ -436,25 +505,24 @@ class _CreateStaffState extends State<EditStaff> {
                       ),
                       const SizedBox(height: 30),
                       DropdownButtonFormField<String>(
-                        value: selectedBranchId,
+                        value: selectedBranch,
                         onChanged: (newValue) {
                           setState(() {
                             selectedBranchId = newValue;
                             selectedBranchName = branchData.firstWhere(
-                                    (branch) => branch['id'] == newValue)[
-                                'name']; // Fetch branch name
+                                (branch) => branch['id'] == newValue)['name'];
+                            print('Selected Branch ID: $selectedBranchId');
+                            print('Selected Branch Name: $selectedBranchName');
                           });
                         },
                         items: branchData
                             .map((branch) => DropdownMenuItem<String>(
-                                  value: branch['id'], // Use branch ID as value
-                                  child: Text(
-                                      branch['name']!), // Display branch name
+                                  value: branch['name'],
+                                  child: Text(branch['name']!),
                                 ))
                             .toList(),
                         decoration: InputDecoration(
                           labelText: 'Select Branch',
-                          labelStyle: const TextStyle(color: Colors.black),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -551,7 +619,7 @@ class _CreateStaffState extends State<EditStaff> {
                               width: 150, // Adjust the width as needed
                               child: ElevatedButton(
                                 onPressed: () {
-                                  _createStaff();
+                                  _updateStaff();
                                 },
                                 child: const Text(
                                   'Save',

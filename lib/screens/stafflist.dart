@@ -438,14 +438,14 @@ class _BranchListPageState extends State<staffListPage> {
                                               color: Colors.blue),
                                           onPressed: () {
                                             print(
-                                                'Staff ID: ${branch['staffId']}'); // Print the staff ID before navigating
+                                                'Staff ID: ${branch['id']}'); // Print the staff ID before navigating
 
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) => EditStaff(
                                                     id: branch[
-                                                        'id']), // Pass the staffId
+                                                        'staffId']), // Pass the staffId
                                               ),
                                             );
                                           },

@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class AmountTransfer extends StatefulWidget {
   const AmountTransfer({Key? key}) : super(key: key);
@@ -27,6 +31,68 @@ class _AmountTransferState extends State<AmountTransfer> {
 
   String? selectedStaff1;
   final List<String> areas = ['CASH', 'CHEQUE', 'NEFT', 'RTGS', 'UPI'];
+  Future<void> _createVoucher() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? staffId = prefs.getString('staffId');
+    if (!_formKey.currentState!.validate()) {
+      return; // If form is not valid, exit early
+    }
+
+    final String apiUrl = 'https://chits.tutytech.in/voucher.php';
+
+    try {
+      // Construct request body
+      final body = {
+        'type': 'insert',
+        'voucherdate': _transferdateController.text,
+        'debitaccount': _debitController.text,
+        'debitopeningbal': _debitopeningbalController.text,
+        'creditaccount': _creditController.text,
+        'creditopeningbal': _creditopeningbalController.text,
+        'amount': _amountController.text,
+        'transactiontype': selectedStaff1,
+        'remarks': _remarksController.text,
+        'entryid': staffId,
+      };
+
+      // Print request URL and body
+      print('Request URL: $apiUrl');
+      print('Request Body: $body');
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body,
+      );
+
+      // Print response status and body
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData[0]['id'] != null) {
+          _showSnackBar('Center created successfully!');
+        } else {
+          _showSnackBar('Error: ${responseData[0]['error']}');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to create center. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showSnackBar('An error occurred: $e');
+      print('Error: $e');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +301,7 @@ class _AmountTransferState extends State<AmountTransfer> {
                           child: ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
-                                // Perform save logic
+                                _createVoucher(); // Perform save logic
                               }
                             },
                             child: const Text(
