@@ -56,7 +56,9 @@ class _BranchListPageState extends State<BranchListPage> {
   }
 
   Future<List<Map<String, dynamic>>> fetchBranches() async {
+    await Future.delayed(Duration(seconds: 1)); // Small delay
     const String _baseUrl = 'https://chits.tutytech.in/branch.php';
+
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -67,7 +69,6 @@ class _BranchListPageState extends State<BranchListPage> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body) as List<dynamic>;
 
-        // Handle missing keys safely
         return responseData.map((branch) {
           return {
             'id': branch['id'] ?? '',

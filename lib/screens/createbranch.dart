@@ -81,7 +81,9 @@ class _CreateBranchState extends State<CreateBranch> {
   }
 
   Future<List<Map<String, dynamic>>> fetchBranches() async {
+    await Future.delayed(Duration(seconds: 1)); // Small delay
     const String _baseUrl = 'https://chits.tutytech.in/branch.php';
+
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -92,7 +94,6 @@ class _CreateBranchState extends State<CreateBranch> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body) as List<dynamic>;
 
-        // Handle missing keys safely
         return responseData.map((branch) {
           return {
             'id': branch['id'] ?? '',
@@ -207,7 +208,6 @@ class _CreateBranchState extends State<CreateBranch> {
         prefs.getString('staffId'); // Retrieve staffId as a string
 
     if (staffId == null) {
-      // Handle the case where staffId is not available
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Staff ID is missing. Please log in again.')),
@@ -217,18 +217,16 @@ class _CreateBranchState extends State<CreateBranch> {
 
     print('Staff ID: $staffId');
 
-    if (!(_formKey.currentState?.validate() ?? true)) {
+    if (!(_formKey.currentState?.validate() ?? false)) {
       return; // Exit the method if validation fails
     }
 
-    final String apiUrl = 'https://chits.tutytech.in/branch.php';
+    const String apiUrl = 'https://chits.tutytech.in/branch.php';
 
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {
           'type': 'insert',
           'branchname': _branchNameController.text,
@@ -240,17 +238,19 @@ class _CreateBranchState extends State<CreateBranch> {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        if (responseData[0]['id'] != null) {
+
+        if (responseData is List &&
+            responseData.isNotEmpty &&
+            responseData[0]['id'] != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Branch created successfully!')),
           );
 
-          // Re-fetch the branches and update UI by using setState
-          setState(() {
-            _branchListFuture = fetchBranches(); // Update the branch list
-          });
+          // Delay fetching to ensure the backend reflects the change
+          await Future.delayed(const Duration(seconds: 2));
 
-          // Navigate to the Branch List page
+          // Re-fetch the branches and update UI
+          _refreshBranches();
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -314,6 +314,12 @@ class _CreateBranchState extends State<CreateBranch> {
         SnackBar(content: Text('An error occurred: $e')),
       );
     }
+  }
+
+  Future<void> _refreshBranches() async {
+    setState(() {
+      _branchListFuture = fetchBranches();
+    });
   }
 
   @override

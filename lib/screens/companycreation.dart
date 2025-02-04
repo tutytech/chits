@@ -93,11 +93,11 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
             const SnackBar(content: Text('Company created successfully!')),
           );
 
-          // Navigate to AmountTransfer after success
+          // Navigate to AmountTransfer after success, passing companyId
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EditCompany(),
+              builder: (context) => EditCompany(id: companyId.toString()),
             ),
           );
         } else {

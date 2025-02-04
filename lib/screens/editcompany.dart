@@ -27,13 +27,15 @@ class _CompanyCreationScreenState extends State<EditCompany> {
   String selectedlogo = 'No file chosen';
 
   @override
-  void initState() {
-    super.initState();
-
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     if (widget.id != null) {
       fetchCompany(widget.id!);
     } else {
-      _showError('Invalid branch ID provided.');
+      // Schedule showing the error message after the build phase
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showError('Invalid branch ID provided.');
+      });
     }
   }
 
