@@ -21,9 +21,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EditCustomer extends StatefulWidget {
-  final String? id; // Pass the branch ID to load specific data
+  final String id; // Pass the branch ID to load specific data
 
-  const EditCustomer({Key? key, this.id}) : super(key: key);
+  const EditCustomer({Key? key, required this.id}) : super(key: key);
 
   @override
   _CreateCustomerState createState() => _CreateCustomerState();
@@ -132,14 +132,15 @@ class _CreateCustomerState extends State<EditCustomer> {
   void initState() {
     super.initState();
     print('edit started');
-    _fetchBranches();
-    _fetchCenters();
+
     print('widget.id: ${widget.id}');
     if (widget.id != null) {
-      fetchCustomers(widget.id!);
+      fetchCustomers(widget.id);
     } else {
       _showError('Invalid branch ID provided.');
-    } // Fetch branches when the widget dependencies change
+    }
+    _fetchBranches();
+    _fetchCenters(); // Fetch branches when the widget dependencies change
   }
 
   Future<void> _downloadFile(String fileUrl) async {
@@ -235,11 +236,11 @@ class _CreateCustomerState extends State<EditCustomer> {
         final result = json.decode(response.body);
         if (result[0]['status'] == 0) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Scheme updated successfully!')),
+            const SnackBar(content: Text('Customer updated successfully!')),
           );
           Navigator.pop(context, true); // Return to the previous screen
         } else {
-          _showError(result[0]['message'] ?? 'Failed to update scheme.');
+          _showError(result[0]['message'] ?? 'Failed to update customer.');
         }
       } else {
         _showError('Failed to update scheme: ${response.body}');
@@ -298,8 +299,10 @@ class _CreateCustomerState extends State<EditCustomer> {
     controller.longitude.value = response['longitude']?.toString() ?? '';
   }
 
-  Future<void> fetchCustomers(String id) async {
+  Future<void> fetchCustomers(String? id) async {
     const String _baseUrl = 'https://chits.tutytech.in/customer.php';
+    print('Fetching customers for ID: $id'); // Step 1
+
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -307,41 +310,92 @@ class _CreateCustomerState extends State<EditCustomer> {
         body: {'type': 'fetch'},
       );
 
+      print('API Response Status Code: ${response.statusCode}'); // Step 2
+      print('API Response Body: ${response.body}'); // Step 3
+
       if (response.statusCode == 200) {
-        print('API Response Body: ${response.body}');
         final decodedResponse = json.decode(response.body);
 
         if (decodedResponse is Map) {
+          print('Decoded response is a valid Map'); // Step 4
+
           if (decodedResponse.containsKey('customerDetails')) {
             final List<dynamic> customerData =
                 decodedResponse['customerDetails'];
+            print('Total Customers Found: ${customerData.length}'); // Step 5
 
-            final customer = customerData.firstWhere(
-              (customer) => customer['id'].toString() == id,
-              orElse: () => null,
-            );
+            if (customerData.isNotEmpty) {
+              print('Customer List: $customerData'); // Step 6
 
-            if (customer != null) {
-              print('Customer Found: $customer');
+              final customer = customerData.firstWhere(
+                (customer) {
+                  print('Checking customer ID: ${customer['id']}'); // Step 7
+                  return customer['id'].toString() == id;
+                },
+                orElse: () {
+                  print('No customer found with ID: $id'); // Step 8
+                  return null;
+                },
+              );
+
+              if (customer != null) {
+                print('Customer Found: $customer'); // Step 9
+
+                // Check for missing or null values before updating UI
+                if (customer['latitude'] == null ||
+                    customer['latitude'] == "") {
+                  print('Warning: Latitude is missing!');
+                }
+                if (customer['longitude'] == null ||
+                    customer['longitude'] == "") {
+                  print('Warning: Longitude is missing!');
+                }
+                if (customer['branch'] == null) {
+                  print('Warning: Branch is missing!');
+                }
+                if (customer['center'] == null) {
+                  print('Warning: Center is missing!');
+                }
+
+                setState(() {
+                  _updateBranchFields(customer);
+                  isLoading = false;
+                });
+
+                print('Branch: ${customer['branch']}'); // Step 10
+                print('Center: ${customer['center']}'); // Step 11
+              } else {
+                print('Customer is NULL after searching!'); // Step 12
+                setState(() {
+                  isLoading = false;
+                });
+              }
+            } else {
+              print('Customer data list is empty'); // Step 13
               setState(() {
-                _updateBranchFields(customer);
                 isLoading = false;
               });
-            } else {
-              _showError('No customer found with ID $id.');
             }
           } else {
-            _showError('Response does not contain customerDetails.');
+            print('Response does not contain "customerDetails"'); // Step 14
+            setState(() {
+              isLoading = false;
+            });
           }
         } else {
-          _showError('Unexpected response format.');
+          print('Decoded response is NOT a Map!'); // Step 15
+          setState(() {
+            isLoading = false;
+          });
         }
       } else {
         throw Exception('Failed to fetch customers');
       }
     } catch (e) {
-      print('Error: $e');
-      _showError('Error: $e');
+      print('Error Occurred: $e'); // Step 16
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 

@@ -30,10 +30,15 @@ class _DashboardState extends State<Dashboard> {
   double chequeCollection = 0.0;
   double cancelAmount = 0.0;
   double totalCollection = 0.0;
+  double totalloan = 0.0;
+  double cashloan = 0.0;
+  double chequeloan = 0.0;
+  double cancelloan = 0.0;
   @override
   void initState() {
     super.initState();
     _fetchPaymentDetails();
+    _fetchLoanDetails();
   }
 
   Widget _buildCard(String title, String amount) {
@@ -62,6 +67,17 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildGrid(List<Widget> cards) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      children: cards,
+    );
+  }
+
+  Widget _buildGrid1(List<Widget> cards) {
     return GridView.count(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
@@ -126,6 +142,61 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
+  Future<void> _fetchLoanDetails() async {
+    const String _baseUrl =
+        'https://chits.tutytech.in/loan.php'; // Replace with your API
+
+    try {
+      // Print the request URL
+      print('Request URL: $_baseUrl');
+
+      // Print the request body
+      print('Request Body: type=innerjoin');
+
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'type': 'innerjoin'}, // Call the 'select' to fetch loan details
+      );
+
+      // Debug: Print the response
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Check if the response body is not empty
+        if (response.body.isNotEmpty) {
+          // Try parsing JSON
+          try {
+            final List<dynamic> data = json.decode(response.body);
+
+            // Initialize total loan amount
+            double totalLoanAmount = 0.0;
+
+            // Assuming the data contains the 'Amt' field which represents the sum of the loan amounts
+            if (data.isNotEmpty) {
+              totalLoanAmount =
+                  double.tryParse(data[0]['Amt'].toString()) ?? 0.0;
+            }
+
+            setState(() {
+              totalloan =
+                  totalLoanAmount; // Set the total loan amount to the UI
+            });
+          } catch (e) {
+            print('Error parsing JSON: $e');
+          }
+        } else {
+          print('Error: Response body is empty.');
+        }
+      } else {
+        print("Failed to load data: HTTP ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,32 +222,58 @@ class _DashboardState extends State<Dashboard> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 100),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    Text(
-                      'Payment Details',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 20),
-                    _buildGrid(
-                      [
-                        _buildCard('Total Collection',
-                            totalCollection.toStringAsFixed(2)),
-                        _buildCard('Cash Collection',
-                            cashCollection.toStringAsFixed(2)),
-                        _buildCard('Cheque Collection',
-                            chequeCollection.toStringAsFixed(2)),
-                        _buildCard(
-                            'Cancel Amount', cancelAmount.toStringAsFixed(2)),
-                      ],
-                    ),
-                  ],
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  Text(
+                    'Payment Details',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  _buildGrid(
+                    [
+                      _buildCard('Total Collection',
+                          totalCollection.toStringAsFixed(2)),
+                      _buildCard(
+                          'Cash Collection', cashCollection.toStringAsFixed(2)),
+                      _buildCard('Cheque Collection',
+                          chequeCollection.toStringAsFixed(2)),
+                      _buildCard(
+                          'Cancel Amount', cancelAmount.toStringAsFixed(2)),
+                    ],
+                  ),
+                  SizedBox(height: 20), // Space between sections
+                  Text(
+                    'Loan Details',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  _buildGrid1(
+                    [
+                      _buildCard('Total Loan', totalloan.toStringAsFixed(2)),
+                    ],
+                  ),
+                  SizedBox(height: 20), // Space between sections
+                  Text(
+                    'BranchWise Balance',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  _buildGrid1(
+                    [
+                      _buildCard('Total Collection',
+                          totalCollection.toStringAsFixed(2)),
+                      _buildCard(
+                          'Cash Collection', cashCollection.toStringAsFixed(2)),
+                      _buildCard('Cheque Collection',
+                          chequeCollection.toStringAsFixed(2)),
+                      _buildCard(
+                          'Cancel Amount', cancelAmount.toStringAsFixed(2)),
+                    ],
+                  ), // Space between sections
+                  // Add more sections as needed
+                ],
               ),
             ),
           ),

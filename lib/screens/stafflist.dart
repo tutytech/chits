@@ -159,20 +159,6 @@ class _BranchListPageState extends State<staffListPage> {
     }
   }
 
-  Future<void> _deleteBranch(String branchId) async {
-    try {
-      await deleteBranch(branchId);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Branch deleted successfully')),
-      );
-      _refreshBranchList();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting branch: $e')),
-      );
-    }
-  }
-
   void _refreshBranchList() {
     setState(() {
       _branchListFuture = fetchBranches();
@@ -305,6 +291,17 @@ class _BranchListPageState extends State<staffListPage> {
                             columns: [
                               DataColumn(
                                 label: Text(
+                                  'ID',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(
+                                        0xFF4A90E2), // Blue color to match gradient theme
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
                                   'Staff ID',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
@@ -418,6 +415,7 @@ class _BranchListPageState extends State<staffListPage> {
                             rows: _filteredBranches.map((branch) {
                               return DataRow(
                                 cells: [
+                                  DataCell(Text(branch['id'] ?? 'N/A')),
                                   DataCell(Text(branch['staffId'] ?? 'N/A')),
                                   DataCell(Text(branch['staffName'] ?? '0')),
                                   DataCell(Text(branch['address'] ?? 'N/A')),
@@ -445,7 +443,7 @@ class _BranchListPageState extends State<staffListPage> {
                                               MaterialPageRoute(
                                                 builder: (context) => EditStaff(
                                                     id: branch[
-                                                        'staffId']), // Pass the staffId
+                                                        'id']), // Pass the staffId
                                               ),
                                             );
                                           },

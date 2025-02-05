@@ -88,8 +88,10 @@ class _CreateStaffState extends State<EditStaff> {
   }
 
   Future<void> _updateStaff() async {
+    print('staff1');
     print('---------------${widget.id}');
     try {
+      print('staff2');
       final url = Uri.parse('https://chits.tutytech.in/staff.php');
 
       final requestBody = {
@@ -103,13 +105,12 @@ class _CreateStaffState extends State<EditStaff> {
         'password': _passwordController.text.trim(),
         'branch': selectedBranch,
         'branchCode': _branchCodeController.text.trim(),
-        'receiptNo':
-            _receiptNoController.text.trim(), // Ensure correct key name
+        'receiptNo': _receiptNoController.text.trim(),
         'rights': selectedRights,
         'email': _emailController.text.trim(),
         'companyid': _companyIdController.text.trim(),
       };
-
+      print('staff3');
       // Debugging prints
       debugPrint('Request URL: $url');
       debugPrint('Request Body: $requestBody');
@@ -119,27 +120,89 @@ class _CreateStaffState extends State<EditStaff> {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: requestBody, // Correctly formatted form data
+        body: requestBody,
       );
 
       debugPrint('Response Code: ${response.statusCode}');
       debugPrint('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
+        print('staff4');
         final result = json.decode(response.body);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Staff updated successfully!')),
-        );
-        Navigator.pop(context, true); // Return to the previous screen
+        if (result[0]['status'] == 0) {
+          print('staff5');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Staff updated successfully!')),
+          );
+          Navigator.pop(context, true); // Return to the previous screen
+        } else {
+          print('staff5');
+          _showError(result[0]['message'] ?? 'Failed to update scheme.');
+        }
       } else {
-        _showError('Failed to update staff: ${response.body}');
+        print('staff6');
+        _showError('Failed to update scheme: ${response.body}');
       }
     } catch (error) {
+      print('staff7');
       debugPrint('Error: $error');
       _showError('An error occurred: $error');
     }
   }
+
+  // Future<void> _updateStaff() async {
+  //   print('---------------${widget.id}');
+  //   try {
+  //     final url = Uri.parse('https://chits.tutytech.in/staff.php');
+
+  //     final requestBody = {
+  //       'type': 'update',
+  //       'id': widget.id.toString(),
+  //       'staffId': _staffIdController.text.trim(),
+  //       'staffName': _staffNameController.text.trim(),
+  //       'address': _addressController.text.trim(),
+  //       'mobileNo': _mobileNoController.text.trim(),
+  //       'userName': _userNameController.text.trim(),
+  //       'password': _passwordController.text.trim(),
+  //       'branch': selectedBranch,
+  //       'branchCode': _branchCodeController.text.trim(),
+  //       'receiptNo':
+  //           _receiptNoController.text.trim(), // Ensure correct key name
+  //       'rights': selectedRights,
+  //       'email': _emailController.text.trim(),
+  //       'companyid': _companyIdController.text.trim(),
+  //     };
+
+  //     // Debugging prints
+  //     debugPrint('Request URL: $url');
+  //     debugPrint('Request Body: ${json.encode(requestBody)}');
+
+  //     final response = await http.post(
+  //       url,
+  //       headers: {
+  //         'Content-Type': 'application/x-www-form-urlencoded',
+  //       },
+  //       body: requestBody, // Correctly formatted form data
+  //     );
+
+  //     debugPrint('Response Code: ${response.statusCode}');
+  //     debugPrint('Response Body: ${response.body}');
+
+  //     if (response.statusCode == 200) {
+  //       final result = json.decode(response.body);
+
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('Staff updated successfully!')),
+  //       );
+  //       Navigator.pop(context, true); // Return to the previous screen
+  //     } else {
+  //       _showError('Failed to update staff: ${response.body}');
+  //     }
+  //   } catch (error) {
+  //     debugPrint('Error: $error');
+  //     _showError('An error occurred: $error');
+  //   }
+  // }
 
   Future<void> fetchStaff(String id) async {
     const String _baseUrl = 'https://chits.tutytech.in/staff.php';
@@ -155,7 +218,7 @@ class _CreateStaffState extends State<EditStaff> {
 
         // Find the branch with the matching ID
         final branch = branchData.firstWhere(
-          (branch) => branch['staffId'].toString() == id,
+          (branch) => branch['id'].toString() == id,
           orElse: () => null,
         );
 

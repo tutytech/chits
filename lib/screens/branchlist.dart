@@ -56,15 +56,20 @@ class _BranchListPageState extends State<BranchListPage> {
   }
 
   Future<List<Map<String, dynamic>>> fetchBranches() async {
-    await Future.delayed(Duration(seconds: 1)); // Small delay
-    const String _baseUrl = 'https://chits.tutytech.in/branch.php';
+    const String apiUrl = 'https://chits.tutytech.in/branch.php';
 
     try {
+      // Print the request URL
+      print('Request URL: $apiUrl');
+
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {'type': 'select'},
       );
+
+      // Print the response body
+      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body) as List<dynamic>;
@@ -81,6 +86,7 @@ class _BranchListPageState extends State<BranchListPage> {
         throw Exception('Failed to fetch branches');
       }
     } catch (e) {
+      print('Error: $e');
       throw Exception('Error: $e');
     }
   }

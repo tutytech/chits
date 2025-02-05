@@ -192,7 +192,7 @@ class _CreateBranchState extends State<EditLoan> {
         final result = json.decode(response.body);
         if (result[0]['status'] == 0) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Scheme updated successfully!')),
+            const SnackBar(content: Text('Loan updated successfully!')),
           );
           Navigator.pop(context, true); // Return to the previous screen
         } else {

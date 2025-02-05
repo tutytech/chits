@@ -45,6 +45,11 @@ class _CreateBranchState extends State<CreateBranch> {
   String? selectedRights;
   String? selectedBranchName;
   String? _staffId;
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   fetchBranches(); // Fetch branches when the widget dependencies change
+  // }
 
   Future<void> _selectMarriage(BuildContext context, String label) async {
     final DateTime? picked = await showDatePicker(
@@ -81,15 +86,20 @@ class _CreateBranchState extends State<CreateBranch> {
   }
 
   Future<List<Map<String, dynamic>>> fetchBranches() async {
-    await Future.delayed(Duration(seconds: 1)); // Small delay
-    const String _baseUrl = 'https://chits.tutytech.in/branch.php';
+    const String apiUrl = 'https://chits.tutytech.in/branch.php';
 
     try {
+      // Print the request URL
+      print('Request URL: $apiUrl');
+
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {'type': 'select'},
       );
+
+      // Print the response body
+      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body) as List<dynamic>;
@@ -106,6 +116,7 @@ class _CreateBranchState extends State<CreateBranch> {
         throw Exception('Failed to fetch branches');
       }
     } catch (e) {
+      print('Error: $e');
       throw Exception('Error: $e');
     }
   }
@@ -221,37 +232,40 @@ class _CreateBranchState extends State<CreateBranch> {
       return; // Exit the method if validation fails
     }
 
-    const String apiUrl = 'https://chits.tutytech.in/branch.php';
+    final String apiUrl = 'https://chits.tutytech.in/branch.php';
 
     try {
+      final body = {
+        'type': 'insert',
+        'branchname': _branchNameController.text,
+        'openingbalance': _openingBalanceController.text,
+        'openingdate': dobController.text,
+        'entryid': staffId,
+      };
+
+      print('Request URL: $apiUrl');
+      print('Request Body: $body');
+
       final response = await http.post(
         Uri.parse(apiUrl),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'type': 'insert',
-          'branchname': _branchNameController.text,
-          'openingbalance': _openingBalanceController.text,
-          'openingdate': dobController.text,
-          'entryid': staffId,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
+        body: body,
       );
-
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
 
-        if (responseData is List &&
-            responseData.isNotEmpty &&
-            responseData[0]['id'] != null) {
+        if (responseData[0]['id'] != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Branch created successfully!')),
           );
 
           // Delay fetching to ensure the backend reflects the change
-          await Future.delayed(const Duration(seconds: 2));
 
           // Re-fetch the branches and update UI
-          _refreshBranches();
-          Navigator.pushReplacement(
+
+          Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => BranchListPage(),
@@ -284,7 +298,7 @@ class _CreateBranchState extends State<CreateBranch> {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          'type': 'list', // Assuming 'list' type fetches all branches
+          'type': 'select', // Assuming 'list' type fetches all branches
         },
       );
 

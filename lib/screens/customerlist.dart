@@ -442,23 +442,16 @@ class _BranchListPageState extends State<CustomerList> {
                                           icon: const Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
-                                            if (branch != null &&
-                                                branch['id'] != null) {
-                                              // Print the branch ID for debugging
-                                              print(
-                                                  'Branch ID: ${branch['id']}');
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      EditCustomer(
-                                                          id: branch['id']),
-                                                ),
-                                              );
-                                            } else {
-                                              print(
-                                                  'Branch or Branch ID is null');
-                                            }
+                                            // Print the branch ID for debugging
+                                            print('Branch ID: ${branch['id']}');
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditCustomer(
+                                                        id: branch['id']),
+                                              ),
+                                            );
                                           },
                                         ),
                                         IconButton(
