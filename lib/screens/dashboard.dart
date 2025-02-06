@@ -243,24 +243,6 @@ class _DashboardState extends State<Dashboard> {
                     ],
                   ),
                   SizedBox(height: 20), // Space between sections
-                  Text(
-                    'BranchWise Balance',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  _buildGrid1(
-                    [
-                      _buildCard('Total Collection',
-                          totalCollection.toStringAsFixed(2)),
-                      _buildCard(
-                          'Cash Collection', cashCollection.toStringAsFixed(2)),
-                      _buildCard('Cheque Collection',
-                          chequeCollection.toStringAsFixed(2)),
-                      _buildCard(
-                          'Cancel Amount', cancelAmount.toStringAsFixed(2)),
-                    ],
-                  ), // Space between sections
-                  // Add more sections as needed
                 ],
               ),
             ),

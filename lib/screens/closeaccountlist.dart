@@ -126,7 +126,7 @@ class _BranchListPageState extends State<closeAccountList> {
         _filteredBranches = _allBranches;
       } else {
         _filteredBranches = _allBranches
-            .where((branch) => branch['customername']
+            .where((branch) => branch['userid']
                 .toString()
                 .toLowerCase()
                 .contains(query.toLowerCase()))

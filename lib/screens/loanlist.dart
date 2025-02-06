@@ -30,7 +30,7 @@ class _BranchListPageState extends State<LoanListPage> {
     super.initState();
     _branchListFuture = fetchLoans();
     _searchController.addListener(() {
-      // _filterBranches(_searchController.text);
+      _filterBranches(_searchController.text);
     });
   }
 
@@ -38,6 +38,21 @@ class _BranchListPageState extends State<LoanListPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _filterBranches(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredBranches = _allBranches;
+      } else {
+        _filteredBranches = _allBranches
+            .where((branch) => branch['customerName']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()))
+            .toList();
+      }
+    });
   }
 
   Future<void> deleteLoan(String branchId) async {
@@ -83,33 +98,65 @@ class _BranchListPageState extends State<LoanListPage> {
   Future<List<Map<String, dynamic>>> fetchLoans() async {
     const String _baseUrl = 'https://chits.tutytech.in/loan.php';
     try {
+      // Print the request URL
+      print('Request URL: $_baseUrl');
+
+      // Print the request body
+      print('Request Body: type=list');
+
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {'type': 'list'},
       );
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body) as List<dynamic>;
+      // Print response status and body
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
-        // Handle missing keys safely
-        return responseData.map((branch) {
-          return {
-            'id': branch['id'] ?? '',
-            'customerId': branch['customerId'] ?? '',
-            'customerName': branch['customerName'] ?? 'Unknown Branch',
-            'accountNo': branch['accountNo']?.toString() ?? '0',
-            'date': branch['date'] ?? 'N/A',
-            'firstCollectionDate': branch['firstCollectionDate'] ?? 'N/A',
-            'amount': branch['amount'] ?? 'N/A',
-            'scheme': branch['scheme'] ?? 'N/A',
-            'remarks': branch['remarks'] ?? 'N/A',
-          };
-        }).toList();
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+
+        // Check if the response is a List or a Map
+        if (responseData is List) {
+          return responseData.map((branch) {
+            return {
+              'id': branch['id'] ?? '',
+              'customerId': branch['customerId'] ?? '',
+              'customerName': branch['customerName'] ?? 'Unknown',
+              'accountNo': branch['accountNo']?.toString() ?? '0',
+              'date': branch['date'] ?? 'N/A',
+              'firstCollectionDate': branch['firstCollectionDate'] ?? 'N/A',
+              'amount': branch['amount'] ?? 'N/A',
+              'scheme': branch['scheme'] ?? 'N/A',
+              'remarks': branch['remarks'] ?? 'N/A',
+            };
+          }).toList();
+        } else if (responseData is Map) {
+          // If the API wraps data inside an object, extract the list
+          final List<dynamic> loans = responseData['data'] ?? [];
+
+          return loans.map((branch) {
+            return {
+              'id': branch['id'] ?? '',
+              'customerId': branch['customerId'] ?? '',
+              'customerName': branch['customerName'] ?? 'Unknown',
+              'accountNo': branch['accountNo']?.toString() ?? '0',
+              'date': branch['date'] ?? 'N/A',
+              'firstCollectionDate': branch['firstCollectionDate'] ?? 'N/A',
+              'amount': branch['amount'] ?? 'N/A',
+              'scheme': branch['scheme'] ?? 'N/A',
+              'remarks': branch['remarks'] ?? 'N/A',
+            };
+          }).toList();
+        } else {
+          throw Exception('Unexpected response format');
+        }
       } else {
-        throw Exception('Failed to fetch branches');
+        throw Exception('Failed to fetch loans');
       }
     } catch (e) {
+      print('Error: $e');
       throw Exception('Error: $e');
     }
   }
