@@ -922,16 +922,20 @@ class _CreateCustomerState extends State<EditCustomer> {
                                   width: 2, // Border width
                                 ),
                               ),
-                              child: CircleAvatar(
-                                radius: 70,
-                                backgroundColor: Colors.grey[300],
+                              child: ClipOval(
+                                // Clip the image to make it perfectly circular
                                 child: CachedNetworkImage(
                                   imageUrl: customerPhotoUrl!,
-                                  placeholder: (context, url) =>
-                                      const CircularProgressIndicator(),
+                                  fit: BoxFit
+                                      .cover, // Fit image inside the circle
+                                  placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
                                   errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error,
-                                          color: Colors.grey),
+                                      const Icon(
+                                    Icons.error,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ),
                             ),

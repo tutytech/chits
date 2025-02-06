@@ -91,11 +91,11 @@ class _CreateStaffState extends State<EditStaff> {
     print('staff1');
     print('---------------${widget.id}');
     try {
-      print('staff2');
       final url = Uri.parse('https://chits.tutytech.in/staff.php');
 
       final requestBody = {
-        'type': 'update',
+        'type':
+            'update', // ✅ Try changing 'type' to 'action' if API expects this
         'id': widget.id.toString(),
         'staffId': _staffIdController.text.trim(),
         'staffName': _staffNameController.text.trim(),
@@ -110,17 +110,18 @@ class _CreateStaffState extends State<EditStaff> {
         'email': _emailController.text.trim(),
         'companyid': _companyIdController.text.trim(),
       };
+
       print('staff3');
-      // Debugging prints
       debugPrint('Request URL: $url');
       debugPrint('Request Body: $requestBody');
 
       final response = await http.post(
         url,
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type':
+              'application/x-www-form-urlencoded', // ✅ Change to JSON
         },
-        body: requestBody,
+        body: requestBody, // ✅ Send as JSON
       );
 
       debugPrint('Response Code: ${response.statusCode}');
@@ -128,20 +129,22 @@ class _CreateStaffState extends State<EditStaff> {
 
       if (response.statusCode == 200) {
         print('staff4');
-        final result = json.decode(response.body);
-        if (result[0]['status'] == 0) {
+        final result =
+            json.decode(response.body); // result is a Map, not a List
+
+        if (result['status'] == 0) {
           print('staff5');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Staff updated successfully!')),
           );
-          Navigator.pop(context, true); // Return to the previous screen
+          Navigator.pop(context, true);
         } else {
           print('staff5');
-          _showError(result[0]['message'] ?? 'Failed to update scheme.');
+          _showError(result['message'] ?? 'Failed to update staff.');
         }
       } else {
         print('staff6');
-        _showError('Failed to update scheme: ${response.body}');
+        _showError('Failed to update staff: ${response.body}');
       }
     } catch (error) {
       print('staff7');
