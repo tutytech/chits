@@ -104,7 +104,7 @@ class _DashboardState extends State<Dashboard> {
 
       // Debug: Print the response
       print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
+      // print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         // Try parsing JSON
@@ -143,45 +143,33 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future<void> _fetchLoanDetails() async {
-    const String _baseUrl =
-        'https://chits.tutytech.in/loan.php'; // Replace with your API
+    const String _baseUrl = 'https://chits.tutytech.in/loan.php';
 
     try {
-      // Print the request URL
       print('Request URL: $_baseUrl');
-
-      // Print the request body
-      print('Request Body: type=innerjoin');
+      print('Request Body: type=list');
 
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {'type': 'innerjoin'}, // Call the 'select' to fetch loan details
+        body: {'type': 'list'}, // Fetch loan details
       );
 
-      // Debug: Print the response
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        // Check if the response body is not empty
         if (response.body.isNotEmpty) {
-          // Try parsing JSON
           try {
-            final List<dynamic> data = json.decode(response.body);
+            final Map<String, dynamic> jsonResponse =
+                json.decode(response.body);
 
-            // Initialize total loan amount
-            double totalLoanAmount = 0.0;
-
-            // Assuming the data contains the 'Amt' field which represents the sum of the loan amounts
-            if (data.isNotEmpty) {
-              totalLoanAmount =
-                  double.tryParse(data[0]['Amt'].toString()) ?? 0.0;
-            }
+            // Get the total amount from the response
+            double totalLoanAmount =
+                double.tryParse(jsonResponse['totalAmount'].toString()) ?? 0.0;
 
             setState(() {
-              totalloan =
-                  totalLoanAmount; // Set the total loan amount to the UI
+              totalloan = totalLoanAmount; // Update UI with total amount
             });
           } catch (e) {
             print('Error parsing JSON: $e');
