@@ -11,7 +11,8 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Loan extends StatefulWidget {
-  const Loan({Key? key}) : super(key: key);
+  final String? rights;
+  const Loan({Key? key, this.rights}) : super(key: key);
 
   @override
   _CreateBranchState createState() => _CreateBranchState();
@@ -288,7 +289,7 @@ class _CreateBranchState extends State<Loan> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(
         children: [
           Container(

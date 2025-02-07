@@ -8,7 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateStaff extends StatefulWidget {
-  const CreateStaff({Key? key}) : super(key: key);
+  final String? rights;
+  const CreateStaff({Key? key, this.rights}) : super(key: key);
 
   @override
   _CreateStaffState createState() => _CreateStaffState();
@@ -192,7 +193,7 @@ class _CreateStaffState extends State<CreateStaff> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(
         children: [
           Container(

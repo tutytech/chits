@@ -12,7 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateBranch extends StatefulWidget {
-  const CreateBranch({Key? key}) : super(key: key);
+  final String? rights;
+  const CreateBranch({Key? key, this.rights}) : super(key: key);
 
   @override
   _CreateBranchState createState() => _CreateBranchState();
@@ -346,7 +347,7 @@ class _CreateBranchState extends State<CreateBranch> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(
         children: [
           Container(

@@ -9,7 +9,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CenterListPage extends StatefulWidget {
-  const CenterListPage({Key? key}) : super(key: key);
+  final String? rights;
+  const CenterListPage({Key? key, this.rights}) : super(key: key);
 
   @override
   _BranchListPageState createState() => _BranchListPageState();
@@ -154,7 +155,7 @@ class _BranchListPageState extends State<CenterListPage> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(
@@ -333,7 +334,9 @@ class _BranchListPageState extends State<CenterListPage> {
                                                   builder: (context) =>
                                                       EditCenter(
                                                           centerId:
-                                                              branch['id'])),
+                                                              branch['id'],
+                                                          rights:
+                                                              widget.rights)),
                                             );
                                           },
                                         ),

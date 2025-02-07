@@ -11,7 +11,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class staffListPage extends StatefulWidget {
-  const staffListPage({Key? key}) : super(key: key);
+  final String? rights;
+  const staffListPage({Key? key, this.rights}) : super(key: key);
 
   @override
   _BranchListPageState createState() => _BranchListPageState();
@@ -175,7 +176,7 @@ class _BranchListPageState extends State<staffListPage> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(
@@ -442,8 +443,9 @@ class _BranchListPageState extends State<staffListPage> {
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) => EditStaff(
-                                                    id: branch[
-                                                        'id']), // Pass the staffId
+                                                    id: branch['id'],
+                                                    rights: widget
+                                                        .rights), // Pass the staffId
                                               ),
                                             );
                                           },

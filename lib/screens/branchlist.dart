@@ -10,7 +10,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BranchListPage extends StatefulWidget {
-  const BranchListPage({Key? key}) : super(key: key);
+  final String? rights;
+  const BranchListPage({Key? key, this.rights}) : super(key: key);
 
   @override
   _BranchListPageState createState() => _BranchListPageState();
@@ -243,7 +244,7 @@ class _BranchListPageState extends State<BranchListPage> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(
@@ -421,7 +422,9 @@ class _BranchListPageState extends State<BranchListPage> {
                                               MaterialPageRoute(
                                                   builder: (context) =>
                                                       EditBranch(
-                                                          id: branch['id'])),
+                                                          id: branch['id'],
+                                                          rights:
+                                                              widget.rights)),
                                             );
                                           },
                                         ),

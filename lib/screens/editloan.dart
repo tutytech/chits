@@ -11,9 +11,10 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditLoan extends StatefulWidget {
+  final String? rights;
   final String? id; // Pass the branch ID to load specific data
 
-  const EditLoan({Key? key, this.id}) : super(key: key);
+  const EditLoan({Key? key, this.id, this.rights}) : super(key: key);
 
   @override
   _CreateBranchState createState() => _CreateBranchState();
@@ -403,7 +404,7 @@ class _CreateBranchState extends State<EditLoan> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(
         children: [
           Container(

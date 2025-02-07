@@ -8,11 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateCenter extends StatefulWidget {
+  final String? rights;
   final List<String>? branches;
-  const CreateCenter({
-    Key? key,
-    this.branches,
-  }) : super(key: key);
+  const CreateCenter({Key? key, this.branches, this.rights}) : super(key: key);
 
   @override
   _CreateCenterState createState() => _CreateCenterState();
@@ -194,7 +192,7 @@ class _CreateCenterState extends State<CreateCenter> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(
         children: [
           Container(

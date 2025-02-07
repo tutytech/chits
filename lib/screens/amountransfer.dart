@@ -9,7 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class AmountTransfer extends StatefulWidget {
-  const AmountTransfer({Key? key}) : super(key: key);
+  final String? rights;
+  const AmountTransfer({Key? key, this.rights}) : super(key: key);
 
   @override
   _AmountTransferState createState() => _AmountTransferState();
@@ -104,7 +105,7 @@ class _AmountTransferState extends State<AmountTransfer> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(

@@ -9,7 +9,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SchemeListPage extends StatefulWidget {
-  const SchemeListPage({Key? key}) : super(key: key);
+  final String? rights;
+  const SchemeListPage({Key? key, this.rights}) : super(key: key);
 
   @override
   _BranchListPageState createState() => _BranchListPageState();
@@ -140,7 +141,7 @@ class _BranchListPageState extends State<SchemeListPage> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(
@@ -340,7 +341,9 @@ class _BranchListPageState extends State<SchemeListPage> {
                                               MaterialPageRoute(
                                                   builder: (context) =>
                                                       EditScheme(
-                                                          id: branch['id'])),
+                                                          id: branch['id'],
+                                                          rights:
+                                                              widget.rights)),
                                             );
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(

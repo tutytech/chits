@@ -195,7 +195,10 @@ class _DashboardState extends State<Dashboard> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
+      drawer: CustomDrawer(
+        branchNames: branchNames ?? [], // Default to an empty list if null
+        rights: widget.rights ?? '', // Default to an empty string if null
+      ),
       body: Stack(
         children: [
           Container(

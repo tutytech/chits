@@ -9,7 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DeleteReport extends StatefulWidget {
-  const DeleteReport({Key? key}) : super(key: key);
+  final String? rights;
+  const DeleteReport({Key? key, this.rights}) : super(key: key);
 
   @override
   _AmountTransferState createState() => _AmountTransferState();
@@ -313,7 +314,7 @@ class _AmountTransferState extends State<DeleteReport> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(
         children: [
           Container(

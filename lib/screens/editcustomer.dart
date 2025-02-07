@@ -21,9 +21,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EditCustomer extends StatefulWidget {
+  final String? rights;
   final String id; // Pass the branch ID to load specific data
 
-  const EditCustomer({Key? key, required this.id}) : super(key: key);
+  const EditCustomer({Key? key, required this.id, this.rights})
+      : super(key: key);
 
   @override
   _CreateCustomerState createState() => _CreateCustomerState();
@@ -885,7 +887,7 @@ class _CreateCustomerState extends State<EditCustomer> {
           _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(
         children: [
           Container(

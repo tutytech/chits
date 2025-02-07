@@ -1,6 +1,7 @@
 import 'package:chitfunds/screens/amountransfer.dart';
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/createbranch.dart';
+import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,9 +9,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class EditCompany extends StatefulWidget {
+  final String? rights;
   final String? id; // Pass the branch ID to load specific data
 
-  const EditCompany({Key? key, this.id}) : super(key: key);
+  const EditCompany({Key? key, this.id, this.rights}) : super(key: key);
 
   @override
   _CompanyCreationScreenState createState() => _CompanyCreationScreenState();
@@ -153,6 +155,8 @@ class _CompanyCreationScreenState extends State<EditCompany> {
 
   @override
   Widget build(BuildContext context) {
+    drawer:
+    CustomDrawer(rights: widget.rights);
     return Scaffold(
       body: Stack(
         children: [

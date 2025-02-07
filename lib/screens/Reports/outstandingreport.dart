@@ -12,7 +12,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Outstandingreport extends StatefulWidget {
-  Outstandingreport({Key? key}) : super(key: key);
+  final String? rights;
+  Outstandingreport({Key? key, this.rights}) : super(key: key);
 
   @override
   _AmountTransferState createState() => _AmountTransferState();
@@ -380,7 +381,7 @@ class _AmountTransferState extends State<Outstandingreport> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(

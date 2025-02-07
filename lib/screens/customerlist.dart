@@ -226,7 +226,7 @@ class _BranchListPageState extends State<CustomerList> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(
@@ -449,7 +449,8 @@ class _BranchListPageState extends State<CustomerList> {
                                               MaterialPageRoute(
                                                 builder: (context) =>
                                                     EditCustomer(
-                                                        id: branch['id']),
+                                                        id: branch['id'],
+                                                        rights: widget.rights),
                                               ),
                                             );
                                           },

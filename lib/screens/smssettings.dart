@@ -9,7 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SmsSettings extends StatefulWidget {
-  const SmsSettings({Key? key}) : super(key: key);
+  final String? rights;
+  const SmsSettings({Key? key, this.rights}) : super(key: key);
 
   @override
   _SmsSettingsState createState() => _SmsSettingsState();
@@ -178,7 +179,7 @@ class _SmsSettingsState extends State<SmsSettings> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(
         children: [
           // Background Gradient

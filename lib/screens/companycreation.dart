@@ -9,7 +9,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class CompanyCreationScreen extends StatefulWidget {
-  const CompanyCreationScreen({Key? key}) : super(key: key);
+  final String? rights;
+  const CompanyCreationScreen({Key? key, this.rights}) : super(key: key);
 
   @override
   _CompanyCreationScreenState createState() => _CompanyCreationScreenState();
@@ -97,7 +98,8 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => EditCompany(id: companyId.toString()),
+              builder: (context) =>
+                  EditCompany(id: companyId.toString(), rights: widget.rights),
             ),
           );
         } else {

@@ -7,9 +7,10 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class EditBranch extends StatefulWidget {
+  final String? rights;
   final String? id; // Pass the branch ID to load specific data
 
-  const EditBranch({Key? key, this.id}) : super(key: key);
+  const EditBranch({Key? key, this.id, this.rights}) : super(key: key);
 
   @override
   _EditBranchState createState() => _EditBranchState();
@@ -133,7 +134,7 @@ class _EditBranchState extends State<EditBranch> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: []),
+      drawer: CustomDrawer(branchNames: [], rights: widget.rights),
       body: Stack(
         children: [
           Container(

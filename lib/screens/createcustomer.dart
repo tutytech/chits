@@ -17,7 +17,8 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateCustomer extends StatefulWidget {
-  const CreateCustomer({Key? key}) : super(key: key);
+  final String? rights;
+  const CreateCustomer({Key? key, this.rights}) : super(key: key);
 
   @override
   _CreateCustomerState createState() => _CreateCustomerState();
@@ -1040,7 +1041,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
           _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(
         children: [
           Container(

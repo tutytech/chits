@@ -17,7 +17,8 @@ import '../wigets/customappbar.dart';
 import 'package:http/http.dart' as http;
 
 class Receipt extends StatefulWidget {
-  Receipt();
+  final String? rights;
+  const Receipt({Key? key, this.rights}) : super(key: key);
 
   @override
   _ReceiptState createState() => _ReceiptState();
@@ -315,7 +316,7 @@ class _ReceiptState extends State<Receipt> {
           _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(children: [
         // Background Gradient
         Container(

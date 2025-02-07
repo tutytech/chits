@@ -8,7 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateScheme extends StatefulWidget {
-  const CreateScheme({Key? key}) : super(key: key);
+  final String? rights;
+  const CreateScheme({Key? key, this.rights}) : super(key: key);
 
   @override
   _CreateSchemeState createState() => _CreateSchemeState();
@@ -165,7 +166,7 @@ class _CreateSchemeState extends State<CreateScheme> {
           _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(children: [
         // Background Gradient
         Container(

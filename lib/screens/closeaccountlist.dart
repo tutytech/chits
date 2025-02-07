@@ -10,7 +10,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class closeAccountList extends StatefulWidget {
-  const closeAccountList({Key? key}) : super(key: key);
+  final String? rights;
+  const closeAccountList({Key? key, this.rights}) : super(key: key);
 
   @override
   _BranchListPageState createState() => _BranchListPageState();
@@ -182,7 +183,7 @@ class _BranchListPageState extends State<closeAccountList> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(

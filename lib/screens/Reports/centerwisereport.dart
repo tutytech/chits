@@ -9,7 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Centerwisereport extends StatefulWidget {
-  Centerwisereport({Key? key}) : super(key: key);
+  final String? rights;
+  Centerwisereport({Key? key, this.rights}) : super(key: key);
 
   @override
   _AmountTransferState createState() => _AmountTransferState();
@@ -269,7 +270,7 @@ class _AmountTransferState extends State<Centerwisereport> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(

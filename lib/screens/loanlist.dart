@@ -10,7 +10,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoanListPage extends StatefulWidget {
-  const LoanListPage({Key? key}) : super(key: key);
+  final String? rights;
+  const LoanListPage({Key? key, this.rights}) : super(key: key);
 
   @override
   _BranchListPageState createState() => _BranchListPageState();
@@ -223,7 +224,7 @@ class _BranchListPageState extends State<LoanListPage> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(branchNames: branchNames),
+      drawer: CustomDrawer(branchNames: branchNames, rights: widget.rights),
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(
@@ -455,7 +456,9 @@ class _BranchListPageState extends State<LoanListPage> {
                                               MaterialPageRoute(
                                                   builder: (context) =>
                                                       EditLoan(
-                                                          id: branch['id'])),
+                                                          id: branch['id'],
+                                                          rights:
+                                                              widget.rights)),
                                             );
                                           },
                                         ),

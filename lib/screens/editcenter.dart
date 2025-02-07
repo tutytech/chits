@@ -7,11 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class EditCenter extends StatefulWidget {
+  final String? rights;
   final String? centerId; // ID of the center to edit
-  const EditCenter({
-    Key? key,
-    this.centerId,
-  }) : super(key: key);
+  const EditCenter({Key? key, this.centerId, this.rights}) : super(key: key);
 
   @override
   _EditCenterState createState() => _EditCenterState();
@@ -214,7 +212,7 @@ class _EditCenterState extends State<EditCenter> {
           Scaffold.of(context).openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Stack(

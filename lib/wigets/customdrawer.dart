@@ -58,8 +58,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    print('User Rights: ${widget.rights}');
-    bool isAdmin = widget.rights?.trim().toLowerCase() == "admin";
+    bool isAdmin = (widget.rights ?? '').trim().toLowerCase() == "admin";
+    print('Navigated with rights: ${widget.rights}');
 
     return Drawer(
       child: ListView(
@@ -89,7 +89,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CustomerList()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          CustomerList(rights: widget.rights)),
                 );
               },
             ),
@@ -99,7 +101,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => BranchListPage()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          BranchListPage(rights: widget.rights)),
                 );
               },
             ),
@@ -109,7 +113,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CenterListPage()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          CenterListPage(rights: widget.rights)),
                 );
               },
             ),
@@ -119,7 +125,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SchemeListPage()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          SchemeListPage(rights: widget.rights)),
                 );
               },
             ),
@@ -129,7 +137,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoanListPage()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          LoanListPage(rights: widget.rights)),
                 );
               },
             ),
@@ -139,7 +149,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => receiptListPage()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          receiptListPage(rights: widget.rights)),
                 );
               },
             ),
@@ -149,7 +161,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AmountTransfer()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          AmountTransfer(rights: widget.rights)),
                 );
               },
             ),
@@ -166,7 +180,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CollectionReport(),
+                        builder: (context) =>
+                            CollectionReport(rights: widget.rights),
                       ),
                     );
                   },
@@ -178,7 +193,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Centerwisereport(),
+                        builder: (context) =>
+                            Centerwisereport(rights: widget.rights),
                       ),
                     );
                   },
@@ -190,7 +206,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Branchwisereport(),
+                        builder: (context) =>
+                            Branchwisereport(rights: widget.rights),
                       ),
                     );
                   },
@@ -202,7 +219,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Outstandingreport(),
+                        builder: (context) =>
+                            Outstandingreport(rights: widget.rights),
                       ),
                     );
                   },
@@ -214,7 +232,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const DeleteReport(),
+                        builder: (context) =>
+                            DeleteReport(rights: widget.rights),
                       ),
                     );
                   },
@@ -227,7 +246,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => staffListPage()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          staffListPage(rights: widget.rights)),
                 );
               },
             ),
@@ -237,7 +258,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => closeAccountList()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          closeAccountList(rights: widget.rights)),
                 );
               },
             ),
@@ -263,7 +286,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => EditCompany(id: companyId!),
+                          builder: (context) => EditCompany(
+                              id: companyId!, rights: widget.rights),
                         ),
                       );
                     },
@@ -274,7 +298,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const EditSmsSettings()),
+                            builder: (context) =>
+                                EditSmsSettings(rights: widget.rights)),
                       );
                     },
                   ),

@@ -8,9 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditScheme extends StatefulWidget {
-  final String? id; // Pass the branch ID to load specific data
+  final String? id, rights; // Pass the branch ID to load specific data
 
-  const EditScheme({Key? key, this.id}) : super(key: key);
+  const EditScheme({Key? key, this.id, this.rights}) : super(key: key);
 
   @override
   _CreateSchemeState createState() => _CreateSchemeState();
@@ -161,7 +161,7 @@ class _CreateSchemeState extends State<EditScheme> {
           _scaffoldKey.currentState?.openDrawer(); // Open drawer using the key
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(children: [
         // Background Gradient
         Container(

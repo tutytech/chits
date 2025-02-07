@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditCompany1 extends StatefulWidget {
-  const EditCompany1({Key? key}) : super(key: key);
+  final String? rights;
+  const EditCompany1({Key? key, this.rights}) : super(key: key);
 
   @override
   _EditCompanyState createState() => _EditCompanyState();
@@ -84,7 +85,7 @@ class _EditCompanyState extends State<EditCompany1> {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      drawer: CustomDrawer(),
+      drawer: CustomDrawer(rights: widget.rights),
       body: Stack(
         children: [
           Container(
