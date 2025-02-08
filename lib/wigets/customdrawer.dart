@@ -1,3 +1,4 @@
+import 'package:chitfunds/screens/LoginScreen.dart';
 import 'package:chitfunds/screens/Reports/branchwisereport.dart';
 import 'package:chitfunds/screens/Reports/centerwisereport.dart';
 import 'package:chitfunds/screens/Reports/collectionreport.dart';
@@ -46,6 +47,38 @@ class _CustomDrawerState extends State<CustomDrawer> {
   void initState() {
     super.initState();
     _loadCompanyId();
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    bool? confirmLogout = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmLogout == true) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', false);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    }
   }
 
   Future<void> _loadCompanyId() async {
@@ -281,6 +314,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ListTile(
+                    leading: const Icon(Icons.business,
+                        color: Colors.black), // Icon for Edit Company Profile
                     title: const Text('Edit Company Profile'),
                     onTap: () {
                       Navigator.push(
@@ -293,14 +328,30 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     },
                   ),
                   ListTile(
+                    leading: const Icon(Icons.sms,
+                        color: Colors.black), // Icon for SMS Settings
                     title: const Text('SMS Settings'),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                EditSmsSettings(rights: widget.rights)),
+                          builder: (context) =>
+                              EditSmsSettings(rights: widget.rights),
+                        ),
                       );
+                    },
+                  ),
+                  const Divider(), // Divider to separate logout option
+                  ListTile(
+                    leading: const Icon(Icons.logout,
+                        color: Colors.red), // Log Out Icon
+                    title: const Text(
+                      'Log Out',
+                      style: TextStyle(color: Colors.red), // Red color for text
+                    ),
+                    onTap: () {
+                      // Add logout functionality here
+                      _logout(context);
                     },
                   ),
                 ],

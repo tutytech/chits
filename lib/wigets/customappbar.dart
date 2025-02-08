@@ -60,10 +60,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: () => _logout(context),
-        ),
+        // IconButton(
+        //   icon: const Icon(Icons.logout),
+        //   onPressed: () => _logout(context),
+        // ),
       ],
     );
   }
