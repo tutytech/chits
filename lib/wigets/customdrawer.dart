@@ -298,64 +298,77 @@ class _CustomDrawerState extends State<CustomDrawer> {
               },
             ),
             const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => SettingsPage()),
-                // );
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.business,
-                        color: Colors.black), // Icon for Edit Company Profile
-                    title: const Text('Edit Company Profile'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditCompany(
-                              id: companyId!, rights: widget.rights),
-                        ),
-                      );
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.sms,
-                        color: Colors.black), // Icon for SMS Settings
-                    title: const Text('SMS Settings'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EditSmsSettings(rights: widget.rights),
-                        ),
-                      );
-                    },
-                  ),
-                  const Divider(), // Divider to separate logout option
-                  ListTile(
-                    leading: const Icon(Icons.logout,
-                        color: Colors.red), // Log Out Icon
-                    title: const Text(
-                      'Log Out',
-                      style: TextStyle(color: Colors.red), // Red color for text
-                    ),
-                    onTap: () {
-                      // Add logout functionality here
-                      _logout(context);
-                    },
-                  ),
-                ],
+            ExpansionTile(
+              tilePadding: EdgeInsets.symmetric(horizontal: 16.0),
+              leading: const Icon(
+                Icons.settings,
+                color: Colors.black,
               ),
+              title: const Text(
+                'Settings',
+              ),
+              childrenPadding: EdgeInsets.only(left: 32.0),
+              collapsedShape: const RoundedRectangleBorder(
+                side: BorderSide(
+                    color:
+                        Colors.transparent), // Remove the border when collapsed
+              ),
+              shape: const RoundedRectangleBorder(
+                side: BorderSide(
+                    color:
+                        Colors.transparent), // Remove the border when expanded
+              ),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.business,
+                        ),
+                        title: const Text('Edit Company Profile'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditCompany(
+                                  id: companyId!, rights: widget.rights),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.sms,
+                        ),
+                        title: const Text('SMS Settings'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  EditSmsSettings(rights: widget.rights),
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: const Icon(Icons.logout, color: Colors.red),
+                        title: const Text(
+                          'Log Out',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        onTap: () {
+                          _logout(context);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
 
