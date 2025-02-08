@@ -123,6 +123,7 @@ class _CreateBranchState extends State<Loan> {
               'aadharNo': customer['aadharNo'] ?? 'N/A',
               'branch': customer['branch'] ?? 'N/A',
               'center': customer['center'] ?? 'N/A',
+              'loanno': customer['loanno']?.toString() ?? '',
             };
           }));
         } else if (decodedResponse['error'] != null) {
@@ -261,7 +262,9 @@ class _CreateBranchState extends State<Loan> {
           customer['name'].toLowerCase() ==
               input.toLowerCase() || // Check by name
           customer['phoneNo'] == input || // Check by mobile number
-          customer['customerId'] == input, // Check by customer ID
+          customer['customerId'] == input ||
+          customer['loanno'].toString() == input,
+      // Check by customer ID
       orElse: () => {}, // Return an empty map if no match is found
     );
 

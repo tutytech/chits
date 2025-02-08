@@ -169,7 +169,9 @@ class _ReceiptState extends State<Receipt> {
           customer['name'].toLowerCase() ==
               input.toLowerCase() || // Check by name
           customer['phoneNo'] == input || // Check by mobile number
-          customer['customerId'] == input, // Check by customer ID
+          customer['customerId'] == input ||
+          customer['receiptno'] == input,
+      // Check by customer ID
       orElse: () => {}, // Return an empty map if no match is found
     );
 
@@ -425,27 +427,35 @@ class _ReceiptState extends State<Receipt> {
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
-                      controller:
-                          _receivedamountController, // This controller will hold the balance
-                      // Makes the text field read-only
+                      controller: _receivedamountController,
                       decoration: InputDecoration(
                         labelText: 'Received Amount',
                         labelStyle: const TextStyle(color: Colors.black),
                         filled: true,
-                        fillColor: Colors.grey[
-                            200], // Optional: gives a light grey background for better visibility
+                        fillColor: Colors.grey[200],
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Received Amount cannot be empty';
+                        if (value == null || value.isEmpty || value == '0') {
+                          return 'Received Amount cannot be empty or zero';
                         }
                         return null;
                       },
                     ),
+
+// Remark Text
+                    if (_receivedamountController.text == '0')
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          'Received amount not to be null',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+
                     const SizedBox(height: 20),
 
                     // Opening Date field
