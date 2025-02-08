@@ -170,7 +170,7 @@ class _ReceiptState extends State<Receipt> {
               input.toLowerCase() || // Check by name
           customer['phoneNo'] == input || // Check by mobile number
           customer['customerId'] == input ||
-          customer['receiptno'] == input,
+          customer['loanno'].toString() == input,
       // Check by customer ID
       orElse: () => {}, // Return an empty map if no match is found
     );
@@ -290,6 +290,7 @@ class _ReceiptState extends State<Receipt> {
               'aadharNo': customer['aadharNo'] ?? 'N/A',
               'branch': customer['branch'] ?? 'N/A',
               'center': customer['center'] ?? 'N/A',
+              'loanno': customer['loanno']?.toString() ?? '',
             };
           }));
         } else if (decodedResponse['error'] != null) {
