@@ -35,15 +35,33 @@ import 'package:chitfunds/screens/stafflist.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final prefs = await SharedPreferences.getInstance();
+  // For testing: force login screen on app start by setting isLoggedIn to false.
+
+  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  final lastScreen = prefs.getString('lastScreen') ?? 'LoginScreen';
+  final rights = prefs.getString('rights');
+
   FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
   FlutterDownloader.initialize(debug: true);
-  runApp(MyApp());
+
+  runApp(MyApp(isLoggedIn: isLoggedIn, lastScreen: lastScreen, rights: rights));
 }
 
 class MyApp extends StatefulWidget {
-  MyApp({Key? key}) : super(key: key);
+  final bool isLoggedIn;
+  final String? lastScreen, rights;
+  MyApp(
+      {Key? key,
+      required this.isLoggedIn,
+      required this.lastScreen,
+      this.rights})
+      : super(key: key);
 
   @override
   State<MyApp> createState() => _FlutterBlueAppState();
@@ -78,9 +96,24 @@ class _FlutterBlueAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       color: Colors.lightBlue,
-      home: LoginScreen(),
+      home: _getInitialScreen(),
       navigatorObservers: [BluetoothAdapterStateObserver()],
     );
+  }
+
+  Widget _getInitialScreen() {
+    if (widget.isLoggedIn) {
+      // Check the last visited screen and navigate accordingly
+      switch (widget.lastScreen) {
+        case 'Dashboard':
+          return Dashboard(rights: widget.rights);
+
+        default:
+          return Dashboard(rights: widget.rights);
+      }
+    } else {
+      return const LoginScreen();
+    }
   }
 }
 
