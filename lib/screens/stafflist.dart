@@ -436,18 +436,29 @@ class _BranchListPageState extends State<staffListPage> {
                                           icon: const Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
-                                            print(
-                                                'Staff ID: ${branch['id']}'); // Print the staff ID before navigating
-
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => EditStaff(
+                                            if (branch['id'] != null) {
+                                              print(
+                                                  'Staff ID: ${branch['id']}');
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EditStaff(
                                                     id: branch['id'],
-                                                    rights: widget
-                                                        .rights), // Pass the staffId
-                                              ),
-                                            );
+                                                    rights: widget.rights,
+                                                  ),
+                                                ),
+                                              );
+                                            } else {
+                                              print(
+                                                  'Error: branch ID is null.');
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                    content: Text(
+                                                        'Invalid staff ID')),
+                                              );
+                                            }
                                           },
                                         ),
                                         IconButton(

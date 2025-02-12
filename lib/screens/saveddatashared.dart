@@ -12,6 +12,11 @@ class PreferencesUtils {
     return prefs.getBool('isLoggedIn') ?? false;
   }
 
+  static Future<String?> getLastScreen() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('lastScreen');
+  }
+
   // Save login state
   static Future<void> setLoggedIn(bool isLoggedIn) async {
     final prefs = await _getPrefs();

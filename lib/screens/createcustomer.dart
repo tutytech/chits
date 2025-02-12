@@ -1093,24 +1093,23 @@ class _CreateCustomerState extends State<CreateCustomer> {
                                     : null,
                               ),
                             ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: InkWell(
-                                onTap:
-                                    _pickImage, // Call the method to pick an image
-                                child: CircleAvatar(
-                                  radius: 15,
-                                  backgroundColor: Colors.blue,
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                                ),
-                              ),
-                            ),
                           ],
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: InkWell(
+                          onTap: _pickImage, // Call the method to pick an image
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundColor: Colors.blue,
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
                         ),
                       ),
 

@@ -1,11 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/screens/stafflist.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http_parser/http_parser.dart';
 
 class CreateStaff extends StatefulWidget {
   final String? rights;
@@ -33,6 +37,10 @@ class _CreateStaffState extends State<CreateStaff> {
   List<Map<String, String>> branchData = [];
   String? selectedBranchName;
   String? selectedBranchId;
+  Uint8List? _imageBytes;
+  final ImagePicker _picker = ImagePicker();
+  String? _imageFileName;
+  File? _image;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -56,6 +64,33 @@ class _CreateStaffState extends State<CreateStaff> {
     'System Entry',
     'Field Officer'
   ];
+  Future<void> _pickImage() async {
+    print('pick1');
+    try {
+      print('pick2');
+      // Pick the image from the gallery
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        print('pick3');
+        final bytes = await pickedFile.readAsBytes(); // Convert image to bytes
+        setState(() {
+          print('pick4');
+          _imageBytes = bytes; // Store the image bytes
+          _imageFileName = pickedFile.name;
+          _image = File(pickedFile.path);
+          print('$_imageFileName');
+          print('$_image');
+        });
+      } else {
+        print('pick5');
+        print("No image selected.");
+      }
+    } catch (e) {
+      print('pick6');
+      print("Error picking image: $e");
+    }
+  }
+
   Future<void> _fetchBranches() async {
     final String apiUrl = 'https://chits.tutytech.in/branch.php';
 
@@ -110,9 +145,11 @@ class _CreateStaffState extends State<CreateStaff> {
     final String apiUrl = 'https://chits.tutytech.in/staff.php';
 
     try {
-      // Print the request URL and body for debugging
-      print('Request URL: $apiUrl');
-      print('Request body: ${{
+      // Create multipart request
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+
+      // Add text fields
+      request.fields.addAll({
         'type': 'insert',
         'staffId': _staffIdController.text,
         'staffName': _staffNameController.text,
@@ -120,40 +157,36 @@ class _CreateStaffState extends State<CreateStaff> {
         'mobileNo': _mobileNoController.text,
         'userName': _userNameController.text,
         'password': _passwordController.text,
-        'branch': selectedBranchName,
+        'branch': selectedBranchName ?? '',
         'branchCode': _branchCodeController.text,
         'receiptNo': _receiptNoController.text,
-        'rights': selectedRights,
-      }}');
+        'rights': selectedRights ?? '',
+        'companyid': companyid ?? '',
+        'email': _emailController.text,
+        'entryid': staffId ?? '',
+      });
 
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: {
-          'type': 'insert',
-          'staffId': _staffIdController.text,
-          'staffName': _staffNameController.text,
-          'address': _addressController.text,
-          'mobileNo': _mobileNoController.text,
-          'userName': _userNameController.text,
-          'password': _passwordController.text,
-          'branch': selectedBranchName ?? '', // Use default value if null
-          'branchCode': _branchCodeController.text,
-          'receiptNo': _receiptNoController.text,
-          'rights': selectedRights ?? '', // Use default value if null
-          'companyid': companyid ?? '', // Make sure companyid is not null
-          'email': _emailController.text,
-          'entryid': staffId ?? '', // Ensure staffId is not null
-        },
-      );
+      // Add image file if selected
+      if (_imageBytes != null && _imageFileName != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'profile', // Field name for the image in the database
+            _imageBytes!,
+            filename: _imageFileName ?? 'profile_image.jpg',
+            contentType: MediaType('image', 'jpeg'),
+          ),
+        );
+      }
 
-      // Print the response body for debugging
-      print('Response body: ${response.body}');
+      // Send request
+      final response = await request.send();
+
+      // Handle response
+      final responseBody = await response.stream.bytesToString();
+      print('Response body: $responseBody');
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
+        final Map<String, dynamic> responseData = json.decode(responseBody);
 
         if (responseData['id'] != null) {
           _showSnackBar('Staff created successfully!');
@@ -164,6 +197,7 @@ class _CreateStaffState extends State<CreateStaff> {
         _showSnackBar(
             'Failed to create staff. Status code: ${response.statusCode}');
       }
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -171,7 +205,6 @@ class _CreateStaffState extends State<CreateStaff> {
         ),
       );
     } catch (e) {
-      // Print the error for debugging
       print('Error: $e');
       _showSnackBar('An error occurred: $e');
     }
@@ -215,6 +248,52 @@ class _CreateStaffState extends State<CreateStaff> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Center(
+                        child: Stack(
+                          alignment: Alignment
+                              .center, // Center alignment for both children
+                          children: [
+                            Container(
+                              width: 140,
+                              height: 140,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  width: 2,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 70,
+                                backgroundColor: Colors.grey[300],
+                                backgroundImage: _imageBytes != null
+                                    ? MemoryImage(_imageBytes!)
+                                    : null,
+                                child: _imageBytes == null
+                                    ? const Icon(Icons.person,
+                                        size: 40, color: Colors.grey)
+                                    : null,
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: InkWell(
+                                onTap: _pickImage,
+                                child: CircleAvatar(
+                                  radius: 15,
+                                  backgroundColor: Colors.blue,
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 20),
                       TextFormField(
                         controller: _staffIdController,

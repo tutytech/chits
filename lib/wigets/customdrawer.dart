@@ -302,7 +302,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
               tilePadding: EdgeInsets.symmetric(horizontal: 16.0),
               leading: const Icon(
                 Icons.settings,
-                color: Colors.black,
               ),
               title: const Text(
                 'Settings',
@@ -380,15 +379,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => receiptListPage()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          receiptListPage(rights: widget.rights)),
                 );
               },
             ),
             ExpansionTile(
-              tilePadding: EdgeInsets.symmetric(horizontal: 16.0),
+              tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
               leading: const Icon(Icons.bar_chart),
               title: const Text('Reports'),
-              childrenPadding: EdgeInsets.only(left: 32.0),
+              childrenPadding: const EdgeInsets.only(left: 32.0),
               children: [
                 ListTile(
                   leading: const Icon(Icons.arrow_right),
@@ -397,17 +398,207 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CollectionReport(),
-                      ),
+                          builder: (context) =>
+                              CollectionReport(rights: widget.rights)),
                     );
                   },
                 ),
               ],
             ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor:
+                      Colors.transparent, // Removes default background space
+                  isScrollControlled: true,
+                  builder: (context) => Align(
+                    alignment:
+                        Alignment.centerLeft, // Aligns closer to the side menu
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 15.0), // Reduce left space
+                      child: SizedBox(
+                        width: 250, // Adjust width as needed
+                        child: Material(
+                          // Required to retain default styling
+                          borderRadius: BorderRadius.circular(10),
+                          child: SettingsPopup(rights: widget.rights),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ],
+
           // Staff and other settings can be added here if needed
         ],
       ),
+    );
+  }
+}
+
+class SettingsPopup extends StatelessWidget {
+  final String? rights;
+  SettingsPopup({Key? key, this.rights}) : super(key: key);
+
+  Future<void> _logout(BuildContext context) async {
+    bool? confirmLogout = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmLogout == true) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', false);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      body: Stack(children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A90E2), Color(0xFF50E3C2)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment:
+                CrossAxisAlignment.center, // Aligns content centrally
+            children: [
+              Text("Edit Profile",
+                  style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold)),
+              SizedBox(height: 50),
+
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const CircleAvatar(
+                      radius: 60,
+                      backgroundImage:
+                          AssetImage('assets/profile_placeholder.png'),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 5,
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: Colors.white,
+                        child: IconButton(
+                          icon: const Icon(Icons.edit,
+                              size: 16, color: Colors.blue),
+                          onPressed: () {
+                            // Edit profile picture functionality
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // ✅ Name Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: const Text(
+                      'Riya Prakash',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    onPressed: () {
+                      // Edit name functionality
+                    },
+                  ),
+                ],
+              ),
+
+              const Divider(),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: const Text(
+                      'Password',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    onPressed: () {
+                      // Edit name functionality
+                    },
+                  ),
+                ],
+              ),
+
+              const Divider(),
+              SizedBox(height: 30),
+              // ✅ Logout Button
+              ElevatedButton.icon(
+                onPressed: () => _logout(context),
+                icon: const Icon(Icons.logout, color: Colors.red),
+                label:
+                    const Text('Logout', style: TextStyle(color: Colors.red)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.red),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      ]),
     );
   }
 }

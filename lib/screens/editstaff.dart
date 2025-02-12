@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/screens/stafflist.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditStaff extends StatefulWidget {
@@ -34,6 +38,11 @@ class _CreateStaffState extends State<EditStaff> {
   String? selectedBranchName;
   String? selectedBranchId;
   bool isLoading = true;
+  String? customerPhotoUrl;
+  String? _imageFileName;
+  final ImagePicker _picker = ImagePicker();
+  File? _image;
+  Uint8List? _imageBytes;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -374,6 +383,33 @@ class _CreateStaffState extends State<EditStaff> {
     );
   }
 
+  Future<void> _pickImage() async {
+    print('pick1');
+    try {
+      print('pick2');
+      // Pick the image from the gallery
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        print('pick3');
+        final bytes = await pickedFile.readAsBytes(); // Convert image to bytes
+        setState(() {
+          print('pick4');
+          _imageBytes = bytes; // Store the image bytes
+          _imageFileName = pickedFile.name;
+          _image = File(pickedFile.path);
+          print('$_imageFileName');
+          print('$_image');
+        });
+      } else {
+        print('pick5');
+        print("No image selected.");
+      }
+    } catch (e) {
+      print('pick6');
+      print("Error picking image: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -406,7 +442,60 @@ class _CreateStaffState extends State<EditStaff> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 20),
+                      Center(
+                        child: Stack(
+                          children: [
+                            // CircleAvatar with border
+                            Container(
+                              width: 140,
+                              height: 140,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.grey.withOpacity(
+                                      0.5), // Mild grey border color
+                                  width: 2, // Border width
+                                ),
+                              ),
+                              child: ClipOval(
+                                // Clip the image to make it perfectly circular
+                                child: CachedNetworkImage(
+                                  imageUrl: customerPhotoUrl!,
+                                  fit: BoxFit
+                                      .cover, // Fit image inside the circle
+                                  placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(
+                                    Icons.error,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: InkWell(
+                                onTap:
+                                    _pickImage, // Call the method to pick an image
+                                child: CircleAvatar(
+                                  radius: 15,
+                                  backgroundColor: Colors.blue,
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
                       TextFormField(
                         controller: _staffIdController,
                         decoration: InputDecoration(

@@ -80,14 +80,16 @@ class _LoginScreenState extends State<LoginScreen> {
             print('Received Rights: $rights');
 
             if (staffId != null && rights != null) {
-              final SharedPreferences prefs =
-                  await SharedPreferences.getInstance();
-              await prefs.setString('staffId', staffId.toString());
-              await prefs.setString('rights', rights);
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', true);
+              await prefs.setString('lastScreen', 'Dashboard');
 
               print('Staff ID saved in SharedPreferences: $staffId');
               print('User Rights saved in SharedPreferences: $rights');
-
+              await prefs.setBool('isLoggedIn', true);
+              await prefs.setString('lastScreen', 'Dashboard');
+              await prefs.setString('staffId', staffId.toString());
+              await prefs.setString('rights', rights);
               Navigator.push(
                 context,
                 MaterialPageRoute(
