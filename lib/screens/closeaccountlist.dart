@@ -85,7 +85,6 @@ class _BranchListPageState extends State<closeAccountList> {
     const String _baseUrl = 'https://chits.tutytech.in/closeaccount.php';
 
     try {
-      // Debug: Print the request URL and parameters
       print('Request URL: $_baseUrl');
       print('Request Body: type=select');
 
@@ -95,27 +94,28 @@ class _BranchListPageState extends State<closeAccountList> {
         body: {'type': 'select'},
       );
 
-      // Debug: Print the response
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body) as List<dynamic>;
 
-        // Handle missing keys safely
+        // Print responseData
+        print('Decoded Response Data: $responseData');
+
         return responseData.map((branch) {
           return {
             'id': branch['id'] ?? '',
             'userid': branch['userid'] ?? 'Unknown Branch',
             'todaydate': branch['todaydate']?.toString() ?? '0',
             'closetime': branch['closetime'] ?? 'N/A',
+            'companyid': branch['companyid'] ?? 'N/A',
           };
         }).toList();
       } else {
         throw Exception('Failed to fetch branches');
       }
     } catch (e) {
-      // Debug: Print the error
       print('Error: $e');
       throw Exception('Error: $e');
     }

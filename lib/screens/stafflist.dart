@@ -444,7 +444,7 @@ class _BranchListPageState extends State<staffListPage> {
                                                 MaterialPageRoute(
                                                   builder: (context) =>
                                                       EditStaff(
-                                                    id: branch['id'],
+                                                    id: branch['id'].toString(),
                                                     rights: widget.rights,
                                                   ),
                                                 ),

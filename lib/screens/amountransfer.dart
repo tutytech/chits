@@ -34,7 +34,8 @@ class _AmountTransferState extends State<AmountTransfer> {
   final List<String> areas = ['CASH', 'CHEQUE', 'NEFT', 'RTGS', 'UPI'];
   Future<void> _createVoucher() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? staffId = prefs.getString('staffId');
+    final String? staffId = await prefs.getString('staffId');
+    final String? companyid = prefs.getString('companyId');
     if (!_formKey.currentState!.validate()) {
       return; // If form is not valid, exit early
     }
@@ -54,6 +55,7 @@ class _AmountTransferState extends State<AmountTransfer> {
         'transactiontype': selectedStaff1,
         'remarks': _remarksController.text,
         'entryid': staffId,
+        'companyid': companyid,
       };
 
       // Print request URL and body
@@ -75,7 +77,7 @@ class _AmountTransferState extends State<AmountTransfer> {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData[0]['id'] != null) {
-          _showSnackBar('Center created successfully!');
+          _showSnackBar('Voucher created successfully!');
         } else {
           _showSnackBar('Error: ${responseData[0]['error']}');
         }

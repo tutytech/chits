@@ -192,6 +192,7 @@ class _ReceiptState extends State<Receipt> {
   Future<void> _createBranch() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = prefs.getString('staffId');
+    final String? companyid = prefs.getString('companyId');
     if (!(_formKey.currentState?.validate() ?? true)) {
       return; // Exit the method if validation fails
     }
@@ -217,6 +218,7 @@ class _ReceiptState extends State<Receipt> {
           'bankname': _banknameController.text,
           'remarks': _remarksController.text,
           'entryid': staffId,
+          'companyid': companyid,
           // Replace with a real entry ID if needed
         },
       );

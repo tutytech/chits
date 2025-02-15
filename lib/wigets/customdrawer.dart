@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:chitfunds/screens/LoginScreen.dart';
 import 'package:chitfunds/screens/Reports/branchwisereport.dart';
 import 'package:chitfunds/screens/Reports/centerwisereport.dart';
@@ -23,16 +27,25 @@ import 'package:chitfunds/screens/loanlist.dart';
 import 'package:chitfunds/screens/receiptlist.dart';
 import 'package:chitfunds/screens/schemelist.dart';
 import 'package:chitfunds/screens/stafflist.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomDrawer extends StatefulWidget {
-  final String? rights;
+  final String? rights, id;
   final List<String>? branchNames;
   final bool? isAdmin;
   final Function(bool)? onRightsChanged;
   const CustomDrawer(
-      {this.branchNames, this.rights, this.isAdmin, this.onRightsChanged});
+      {this.branchNames,
+      this.rights,
+      this.isAdmin,
+      this.onRightsChanged,
+      this.id});
 
   @override
   _CustomDrawerState createState() => _CustomDrawerState();
@@ -441,9 +454,319 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 }
 
-class SettingsPopup extends StatelessWidget {
-  final String? rights;
-  SettingsPopup({Key? key, this.rights}) : super(key: key);
+class SettingsPopup extends StatefulWidget {
+  final String? rights, entryid, id;
+
+  const SettingsPopup({Key? key, this.rights, this.entryid, this.id})
+      : super(key: key);
+
+  @override
+  State<SettingsPopup> createState() => _SettingsPopupState();
+}
+
+class _SettingsPopupState extends State<SettingsPopup> {
+  String? staffName;
+  String? password;
+  String? profile;
+  String profileUrl = '';
+  String? uploadedImageUrl;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStaffDetails();
+  }
+
+  Future<void> _loadStaffDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      staffName = prefs.getString('userName') ?? 'Unknown';
+      password = prefs.getString('password') ?? 'Unknown';
+      profile = prefs.getString('profileUrl') ?? '';
+      _nameController.text = staffName!;
+      _passwordController.text = password!;
+    });
+
+    print('Loaded Staff Name: $staffName');
+    print('Loaded Password: $password');
+    print('Loaded Profile URL: $profile');
+  }
+
+  Future<void> _pickProfileImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        profile = image.path; // Local file path for preview
+      });
+
+      // Optional: Upload image to the server here
+      await _uploadImage(File(image.path));
+    }
+  }
+
+  Future<void> _pickProfileImageweb() async {
+    if (kIsWeb) {
+      // Flutter Web Image Picker
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+      );
+
+      if (result != null && result.files.single.bytes != null) {
+        Uint8List bytes = result.files.single.bytes!;
+        String fileName = result.files.single.name;
+        await _uploadImageWeb(bytes, fileName);
+      }
+    } else {
+      // Flutter Mobile Image Picker
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image != null) {
+        Uint8List bytes = await image.readAsBytes();
+        await _uploadImageWeb(bytes, image.name); // Same upload logic
+      }
+    }
+  }
+
+  Future<void> _uploadImageWeb(Uint8List bytes, String fileName) async {
+    try {
+      var uri = Uri.parse('https://chits.tutytech.in/uploads');
+      var request = http.MultipartRequest('POST', uri);
+
+      request.files.add(http.MultipartFile.fromBytes(
+        'image',
+        bytes,
+        filename: fileName,
+      ));
+
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        print('Image uploaded successfully');
+        // Update profile URL in SharedPreferences
+        final newImageUrl =
+            'https://chits.tutytech.in/uploads/$fileName'; // Adjust as per your API response
+        setState(() {
+          profile = newImageUrl;
+        });
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('profileUrl', newImageUrl);
+      } else {
+        print('Failed to upload image: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Image upload error: $e');
+    }
+  }
+
+  Future<void> _uploadImage(File imageFile) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://chits.tutytech.in/staff.php'), // Adjust URL
+      );
+
+      request.files.add(
+        await http.MultipartFile.fromPath('profile_image', imageFile.path),
+      );
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.bytesToString();
+        final result = jsonDecode(responseData);
+
+        if (result['status'] == 1) {
+          setState(() {
+            uploadedImageUrl = result['imageUrl']; // URL returned from API
+          });
+
+          // Update profile image in local state & shared preferences
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('profileUrl', uploadedImageUrl!);
+
+          debugPrint('Uploaded Image URL: $uploadedImageUrl');
+        } else {
+          debugPrint('Image upload failed: ${result['message']}');
+        }
+      } else {
+        debugPrint('Image upload error: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      debugPrint('Image upload exception: $e');
+    }
+  }
+
+  void _editName() async {
+    final newName = await _showEditDialog('Name', _nameController);
+    if (newName != null && newName != staffName) {
+      setState(() {
+        staffName = newName;
+        _nameController.text = newName;
+      });
+
+      final bool success = await _updateStaffDetails(
+        updatedName: newName,
+        updatedPassword: password,
+      );
+
+      if (success) {
+        _updateStaff(); // Navigate or whatever logic you need
+      } else {
+        _showErrorSnackbar('Failed to update Name. Try again!');
+      }
+    }
+  }
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _editPassword() async {
+    final newPassword = await _showEditDialog('Password', _passwordController);
+    if (newPassword != null && newPassword != password) {
+      setState(() {
+        password = newPassword;
+        _passwordController.text = newPassword;
+      });
+
+      final bool success = await _updateStaffDetails(
+        updatedName: staffName,
+        updatedPassword: newPassword,
+      );
+
+      if (success) {
+        _updateStaff(); // Navigate or whatever logic you need
+      } else {
+        _showErrorSnackbar('Failed to update Password. Try again!');
+      }
+    }
+  }
+
+  Future<bool> _updateStaffDetails({
+    required String? updatedName,
+    required String? updatedPassword,
+  }) async {
+    try {
+      // Simulating API call (Replace with your API logic)
+      await Future.delayed(const Duration(seconds: 1));
+
+      // Simulate success (true) or failure (false)
+      // Replace this with actual API response logic
+      bool apiSuccess = true; // Example, change as per API response
+
+      return apiSuccess;
+    } catch (e) {
+      print("Error updating staff details: $e");
+      return false;
+    }
+  }
+
+  Future<void> _updateStaff() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int? id = prefs.getInt('id');
+    final String? finalProfileUrl =
+        uploadedImageUrl ?? prefs.getString('profileUrl');
+
+    print('staff1');
+    print('---------------${widget.id}');
+    try {
+      final url = Uri.parse('https://chits.tutytech.in/staff.php');
+
+      final requestBody = {
+        'type':
+            'updateprofile', // ✅ Try changing 'type' to 'action' if API expects this
+        'id': id.toString(),
+
+        'userName': _nameController.text.trim(),
+        'password': _passwordController.text.trim(),
+        'profile': profile,
+      };
+
+      print('staff3');
+      debugPrint('Request URL: $url');
+      debugPrint('Request Body: $requestBody');
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: requestBody,
+      );
+
+      debugPrint('Response Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('staff4');
+        final result =
+            json.decode(response.body); // result is a Map, not a List
+
+        if (result['status'] == 0) {
+          print('staff5');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Staff updated successfully!')),
+          );
+          Navigator.pop(context, true);
+        } else {
+          print('staff5');
+          _showError(result['message'] ?? 'Failed to update staff.');
+        }
+      } else {
+        print('staff6');
+        _showError('Failed to update staff: ${response.body}');
+      }
+    } catch (error) {
+      print('staff7');
+      debugPrint('Error: $error');
+      _showError('An error occurred: $error');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  Future<String?> _showEditDialog(
+      String field, TextEditingController controller) async {
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        TextEditingController localController =
+            TextEditingController(text: controller.text);
+        return AlertDialog(
+          title: Text('Edit $field'),
+          content: TextField(
+            controller: localController,
+            decoration: InputDecoration(labelText: field),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, localController.text),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _logout(BuildContext context) async {
     bool? confirmLogout = await showDialog(
@@ -504,25 +827,47 @@ class SettingsPopup extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 30),
                 child: Stack(
-                  alignment: Alignment.center,
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 60,
-                      backgroundImage:
-                          AssetImage('assets/profile_placeholder.png'),
+                      backgroundColor: Colors.grey[300],
+                      child: ClipOval(
+                        child: profile != null && profile!.isNotEmpty
+                            ? Image.network(
+                                profile!,
+                                width: 120,
+                                height: 120,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.person,
+                                      size: 60, color: Colors.grey);
+                                },
+                              )
+                            : const Icon(Icons.person,
+                                size: 60, color: Colors.grey),
+                      ),
                     ),
                     Positioned(
                       bottom: 0,
-                      right: 5,
-                      child: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.white,
-                        child: IconButton(
-                          icon: const Icon(Icons.edit,
-                              size: 16, color: Colors.blue),
-                          onPressed: () {
-                            // Edit profile picture functionality
-                          },
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () {
+                          _pickProfileImageweb();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.blue,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.edit,
+                              color: Colors.white, size: 18),
                         ),
                       ),
                     ),
@@ -538,8 +883,8 @@ class SettingsPopup extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: const Text(
-                      'Riya Prakash',
+                    child: Text(
+                      staffName ?? 'Unknown',
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -547,7 +892,7 @@ class SettingsPopup extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.white),
                     onPressed: () {
-                      // Edit name functionality
+                      _editName();
                     },
                   ),
                 ],
@@ -560,8 +905,8 @@ class SettingsPopup extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: const Text(
-                      'Password',
+                    child: Text(
+                      password ?? 'Unknown',
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -569,7 +914,7 @@ class SettingsPopup extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.white),
                     onPressed: () {
-                      // Edit name functionality
+                      _editPassword();
                     },
                   ),
                 ],

@@ -227,6 +227,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = await prefs.getString('staffId');
+    final String? companyid = prefs.getString('companyId');
     print('-------------$staffId');
 
     final String apiUrl = 'https://chits.tutytech.in/customer.php';
@@ -273,6 +274,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       request.fields['latitude'] = controller.latitude.value;
       request.fields['longitude'] = controller.longitude.value;
       request.fields['entryid'] = staffId.toString(); // Add image file
+      request.fields['companyid'] = companyid.toString();
       request.files.add(
         http.MultipartFile.fromBytes(
           'customerPhoto',
@@ -1065,27 +1067,24 @@ class _CreateCustomerState extends State<CreateCustomer> {
                     children: [
                       Center(
                         child: Stack(
+                          alignment: Alignment
+                              .center, // Center alignment for both children
                           children: [
-                            // CircleAvatar with border
                             Container(
-                              width:
-                                  140, // Adjust width according to your needs
-                              height:
-                                  140, // Adjust height according to your needs
+                              width: 140,
+                              height: 140,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.grey.withOpacity(
-                                      0.5), // Mild grey border color
-                                  width: 2, // Border width
+                                  color: Colors.grey.withOpacity(0.5),
+                                  width: 2,
                                 ),
                               ),
                               child: CircleAvatar(
                                 radius: 70,
                                 backgroundColor: Colors.grey[300],
                                 backgroundImage: _imageBytes != null
-                                    ? MemoryImage(
-                                        _imageBytes!) // Use image bytes to show the picked image
+                                    ? MemoryImage(_imageBytes!)
                                     : null,
                                 child: _imageBytes == null
                                     ? const Icon(Icons.person,
@@ -1093,26 +1092,25 @@ class _CreateCustomerState extends State<CreateCustomer> {
                                     : null,
                               ),
                             ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: InkWell(
+                                onTap: _pickImage,
+                                child: CircleAvatar(
+                                  radius: 15,
+                                  backgroundColor: Colors.blue,
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: InkWell(
-                          onTap: _pickImage, // Call the method to pick an image
-                          child: CircleAvatar(
-                            radius: 15,
-                            backgroundColor: Colors.blue,
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                      ),
-
                       const SizedBox(height: 40),
                       TextFormField(
                         controller: _customerIdController,

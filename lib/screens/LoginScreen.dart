@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:chitfunds/screens/companycreation.dart';
 import 'package:chitfunds/screens/dashboard.dart';
+import 'package:chitfunds/screens/sendotp.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'registration.dart';
@@ -75,10 +76,13 @@ class _LoginScreenState extends State<LoginScreen> {
           if (responseData['success'] == true) {
             final staffId = responseData['staffId'];
             final rights = responseData['rights'];
+            final profileUrl = responseData['profileUrl'] ?? '';
+            final id = responseData['id'] ?? ''; // Make it an integer
 
             print('Received Staff ID: $staffId');
             print('Received Rights: $rights');
-
+            print('Received Profile URL: $profileUrl');
+            print('Received ID: $id');
             if (staffId != null && rights != null) {
               final prefs = await SharedPreferences.getInstance();
               await prefs.setBool('isLoggedIn', true);
@@ -90,6 +94,17 @@ class _LoginScreenState extends State<LoginScreen> {
               await prefs.setString('lastScreen', 'Dashboard');
               await prefs.setString('staffId', staffId.toString());
               await prefs.setString('rights', rights);
+              await prefs.setString('userName', _emailController.text);
+              await prefs.setString('password', _passwordController.text);
+              await prefs.setString('profileUrl', profileUrl);
+              await prefs.setInt('id', id);
+              print('Staff ID saved in SharedPreferences: $staffId');
+              print('User Rights saved in SharedPreferences: $rights');
+              print(
+                  'UserName saved in SharedPreferences: ${_emailController.text}');
+              print(
+                  'Password saved in SharedPreferences: ${_passwordController.text}');
+              print('Profile URL saved in SharedPreferences: $profileUrl');
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -315,7 +330,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 20),
                       TextButton(
                         onPressed: () {
-                          // Handle forgot password logic here
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const SendOtpPage()),
+                          );
                         },
                         child: const Text(
                           'Forgot Password?',

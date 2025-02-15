@@ -6,14 +6,16 @@ import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/screens/stafflist.dart';
 import 'package:chitfunds/wigets/customappbar.dart';
 import 'package:chitfunds/wigets/customdrawer.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditStaff extends StatefulWidget {
-  final String? id, rights;
-  const EditStaff({Key? key, this.id, this.rights}) : super(key: key);
+  final String? rights;
+  final String id;
+  const EditStaff({Key? key, required this.id, this.rights}) : super(key: key);
 
   @override
   _CreateStaffState createState() => _CreateStaffState();
@@ -44,10 +46,10 @@ class _CreateStaffState extends State<EditStaff> {
   File? _image;
   Uint8List? _imageBytes;
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (widget.id != null) {
-      fetchStaff(widget.id!);
+  void initState() {
+    super.initState();
+    if (widget.id.isNotEmpty) {
+      fetchStaff(widget.id);
     } else {
       _showError('Invalid branch ID provided.');
     }
@@ -228,10 +230,8 @@ class _CreateStaffState extends State<EditStaff> {
       if (response.statusCode == 200) {
         final List<dynamic> branchData = json.decode(response.body);
 
-        // Find the branch with the matching ID
-        final branch = branchData.firstWhere(
+        final branch = branchData.firstWhereOrNull(
           (branch) => branch['id'].toString() == id,
-          orElse: () => null,
         );
 
         if (branch != null) {
@@ -246,7 +246,7 @@ class _CreateStaffState extends State<EditStaff> {
         throw Exception('Failed to fetch branches');
       }
     } catch (e) {
-      throw Exception('Error: $e');
+      _showError('Error fetching staff: $e');
     }
   }
 

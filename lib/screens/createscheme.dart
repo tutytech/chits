@@ -46,6 +46,7 @@ class _CreateSchemeState extends State<CreateScheme> {
   Future<void> _createScheme() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = prefs.getString('staffId');
+    final String? companyid = prefs.getString('companyId');
     final String apiUrl = 'https://chits.tutytech.in/scheme.php';
 
     try {
@@ -79,6 +80,7 @@ class _CreateSchemeState extends State<CreateScheme> {
           'noofweeks': _weeksDaysController.text,
           'schemedetails': schemeDetailsJson,
           'entryid': staffId,
+          'companyid': companyid,
         },
       );
       print('Collection Type: $_selectedCollectionMode');

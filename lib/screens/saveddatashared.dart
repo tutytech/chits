@@ -29,6 +29,11 @@ class PreferencesUtils {
     return prefs.getInt('staffId');
   }
 
+  static Future<int?> getId() async {
+    final prefs = await _getPrefs();
+    return prefs.getInt('id');
+  }
+
   // Save user ID
   static Future<void> setUserId(int userId) async {
     final prefs = await _getPrefs();
@@ -127,8 +132,33 @@ class PreferencesUtils {
     await prefs.setString('rights', rights);
   }
 
+  static Future<void> setusername(String username) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('userName', username);
+  }
+
+  static Future<void> setpassword(String password) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('password', password);
+  }
+
+  static Future<void> setid(int id) async {
+    final prefs = await _getPrefs();
+    await prefs.setInt('id', id);
+  }
+
+  static Future<void> setprofile(String profile) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('profileUrl', profile);
+  }
+
   static Future<String?> getrights() async {
     final prefs = await _getPrefs();
     return prefs.getString('rights');
+  }
+
+  static Future<String?> getprofile() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('profileUrl');
   }
 }

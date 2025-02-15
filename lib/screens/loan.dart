@@ -145,6 +145,7 @@ class _CreateBranchState extends State<Loan> {
   Future<void> _submitLoanForm() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = prefs.getString('staffId');
+    final String? companyid = prefs.getString('companyId');
     // Validate the form first
     if (_formKey.currentState?.validate() != true) {
       // If the form is invalid, stop further execution
@@ -165,6 +166,7 @@ class _CreateBranchState extends State<Loan> {
       'scheme': selectedBranch ?? '',
       'remarks': remarksController.text,
       'entryid': staffId.toString(),
+      'companyid': companyid.toString(),
     };
 
     try {

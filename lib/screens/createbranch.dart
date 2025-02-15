@@ -218,6 +218,7 @@ class _CreateBranchState extends State<CreateBranch> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId =
         prefs.getString('staffId'); // Retrieve staffId as a string
+    final String? companyid = prefs.getString('companyId');
 
     if (staffId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -242,6 +243,7 @@ class _CreateBranchState extends State<CreateBranch> {
         'openingbalance': _openingBalanceController.text,
         'openingdate': dobController.text,
         'entryid': staffId,
+        'companyid': companyid,
       };
 
       print('Request URL: $apiUrl');
