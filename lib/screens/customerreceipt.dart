@@ -25,6 +25,17 @@ class Receipt extends StatefulWidget {
 }
 
 class _ReceiptState extends State<Receipt> {
+  final TextEditingController _receivedAmountController =
+      TextEditingController();
+  final TextEditingController _collectionDateController =
+      TextEditingController();
+  String? _selectedReason;
+
+  final List<String> _reasons = [
+    'Customer not available',
+    'Postponed',
+    'Other'
+  ];
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 
   late StreamSubscription<BluetoothAdapterState> _adapterStateStateSubscription;
@@ -193,37 +204,52 @@ class _ReceiptState extends State<Receipt> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = prefs.getString('staffId');
     final String? companyid = prefs.getString('companyId');
-    if (!(_formKey.currentState?.validate() ?? true)) {
+    final String receivedAmount = _receivedAmountController.text.trim().isEmpty
+        ? '0'
+        : _receivedAmountController.text.trim();
+
+    if (!(_formKey.currentState?.validate() ?? false)) {
       return; // Exit the method if validation fails
     }
+
     final String apiUrl = 'https://chits.tutytech.in/receipt.php';
 
     try {
+      final Map<String, String> bodyData = {
+        'type': 'insert',
+        'customerId': _detailsController.text,
+        'customername': _customerNameController.text,
+        'mobileno': _mobileNoController.text,
+        'loanamount': _loanamountController.text,
+        'receivedamount': receivedAmount.isEmpty ? '0' : receivedAmount,
+        'depositamount': _depositamountController.text,
+        'paymenttype': selectedStaff1.toString(),
+        'chequeno': _chequenoController.text,
+        'chequedate': _chequedateController.text,
+        'bankname': _banknameController.text,
+        'remarks': _remarksController.text,
+        'entryid': staffId ?? '',
+        'companyid': companyid ?? '',
+        'nextcollectiondate': _collectionDateController.text,
+      };
+
+      // Conditionally add 'reason' field only if receivedAmount is '0'
+      if (receivedAmount == '0' || receivedAmount == '0.0') {
+        bodyData['reason'] = _selectedReason.toString();
+      }
+
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: {
-          'type': 'insert',
-          'customerId': _detailsController.text,
-          'customername': _customerNameController.text,
-          'mobileno': _mobileNoController.text,
-          'loanamount': _loanamountController.text,
-          'receivedamount': _receivedamountController.text,
-          'depositamount': _depositamountController.text,
-          'paymenttype': selectedStaff1,
-          'chequeno': _chequenoController.text,
-          'chequedate': _chequedateController.text,
-          'bankname': _banknameController.text,
-          'remarks': _remarksController.text,
-          'entryid': staffId,
-          'companyid': companyid,
-          // Replace with a real entry ID if needed
-        },
+        body: bodyData,
       );
+
       print('Request URL: $apiUrl');
-      print('Request Body: ${response.body}');
+      print('Request Body: $bodyData');
+      print('Response: ${response.body}');
+
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData[0]['id'] != null) {
@@ -236,9 +262,6 @@ class _ReceiptState extends State<Receipt> {
               builder: (context) => receiptListPage(),
             ),
           );
-
-          // Fetch the list of all branches
-          // await _fetchBranches();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: ${responseData[0]['error']}')),
@@ -246,7 +269,7 @@ class _ReceiptState extends State<Receipt> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create branch.')),
+          const SnackBar(content: Text('Failed to create receipt.')),
         );
       }
     } catch (e) {
@@ -430,7 +453,8 @@ class _ReceiptState extends State<Receipt> {
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
-                      controller: _receivedamountController,
+                      controller: _receivedAmountController,
+                      keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: 'Received Amount',
                         labelStyle: const TextStyle(color: Colors.black),
@@ -441,24 +465,88 @@ class _ReceiptState extends State<Receipt> {
                           borderSide: BorderSide.none,
                         ),
                       ),
+                      onChanged: (value) {
+                        setState(() {});
+                      },
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    if (_receivedAmountController.text == '0') ...[
+                      // Reason Dropdown
+                      DropdownButtonFormField<String>(
+                        value: _selectedReason,
+                        decoration: InputDecoration(
+                          labelText: 'Reason',
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        items: _reasons.map((reason) {
+                          return DropdownMenuItem<String>(
+                            value: reason,
+                            child: Text(reason),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedReason = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a reason';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+
+                    const SizedBox(height: 10),
+
+                    // Collection Date TextField
+                    TextFormField(
+                      controller: _collectionDateController,
+                      readOnly:
+                          true, // Makes the field non-editable so date can only be picked from calendar
+                      decoration: InputDecoration(
+                        labelText: 'Next Collection Date',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.calendar_today,
+                              color: Colors.grey),
+                          onPressed: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (pickedDate != null) {
+                              setState(() {
+                                _collectionDateController.text =
+                                    DateFormat('dd/MM/yyyy').format(pickedDate);
+                              });
+                            }
+                          },
+                        ),
+                      ),
                       validator: (value) {
-                        if (value == null || value.isEmpty || value == '0') {
-                          return 'Received Amount cannot be empty or zero';
+                        if (value == null || value.isEmpty) {
+                          return 'Next Collection Date cannot be empty';
                         }
                         return null;
                       },
                     ),
-
-// Remark Text
-                    if (_receivedamountController.text == '0')
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          'Received amount not to be null',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-
                     const SizedBox(height: 20),
 
                     // Opening Date field

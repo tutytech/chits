@@ -154,8 +154,8 @@ class _BranchListPageState extends State<receiptListPage> {
       );
 
       // Debug: Print the response
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
+      // print('Response Status Code: ${response.statusCode}');
+      // print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body) as List<dynamic>;
