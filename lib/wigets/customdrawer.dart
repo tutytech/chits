@@ -86,7 +86,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
     if (confirmLogout == true) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', false);
+      await prefs.remove('staffId');
 
+      // Check if 'staffId' is removed
+      bool isRemoved = !prefs.containsKey('staffId');
+      if (isRemoved) {
+        print('staffId successfully removed from SharedPreferences');
+      } else {
+        print('Failed to remove staffId from SharedPreferences');
+      }
+
+      // Navigate to LoginScreen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -792,7 +802,17 @@ class _SettingsPopupState extends State<SettingsPopup> {
     if (confirmLogout == true) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', false);
+      await prefs.remove('staffId');
 
+      // Check if 'staffId' is removed
+      bool isRemoved = !prefs.containsKey('staffId');
+      if (isRemoved) {
+        print('staffId successfully removed from SharedPreferences');
+      } else {
+        print('Failed to remove staffId from SharedPreferences');
+      }
+
+      // Navigate to LoginScreen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),

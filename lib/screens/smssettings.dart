@@ -23,6 +23,7 @@ class _SmsSettingsState extends State<SmsSettings> {
   final TextEditingController presmsController = TextEditingController();
   final TextEditingController postsmsController = TextEditingController();
   final TextEditingController midsmsController = TextEditingController();
+  bool? isActive;
 
   String? selectedBranch;
   String? selectedDayOrder;
@@ -40,6 +41,12 @@ class _SmsSettingsState extends State<SmsSettings> {
     _fetchBranches();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    isActive = false; // Default state to Active (Y)
+  }
+
   Future<void> _createsms() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -47,7 +54,7 @@ class _SmsSettingsState extends State<SmsSettings> {
     if (!(_formKey.currentState?.validate() ?? true)) {
       return; // Exit the method if validation fails
     }
-
+    final String activeStatus = isActive == true ? 'Y' : 'N';
     final String apiUrl = 'https://chits.tutytech.in/sms.php';
 
     // Prepare request body
@@ -58,6 +65,7 @@ class _SmsSettingsState extends State<SmsSettings> {
       'postsmslink': postsmsController.text,
       'branch': selectedBranchName,
       'companyid': companyid,
+      'active': activeStatus,
     };
 
     try {
@@ -186,7 +194,6 @@ class _SmsSettingsState extends State<SmsSettings> {
       drawer: CustomDrawer(rights: widget.rights),
       body: Stack(
         children: [
-          // Background Gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -207,8 +214,6 @@ class _SmsSettingsState extends State<SmsSettings> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-
-                      // Branch Name field
                       TextFormField(
                         controller: presmsController,
                         decoration: InputDecoration(
@@ -229,8 +234,6 @@ class _SmsSettingsState extends State<SmsSettings> {
                         },
                       ),
                       const SizedBox(height: 20),
-
-                      // Full Branch Name field
                       TextFormField(
                         controller: midsmsController,
                         decoration: InputDecoration(
@@ -251,7 +254,6 @@ class _SmsSettingsState extends State<SmsSettings> {
                         },
                       ),
                       const SizedBox(height: 20),
-
                       TextFormField(
                         controller: postsmsController,
                         decoration: InputDecoration(
@@ -272,8 +274,6 @@ class _SmsSettingsState extends State<SmsSettings> {
                         },
                       ),
                       const SizedBox(height: 20),
-
-                      // Select Branch dropdown
                       DropdownButtonFormField<String>(
                         value: selectedBranchId,
                         onChanged: (newValue) {
@@ -307,8 +307,19 @@ class _SmsSettingsState extends State<SmsSettings> {
                         },
                       ),
                       const SizedBox(height: 20),
-
-                      // Note Section
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: isActive,
+                            onChanged: (value) {
+                              setState(() {
+                                isActive = value ?? false;
+                              });
+                            },
+                          ),
+                          const Text('Active'), // Always shows "Active"
+                        ],
+                      ),
                       const Padding(
                         padding: EdgeInsets.only(bottom: 10.0),
                         child: Text(
@@ -320,8 +331,6 @@ class _SmsSettingsState extends State<SmsSettings> {
                           ),
                         ),
                       ),
-
-                      // Create Save button
                       SizedBox(
                         height: 50,
                         width: double.infinity,
@@ -364,23 +373,6 @@ class _SmsSettingsState extends State<SmsSettings> {
                       ),
                     ],
                   ),
-                ),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              color: const Color.fromARGB(218, 209, 209, 204),
-              padding: const EdgeInsets.all(10.0),
-              child: const Text(
-                'POWERED BY TUTYTECH',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
