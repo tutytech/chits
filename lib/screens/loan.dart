@@ -269,10 +269,15 @@ class _CreateBranchState extends State<Loan> {
 
     setState(() {
       _filteredCustomers = _customers.where((customer) {
-        return customer['name'].toLowerCase().startsWith(input.toLowerCase()) ||
-            customer['phoneNo'] == input ||
-            customer['customerId'] == input ||
-            customer['loanno'].toString() == input;
+        String name = customer['name'].toLowerCase();
+        String phoneNo = customer['phoneNo'].toString();
+        String customerId = customer['customerId'].toString();
+        String loanno = customer['loanno'].toString();
+
+        return name.contains(input.toLowerCase()) ||
+            phoneNo.contains(input) || // Now ensures string matching
+            customerId.contains(input) ||
+            loanno.contains(input);
       }).toList();
     });
   }
@@ -300,7 +305,8 @@ class _CreateBranchState extends State<Loan> {
             child: Column(
               children: _filteredCustomers.map((customer) {
                 return ListTile(
-                  title: Text("${customer['name']} - ${customer['loanno']}"),
+                  title: Text(
+                      "${customer['name']} - ${customer['loanno']}- ${customer['phoneNo']}"),
                   onTap: () => _selectCustomer(customer),
                 );
               }).toList(),
