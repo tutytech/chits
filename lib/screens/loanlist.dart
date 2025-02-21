@@ -274,7 +274,7 @@ class _BranchListPageState extends State<LoanListPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Loan(),
+                            builder: (context) => Loan(rights: widget.rights),
                           ),
                         );
                       },

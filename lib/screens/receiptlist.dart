@@ -298,7 +298,8 @@ class _BranchListPageState extends State<receiptListPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Receipt(),
+                            builder: (context) =>
+                                Receipt(rights: widget.rights),
                           ),
                         );
                       },
