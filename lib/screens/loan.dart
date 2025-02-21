@@ -19,6 +19,7 @@ class Loan extends StatefulWidget {
 }
 
 class _CreateBranchState extends State<Loan> {
+  List<Map<String, dynamic>> _filteredCustomers = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
   final _formKey = GlobalKey<FormState>();
@@ -259,29 +260,53 @@ class _CreateBranchState extends State<Loan> {
   }
 
   void _searchCustomer(String input) {
-    final customer = _customers.firstWhere(
-      (customer) =>
-          customer['name'].toLowerCase() ==
-              input.toLowerCase() || // Check by name
-          customer['phoneNo'] == input || // Check by mobile number
-          customer['customerId'] == input ||
-          customer['loanno'].toString() == input,
-      // Check by customer ID
-      orElse: () => {}, // Return an empty map if no match is found
-    );
-
-    if (customer.isNotEmpty) {
-      // Set the name and phone number to the respective text fields
-      customernameController.text = customer['name'];
-      customeridController.text = customer['customerId'];
-
-      // Disable editing for these fields
-      setState(() {});
-    } else {
-      // Clear the fields if no match is found
-      customernameController.clear();
-      customeridController.clear();
+    if (input.isEmpty) {
+      setState(() {
+        _filteredCustomers = [];
+      });
+      return;
     }
+
+    setState(() {
+      _filteredCustomers = _customers.where((customer) {
+        return customer['name'].toLowerCase().startsWith(input.toLowerCase()) ||
+            customer['phoneNo'] == input ||
+            customer['customerId'] == input ||
+            customer['loanno'].toString() == input;
+      }).toList();
+    });
+  }
+
+  void _selectCustomer(Map<String, dynamic> customer) {
+    customernameController.text = customer['name'];
+    customeridController.text = customer['customerId'];
+
+    // Hide dropdown after selection
+    setState(() {
+      _filteredCustomers = [];
+    });
+  }
+
+  Widget _buildCustomerDropdown() {
+    return _filteredCustomers.isNotEmpty
+        ? Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey),
+            ),
+            child: Column(
+              children: _filteredCustomers.map((customer) {
+                return ListTile(
+                  title: Text("${customer['name']} - ${customer['loanno']}"),
+                  onTap: () => _selectCustomer(customer),
+                );
+              }).toList(),
+            ),
+          )
+        : SizedBox.shrink();
   }
 
   @override
@@ -336,6 +361,7 @@ class _CreateBranchState extends State<Loan> {
                           _searchCustomer(value);
                         },
                       ),
+                      _buildCustomerDropdown(),
                       const SizedBox(height: 20),
                       TextFormField(
                         controller: customeridController,

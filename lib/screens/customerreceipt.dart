@@ -68,6 +68,7 @@ class _ReceiptState extends State<Receipt> {
   final TextEditingController _customerNameController = TextEditingController();
   final TextEditingController _mobileNoController = TextEditingController();
   String? selectedStaff;
+  List<Map<String, dynamic>> _filteredCustomers = [];
   String? selectedStaff1;
   String? selectedCenter;
   String? selectedCenterId;
@@ -175,29 +176,52 @@ class _ReceiptState extends State<Receipt> {
   }
 
   void _searchCustomer(String input) {
-    final customer = _customers.firstWhere(
-      (customer) =>
-          customer['name'].toLowerCase() ==
-              input.toLowerCase() || // Check by name
-          customer['phoneNo'] == input || // Check by mobile number
-          customer['customerId'] == input ||
-          customer['loanno'].toString() == input,
-      // Check by customer ID
-      orElse: () => {}, // Return an empty map if no match is found
-    );
-
-    if (customer.isNotEmpty) {
-      // Set the name and phone number to the respective text fields
-      _customerNameController.text = customer['name'];
-      _mobileNoController.text = customer['phoneNo'];
-
-      // Disable editing for these fields
-      setState(() {});
-    } else {
-      // Clear the fields if no match is found
-      _customerNameController.clear();
-      _mobileNoController.clear();
+    if (input.isEmpty) {
+      setState(() {
+        _filteredCustomers = [];
+      });
+      return;
     }
+
+    setState(() {
+      _filteredCustomers = _customers.where((customer) {
+        return customer['name'].toLowerCase().startsWith(input.toLowerCase()) ||
+            customer['phoneNo'] == input ||
+            customer['customerId'] == input ||
+            customer['loanno'].toString() == input;
+      }).toList();
+    });
+  }
+
+  void _selectCustomer(Map<String, dynamic> customer) {
+    _customerNameController.text = customer['name'];
+
+    // Hide dropdown after selection
+    setState(() {
+      _filteredCustomers = [];
+    });
+  }
+
+  Widget _buildCustomerDropdown() {
+    return _filteredCustomers.isNotEmpty
+        ? Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey),
+            ),
+            child: Column(
+              children: _filteredCustomers.map((customer) {
+                return ListTile(
+                  title: Text("${customer['name']} - ${customer['loanno']}"),
+                  onTap: () => _selectCustomer(customer),
+                );
+              }).toList(),
+            ),
+          )
+        : SizedBox.shrink();
   }
 
   Future<void> _createBranch() async {
@@ -379,7 +403,7 @@ class _ReceiptState extends State<Receipt> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter customer details';
+                          return 'Customer Details is required';
                         }
                         return null;
                       },
@@ -387,6 +411,7 @@ class _ReceiptState extends State<Receipt> {
                         _searchCustomer(value);
                       },
                     ),
+                    _buildCustomerDropdown(),
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: _customerNameController,

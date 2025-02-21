@@ -479,6 +479,7 @@ class _SettingsPopupState extends State<SettingsPopup> {
   String? password;
   String? profile;
   String profileUrl = '';
+  File? _selectedImage;
   String? uploadedImageUrl;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -505,110 +506,15 @@ class _SettingsPopupState extends State<SettingsPopup> {
   }
 
   Future<void> _pickProfileImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (image != null) {
+    if (pickedFile != null) {
       setState(() {
-        profile = image.path; // Local file path for preview
+        _selectedImage = File(pickedFile.path);
       });
 
-      // Optional: Upload image to the server here
-      await _uploadImage(File(image.path));
-    }
-  }
-
-  Future<void> _pickProfileImageweb() async {
-    if (kIsWeb) {
-      // Flutter Web Image Picker
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-      );
-
-      if (result != null && result.files.single.bytes != null) {
-        Uint8List bytes = result.files.single.bytes!;
-        String fileName = result.files.single.name;
-        await _uploadImageWeb(bytes, fileName);
-      }
-    } else {
-      // Flutter Mobile Image Picker
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
-      if (image != null) {
-        Uint8List bytes = await image.readAsBytes();
-        await _uploadImageWeb(bytes, image.name); // Same upload logic
-      }
-    }
-  }
-
-  Future<void> _uploadImageWeb(Uint8List bytes, String fileName) async {
-    try {
-      var uri = Uri.parse('https://chits.tutytech.in/uploads');
-      var request = http.MultipartRequest('POST', uri);
-
-      request.files.add(http.MultipartFile.fromBytes(
-        'image',
-        bytes,
-        filename: fileName,
-      ));
-
-      var response = await request.send();
-
-      if (response.statusCode == 200) {
-        print('Image uploaded successfully');
-        // Update profile URL in SharedPreferences
-        final newImageUrl =
-            'https://chits.tutytech.in/uploads/$fileName'; // Adjust as per your API response
-        setState(() {
-          profile = newImageUrl;
-        });
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('profileUrl', newImageUrl);
-      } else {
-        print('Failed to upload image: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Image upload error: $e');
-    }
-  }
-
-  Future<void> _uploadImage(File imageFile) async {
-    try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('https://chits.tutytech.in/staff.php'), // Adjust URL
-      );
-
-      request.files.add(
-        await http.MultipartFile.fromPath('profile_image', imageFile.path),
-      );
-
-      final response = await request.send();
-
-      if (response.statusCode == 200) {
-        final responseData = await response.stream.bytesToString();
-        final result = jsonDecode(responseData);
-
-        if (result['status'] == 1) {
-          setState(() {
-            uploadedImageUrl = result['imageUrl']; // URL returned from API
-          });
-
-          // Update profile image in local state & shared preferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('profileUrl', uploadedImageUrl!);
-
-          debugPrint('Uploaded Image URL: $uploadedImageUrl');
-        } else {
-          debugPrint('Image upload failed: ${result['message']}');
-        }
-      } else {
-        debugPrint('Image upload error: ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      debugPrint('Image upload exception: $e');
+      await _uploadProfileImage(); // Upload after selecting
     }
   }
 
@@ -682,6 +588,41 @@ class _SettingsPopupState extends State<SettingsPopup> {
     }
   }
 
+  Future<String?> _uploadProfileImage() async {
+    if (_selectedImage == null)
+      return profile; // Use existing profile URL if no new image
+
+    final url = Uri.parse('https://chits.tutytech.in/upload_image.php');
+
+    try {
+      var request = http.MultipartRequest('POST', url);
+      request.files.add(
+        await http.MultipartFile.fromPath('image', _selectedImage!.path),
+      );
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        _updateStaff();
+
+        if (result['status'] == 'success') {
+          return result['image_url']; // Uploaded image URL
+        } else {
+          _showError(result['message'] ?? 'Image upload failed.');
+          return null;
+        }
+      } else {
+        _showError('Failed to upload image: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      _showError('Image upload error: $error');
+      return null;
+    }
+  }
+
   Future<void> _updateStaff() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int? id = prefs.getInt('id');
@@ -700,7 +641,7 @@ class _SettingsPopupState extends State<SettingsPopup> {
 
         'userName': _nameController.text.trim(),
         'password': _passwordController.text.trim(),
-        'profile': profile,
+        'profile': finalProfileUrl,
       };
 
       print('staff3');
@@ -878,7 +819,7 @@ class _SettingsPopupState extends State<SettingsPopup> {
                       right: 0,
                       child: GestureDetector(
                         onTap: () {
-                          _pickProfileImageweb();
+                          _pickProfileImage();
                         },
                         child: Container(
                           padding: const EdgeInsets.all(5),
