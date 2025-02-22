@@ -137,19 +137,17 @@ class _CreateStaffState extends State<CreateStaff> {
     final String? staffId = prefs.getString('staffId');
     final String? companyid = prefs.getString('companyId');
 
-    // Check if the form is valid
     if (!(_formKey.currentState?.validate() ?? false)) {
-      return; // Exit the method if validation fails
+      return; // Exit if validation fails
     }
 
-    final String apiUrl = 'https://chits.tutytech.in/staff.php';
+    final String staffApiUrl = 'https://chits.tutytech.in/staff.php';
+    final String userApiUrl = 'https://chits.tutytech.in/user.php';
 
     try {
-      // Create multipart request
-      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
-
-      // Add text fields
-      request.fields.addAll({
+      // Create multipart request for staff
+      var staffRequest = http.MultipartRequest('POST', Uri.parse(staffApiUrl));
+      staffRequest.fields.addAll({
         'type': 'insert',
         'staffId': _staffIdController.text,
         'staffName': _staffNameController.text,
@@ -166,11 +164,10 @@ class _CreateStaffState extends State<CreateStaff> {
         'entryid': staffId ?? '',
       });
 
-      // Add image file if selected
       if (_imageBytes != null && _imageFileName != null) {
-        request.files.add(
+        staffRequest.files.add(
           http.MultipartFile.fromBytes(
-            'profile', // Field name for the image in the database
+            'profile',
             _imageBytes!,
             filename: _imageFileName ?? 'profile_image.jpg',
             contentType: MediaType('image', 'jpeg'),
@@ -178,31 +175,46 @@ class _CreateStaffState extends State<CreateStaff> {
         );
       }
 
-      // Send request
-      final response = await request.send();
+      // Send staff request
+      final staffResponse = await staffRequest.send();
+      final staffResponseBody = await staffResponse.stream.bytesToString();
+      print('Staff response body: $staffResponseBody');
 
-      // Handle response
-      final responseBody = await response.stream.bytesToString();
-      print('Response body: $responseBody');
+      if (staffResponse.statusCode == 200) {
+        final Map<String, dynamic> staffData = json.decode(staffResponseBody);
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(responseBody);
+        if (staffData['id'] != null) {
+          // Call user.php to store usernames and passwords
+          final userResponse = await http.post(
+            Uri.parse(userApiUrl),
+            body: {
+              'type': 'insert',
+              'username': _userNameController.text,
+              'password': _passwordController.text,
+              'rights': selectedRights ?? '',
+            },
+          );
 
-        if (responseData['id'] != null) {
-          _showSnackBar('Staff created successfully!');
+          final userData = json.decode(userResponse.body);
+          print('User response: $userData');
+
+          if (userResponse.statusCode == 200 && userData['success'] == true) {
+            _showSnackBar('Staff and users created successfully!');
+          } else {
+            _showSnackBar('Failed to create users: ${userData['errors']}');
+          }
         } else {
-          _showSnackBar('Error: ${responseData['message']}');
+          _showSnackBar('Error: ${staffData['message']}');
         }
       } else {
         _showSnackBar(
-            'Failed to create staff. Status code: ${response.statusCode}');
+            'Failed to create staff. Status code: ${staffResponse.statusCode}');
       }
 
+      // Navigate to staff list page
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => staffListPage(),
-        ),
+        MaterialPageRoute(builder: (context) => staffListPage()),
       );
     } catch (e) {
       print('Error: $e');

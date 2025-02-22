@@ -25,6 +25,8 @@ class CreateCustomer extends StatefulWidget {
 }
 
 class _CreateCustomerState extends State<CreateCustomer> {
+  final TextEditingController _userNameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   final HomeController controller = Get.put(HomeController());
   final TextEditingController _branchNameController = TextEditingController();
   final TextEditingController _fullBranchNameController =
@@ -249,6 +251,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
       request.fields['customerId'] = _customerIdController.text.trim();
       request.fields['name'] = _nameController.text.trim();
       request.fields['address'] = _addressController.text.trim();
+      request.fields['username'] = _userNameController.text.trim();
+      request.fields['password'] = _passwordController.text.trim();
       request.fields['phoneNo'] = _phoneNoController.text.trim();
       request.fields['aadharNo'] =
           _aadharNoController.text.trim(); // Ensure this is passed as a string
@@ -1275,8 +1279,48 @@ class _CreateCustomerState extends State<CreateCustomer> {
                         ],
                       ),
 
-                      const SizedBox(height: 20), // Space below the row
+                      const SizedBox(height: 30),
+                      TextFormField(
+                        controller: _userNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter User Name',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your username';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Password',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          return null;
+                        },
+                      ), // Space below the row
 
+                      const SizedBox(height: 20),
                       // Address TextFormField (same as before)
                       // Space below the address field
 

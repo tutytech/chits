@@ -29,6 +29,11 @@ class PreferencesUtils {
     return prefs.getInt('staffId');
   }
 
+  static Future<int?> getcustomerId() async {
+    final prefs = await _getPrefs();
+    return prefs.getInt('customerId');
+  }
+
   static Future<int?> getId() async {
     final prefs = await _getPrefs();
     return prefs.getInt('id');

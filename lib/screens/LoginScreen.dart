@@ -27,6 +27,73 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<List<Map<String, dynamic>>> fetchCustomers() async {
+    const String _baseUrl = 'https://chits.tutytech.in/customer.php';
+    final Map<String, String> body = {'type': 'fetch'};
+
+    try {
+      print('Request URL: $_baseUrl');
+      print('Request Body: $body');
+
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: body,
+      );
+
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+
+        if (decodedResponse['success'] == true &&
+            decodedResponse['customerDetails'] is List) {
+          return List<Map<String, dynamic>>.from(
+              decodedResponse['customerDetails'].map((customer) {
+            return {
+              'id': customer['id'] ?? '',
+              'customerId': customer['customerId'] ?? 'Unknown customer',
+              'name': customer['name']?.toString() ?? 'N/A',
+              'address': customer['address'] ?? 'N/A',
+              'phoneNo': customer['phoneNo'] ?? 'N/A',
+              'aadharNo': customer['aadharNo'] ?? 'N/A',
+              'branch': customer['branch'] ?? 'N/A',
+              'center': customer['center'] ?? 'N/A',
+              'latitude': customer['latitude'] ?? 'N/A',
+              'longitude': customer['longitude'] ?? 'N/A',
+              'uploadAadhar': customer['uploadAadhar'] ?? '',
+              'uploadvoterId': customer['uploadvoterId'] ?? '',
+              'uploadPan': customer['uploadPan'] ?? '',
+              'uploadNomineeAadharCard':
+                  customer['uploadNomineeAadharCard'] ?? '',
+              'uploadNomineeVoterId': customer['uploadNomineeVoterId'] ?? '',
+              'uploadNomineePan': customer['uploadNomineePan'] ?? '',
+              'uploadRationCard': customer['uploadRationCard'] ?? '',
+              'uploadbondsheet': customer['uploadbondsheet'] ?? '',
+              'uploadChequeLeaf': customer['uploadChequeLeaf'] ?? '',
+              'uploadGasBill': customer['uploadGasBill'] ?? '',
+              'uploadEbBill': customer['uploadEbBill'] ?? '',
+              'uploadPropertyTaxReceipt':
+                  customer['uploadPropertyTaxReceipt'] ?? '',
+              'customerPhoto': customer['customerPhoto'] ?? '',
+            };
+          }));
+        } else if (decodedResponse['error'] != null) {
+          throw Exception('API Error: ${decodedResponse['error']}');
+        } else {
+          throw Exception('Unexpected response format');
+        }
+      } else {
+        throw Exception(
+            'Failed to fetch customers (HTTP ${response.statusCode})');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      throw Exception('Error: $e');
+    }
+  }
+
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Email is required';
@@ -131,6 +198,56 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _customerLogin(String staffId) async {
+    final customerUrl = 'https://chits.tutytech.in/staff.php';
+    try {
+      final customerResponse = await http.post(
+        Uri.parse(customerUrl),
+        body: {
+          'type': 'customerLogin',
+          'userName': _emailController.text,
+          'password': _passwordController.text,
+        },
+      );
+
+      final customerData = json.decode(customerResponse.body);
+      print('Customer Login Response: $customerData');
+
+      if (customerResponse.statusCode == 200 &&
+          customerData['success'] == true) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('customerId', customerData['customerId']);
+        await prefs.setString('customerName', customerData['customerName']);
+        await prefs.setString(
+            'customerProfileUrl', customerData['profileUrl'] ?? '');
+
+        print('Customer login successful: ${customerData['customerId']}');
+      } else {
+        print('Customer login failed: ${customerData['error']}');
+      }
+    } catch (e) {
+      print('Error during customer login: $e');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Login Failed'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showNoAccountDialog() {
     showDialog(
       context: context,
@@ -212,24 +329,6 @@ class _LoginScreenState extends State<LoginScreen> {
               'Cancel',
               style: TextStyle(color: Colors.black),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Error'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('OK'),
           ),
         ],
       ),
