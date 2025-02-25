@@ -23,6 +23,8 @@ class EditLoan extends StatefulWidget {
 class _CreateBranchState extends State<EditLoan> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+
+  bool? isActive;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _customerNameController = TextEditingController();
   final TextEditingController _mobileNoController = TextEditingController();
@@ -77,6 +79,7 @@ class _CreateBranchState extends State<EditLoan> {
   @override
   void initState() {
     super.initState();
+    isActive = false;
     _loadCustomers();
     if (widget.id != null) {
       fetchLoans(widget.id!);
@@ -86,8 +89,10 @@ class _CreateBranchState extends State<EditLoan> {
   }
 
   Future<void> fetchLoans(String id) async {
+    print('loan1');
     const String _baseUrl = 'https://chits.tutytech.in/loan.php';
     try {
+      print('loan2');
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -95,8 +100,12 @@ class _CreateBranchState extends State<EditLoan> {
       );
 
       if (response.statusCode == 200) {
+        print('loan3');
         print('API Response Body: ${response.body}');
-        final List<dynamic> branchData = json.decode(response.body);
+        final Map<String, dynamic> decodedResponse = json.decode(response.body);
+
+        // Extract loan data from 'data' key
+        final List<dynamic> branchData = decodedResponse['data'];
 
         print('Branch Data List: $branchData');
         final branch = branchData.firstWhere(
@@ -105,18 +114,22 @@ class _CreateBranchState extends State<EditLoan> {
         );
 
         if (branch != null) {
+          print('loan4');
           print('Branch Found: $branch');
           setState(() {
             _updateBranchFields(branch);
             isLoading = false;
           });
         } else {
+          print('loan5');
           _showError('No branch found with ID $id.');
         }
       } else {
+        print('loan6');
         throw Exception('Failed to fetch branches');
       }
     } catch (e) {
+      print('loan7');
       print('Error: $e');
       throw Exception('Error: $e');
     }
@@ -157,6 +170,7 @@ class _CreateBranchState extends State<EditLoan> {
   }
 
   Future<void> _updateLoanData() async {
+    final String activeStatus = isActive == true ? 'Y' : 'N';
     print('---------------${widget.id}');
     try {
       final url = Uri.parse('https://chits.tutytech.in/loan.php');
@@ -171,6 +185,7 @@ class _CreateBranchState extends State<EditLoan> {
         'amount': firstcollectiondateController.text.trim(),
         'scheme': amountController.text.trim(),
         'remarks': remarksController.text.trim(),
+        'closedaccounts': activeStatus // Updated here
       };
 
       // Debugging prints
@@ -180,10 +195,9 @@ class _CreateBranchState extends State<EditLoan> {
       final response = await http.post(
         url,
         headers: {
-          'Content-Type':
-              'application/x-www-form-urlencoded', // Ensure the server expects JSON
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: requestBody, // Send as JSON
+        body: requestBody,
       );
 
       debugPrint('Response Code: ${response.statusCode}');
@@ -422,10 +436,32 @@ class _CreateBranchState extends State<EditLoan> {
               child: Form(
                 key: _formKey,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 50),
+                  padding: const EdgeInsets.only(top: 30),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Closed Accounts:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          Checkbox(
+                            value: isActive,
+                            onChanged: (value) {
+                              setState(() {
+                                isActive = value ?? false;
+                              });
+                            },
+                          ),
+                          const Text('Active'),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
                       TextFormField(
                         controller: _detailsController,
                         decoration: InputDecoration(
