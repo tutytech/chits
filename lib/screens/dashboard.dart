@@ -228,7 +228,7 @@ class _DashboardState extends State<Dashboard> {
                           totalCollection.toStringAsFixed(2)),
                       _buildCard(
                           'Cash Collection', cashCollection.toStringAsFixed(2)),
-                      _buildCard('Cheque Collection',
+                      _buildCard('Bank Collection',
                           chequeCollection.toStringAsFixed(2)),
                       _buildCard(
                           'Cancel Amount', cancelAmount.toStringAsFixed(2)),

@@ -122,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
       try {
         final body = {
           'type': 'login',
-          'userName': _emailController.text,
+          'username': _emailController.text,
           'password': _passwordController.text,
         };
 

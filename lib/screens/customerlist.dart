@@ -120,6 +120,7 @@ class _BranchListPageState extends State<CustomerList> {
               'address': customer['address'] ?? 'N/A',
               'phoneNo': customer['phoneNo'] ?? 'N/A',
               'aadharNo': customer['aadharNo'] ?? 'N/A',
+              'collectionstaff': customer['collectionstaff'] ?? 'N/A',
               'branch': customer['branch'] ?? 'N/A',
               'center': customer['center'] ?? 'N/A',
               'latitude': customer['latitude'] ?? 'N/A',
