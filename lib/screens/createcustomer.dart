@@ -61,8 +61,10 @@ class _CreateCustomerState extends State<CreateCustomer> {
   String selectedBondSheetFileName = 'No file chosen';
   String selectedImagesFileName = 'No file chosen';
   Uint8List? _imageBytes;
-  String? selectedBranchName;
-  String? selectedBranchId;
+  String? selectedBranchId; // Allow null initially
+  String? selectedStaffId;
+  String selectedBranchName = 'Unknown';
+  String? selectedStaffName;
   String? selectedCenterId;
   String? selectedCenterName;
 // Variables to hold file bytes for each selected document
@@ -97,7 +99,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
   List<Map<String, String>> centerData = [];
   bool _isLoading = false;
 
-  List<Map<String, String>> branchData = [];
+  List<Map<String, dynamic>> branchData = [];
+  List<Map<String, dynamic>> staffData = [];
   final TextEditingController _customerIdController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -123,17 +126,17 @@ class _CreateCustomerState extends State<CreateCustomer> {
   final ImagePicker _picker = ImagePicker();
   List<String> centers = [];
   File? _image;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    print('Hello customer');
     // super.didChangeDependencies();
     _fetchBranches();
-    _fetchCenters(); // Fetch branches when the widget dependencies change
+    _fetchCenters();
+    _fetchStaffName();
+// Fetch branches when the widget dependencies change
   }
-
-  // Function to pick an image or document for Aadhaar
-  String selectedAadhaarFileName1 =
-      'default_name.jpg'; // Default value for the name
 
   Future<void> _fetchAndSaveLocation() async {
     setState(() {
@@ -172,6 +175,55 @@ class _CreateCustomerState extends State<CreateCustomer> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _fetchStaffName() async {
+    final String apiUrl = 'https://chits.tutytech.in/staff.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'select', // Type for listing centers
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Log response for debugging
+        print("Response Body: ${response.body}");
+
+        final responseData = json.decode(response.body);
+
+        // Parse centers from response
+        List<Map<String, String>> staffs = [];
+        for (var staff in responseData) {
+          if (staff['id'] != null && staff['staffName'] != null) {
+            staffs.add({
+              'id': staff['id'].toString(),
+              'name': staff['staffName'],
+            });
+          }
+        }
+
+        if (staffs.isEmpty) {
+          _showSnackBar('No staff were found in the response data.');
+        } else {
+          setState(() {
+            staffData = staffs; // Update the state with center data
+          });
+
+          print('Staff Data: $staffs');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to fetch Staff. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showSnackBar('An error occurred: $e');
     }
   }
 
@@ -226,6 +278,8 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
   Future<void> _createCustomer() async {
     print('hello1');
+    final username = _userNameController.text.trim();
+    final password = _passwordController.text.trim();
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = await prefs.getString('staffId');
@@ -279,6 +333,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
       request.fields['longitude'] = controller.longitude.value;
       request.fields['entryid'] = staffId.toString(); // Add image file
       request.fields['companyid'] = companyid.toString();
+
       request.files.add(
         http.MultipartFile.fromBytes(
           'customerPhoto',
@@ -452,6 +507,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
           print("Customer created successfully: $responseBody");
 
           _showSnackBar('Customer created successfully!');
+          await _createUser(username, password);
         } else {
           print(
               "Customer created successfully, but no response body returned.");
@@ -470,6 +526,32 @@ class _CreateCustomerState extends State<CreateCustomer> {
     } catch (e) {
       print("Exception: $e");
       _showSnackBar('An error occurred: $e');
+    }
+  }
+
+  Future<void> _createUser(String username, String password) async {
+    final String userApiUrl = 'https://chits.tutytech.in/user.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(userApiUrl),
+        body: {
+          'type': 'insertcustomer',
+          'username': username,
+          'password': password,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print("User created successfully: ${response.body}");
+        _showSnackBar('User created successfully!');
+      } else {
+        print("Failed to create user: ${response.reasonPhrase}");
+        _showSnackBar('Failed to create user.');
+      }
+    } catch (e) {
+      print("Error creating user: $e");
+      _showSnackBar('An error occurred while creating user.');
     }
   }
 
@@ -1349,7 +1431,42 @@ class _CreateCustomerState extends State<CreateCustomer> {
                         },
                       ),
                       const SizedBox(height: 20),
+                      DropdownButtonFormField<String>(
+                        value: selectedStaffId,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedStaffId = newValue;
+                            selectedStaffName = staffData.firstWhere((branch) =>
+                                branch['id'] ==
+                                newValue)['name']; // Fetch branch name
+                          });
+                        },
+                        items: staffData
+                            .map((branch) => DropdownMenuItem<String>(
+                                  value: branch['id'], // Use branch ID as value
+                                  child: Text(
+                                      branch['name']!), // Display branch name
+                                ))
+                            .toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Select Staff',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a staff';
+                          }
+                          return null;
+                        },
+                      ),
 
+                      const SizedBox(height: 20),
                       // Branch Dropdown validation
                       DropdownButtonFormField<String>(
                         value: selectedBranchId,

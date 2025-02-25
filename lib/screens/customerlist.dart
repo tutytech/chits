@@ -276,7 +276,8 @@ class _BranchListPageState extends State<CustomerList> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CreateCustomer(),
+                            builder: (context) =>
+                                CreateCustomer(rights: widget.rights),
                           ),
                         );
                       },
