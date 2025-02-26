@@ -80,21 +80,33 @@ class _DashboardState extends State<CustomerDashboard> {
 
   Widget _buildLoanList() {
     if (loanDetails.isEmpty) {
-      return const Center(child: Text('No loan details available.'));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'No loan details available.',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      );
     }
 
-    return Column(
-      children: loanDetails.map((loan) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: loanDetails.length,
+      itemBuilder: (context, index) {
+        final loan = loanDetails[index];
         return Card(
           elevation: 4,
-          margin: const EdgeInsets.symmetric(vertical: 8),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: ListTile(
-            title: Text('Loan No: ${loan['accountNo']}'),
-            subtitle: Text('Loan Amount: ${loan['amount']}'),
-            trailing: Text('Loan Date: ${loan['date']}'),
+            title: Text('Loan No: ${loan['accountNo'] ?? 'N/A'}'),
+            subtitle: Text('Loan Amount: ${loan['amount'] ?? '0.0'}'),
+            trailing: Text('Loan Date: ${loan['date'] ?? 'N/A'}'),
           ),
         );
-      }).toList(),
+      },
     );
   }
 
@@ -156,7 +168,7 @@ class _DashboardState extends State<CustomerDashboard> {
     const String _baseUrl = 'https://chits.tutytech.in/loan.php';
 
     try {
-      print('Request URL: $_baseUrl');
+      print('Requesting data from: $_baseUrl');
       print('Request Body: type=list');
 
       final response = await http.post(
@@ -166,28 +178,33 @@ class _DashboardState extends State<CustomerDashboard> {
       );
 
       print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
+      print('Raw Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           final Map<String, dynamic> jsonResponse = json.decode(response.body);
 
+          print('Parsed JSON Response: $jsonResponse');
+
           double totalLoanAmount =
               double.tryParse(jsonResponse['totalAmount'].toString()) ?? 0.0;
-          List<dynamic> loans = jsonResponse['data'];
+          List<dynamic> loans = jsonResponse['data'] ?? [];
+
+          print('Total Loan Amount: $totalLoanAmount');
+          print('Number of Loans: ${loans.length}');
 
           setState(() {
             totalloan = totalLoanAmount;
-            loanDetails = loans; // Store loan details for display
+            loanDetails = loans; // Update the UI
           });
         } else {
-          print('Error: Response body is empty.');
+          print('Error: Empty response body.');
         }
       } else {
         print("Failed to load data: HTTP ${response.statusCode}");
       }
     } catch (e) {
-      print("Error fetching data: $e");
+      print("Error fetching loan data: $e");
     }
   }
 
