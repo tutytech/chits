@@ -18,6 +18,8 @@ class CustomerDashboard extends StatefulWidget {
 class _DashboardState extends State<CustomerDashboard> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
+  bool isActiveChecked = true; // Default to Active loans
+  bool isCancelledChecked = false;
   final TextEditingController _branchNameController = TextEditingController();
   final TextEditingController _openingBalanceController =
       TextEditingController();
@@ -40,6 +42,7 @@ class _DashboardState extends State<CustomerDashboard> {
     super.initState();
     _fetchPaymentDetails();
     _fetchLoanDetails();
+    _fetchLoanclosedaccounts();
   }
 
   Widget _buildCard(String title, String amount) {
@@ -103,7 +106,8 @@ class _DashboardState extends State<CustomerDashboard> {
           child: ListTile(
             title: Text('Loan No: ${loan['accountNo'] ?? 'N/A'}'),
             subtitle: Text('Loan Amount: ${loan['amount'] ?? '0.0'}'),
-            trailing: Text('Loan Date: ${loan['date'] ?? 'N/A'}'),
+            trailing: Text('Loan Date: ${loan['date'] ?? 'N/A'}',
+                style: TextStyle(fontSize: 15)),
           ),
         );
       },
@@ -188,17 +192,67 @@ class _DashboardState extends State<CustomerDashboard> {
 
           double totalLoanAmount =
               double.tryParse(jsonResponse['totalAmount'].toString()) ?? 0.0;
-          List<dynamic> loans = jsonResponse['data'] ?? [];
 
           print('Total Loan Amount: $totalLoanAmount');
-          print('Number of Loans: ${loans.length}');
 
           setState(() {
             totalloan = totalLoanAmount;
-            loanDetails = loans; // Update the UI
           });
         } else {
           print('Error: Empty response body.');
+        }
+      } else {
+        print("Failed to load data: HTTP ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching loan data: $e");
+    }
+  }
+
+  Future<void> _fetchLoanclosedaccounts() async {
+    const String _baseUrl = 'https://chits.tutytech.in/loan.php';
+
+    try {
+      print('Requesting data from: $_baseUrl');
+      print('Request Body: type=listclosedaccounts');
+
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'type': 'listclosedaccounts'},
+      );
+
+      print('Response Status Code: ${response.statusCode}');
+      print('Raw Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        if (response.body.isNotEmpty) {
+          final Map<String, dynamic> jsonResponse = json.decode(response.body);
+          final List<dynamic> allLoans = jsonResponse['data'] ?? [];
+
+          // Filter data based on checkbox selections
+          List<dynamic> filteredLoans = allLoans.where((loan) {
+            final String closedAccounts =
+                loan['closedaccounts']?.toString() ?? '';
+            if (isActiveChecked && !isCancelledChecked) {
+              return closedAccounts == 'N'; // Active loans
+            } else if (!isActiveChecked && isCancelledChecked) {
+              return closedAccounts == 'Y'; // Cancelled loans
+            }
+            return false; // No loans if both or neither checkbox is selected
+          }).toList();
+
+          print('Filtered Loans Count: ${filteredLoans.length}');
+          print('Filtered Loans: $filteredLoans');
+
+          setState(() {
+            loanDetails = filteredLoans; // Update the UI with filtered data
+          });
+        } else {
+          print('Error: Empty response body.');
+          setState(() {
+            loanDetails = [];
+          });
         }
       } else {
         print("Failed to load data: HTTP ${response.statusCode}");
@@ -219,8 +273,8 @@ class _DashboardState extends State<CustomerDashboard> {
         },
       ),
       drawer: CustomDrawer(
-        branchNames: branchNames ?? [], // Default to an empty list if null
-        rights: widget.rights ?? '', // Default to an empty string if null
+        branchNames: branchNames ?? [],
+        rights: widget.rights ?? '',
       ),
       body: Stack(
         children: [
@@ -243,6 +297,22 @@ class _DashboardState extends State<CustomerDashboard> {
                   const Text(
                     'Loan Details',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: isActiveChecked,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            isActiveChecked = value ?? false;
+                            isCancelledChecked = false; // Uncheck "Cancelled"
+                            _fetchLoanclosedaccounts(); // Fetch and filter data
+                          });
+                        },
+                      ),
+                      const Text('Active'),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   _buildLoanList(),
