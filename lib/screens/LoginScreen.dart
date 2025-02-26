@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:chitfunds/screens/companycreation.dart';
+import 'package:chitfunds/screens/customerlogindashboard.dart';
 import 'package:chitfunds/screens/dashboard.dart';
 import 'package:chitfunds/screens/sendotp.dart';
 import 'package:flutter/material.dart';
@@ -144,19 +145,15 @@ class _LoginScreenState extends State<LoginScreen> {
             final staffId = responseData['staffId'];
             final rights = responseData['rights'];
             final profileUrl = responseData['profileUrl'] ?? '';
-            final id = responseData['id'] ?? ''; // Make it an integer
+            final id = responseData['id'] ?? '';
 
             print('Received Staff ID: $staffId');
             print('Received Rights: $rights');
             print('Received Profile URL: $profileUrl');
             print('Received ID: $id');
+
             if (staffId != null && rights != null) {
               final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('isLoggedIn', true);
-              await prefs.setString('lastScreen', 'Dashboard');
-
-              print('Staff ID saved in SharedPreferences: $staffId');
-              print('User Rights saved in SharedPreferences: $rights');
               await prefs.setBool('isLoggedIn', true);
               await prefs.setString('lastScreen', 'Dashboard');
               await prefs.setString('staffId', staffId.toString());
@@ -165,19 +162,24 @@ class _LoginScreenState extends State<LoginScreen> {
               await prefs.setString('password', _passwordController.text);
               await prefs.setString('profileUrl', profileUrl);
               await prefs.setInt('id', id);
-              print('Staff ID saved in SharedPreferences: $staffId');
-              print('User Rights saved in SharedPreferences: $rights');
-              print(
-                  'UserName saved in SharedPreferences: ${_emailController.text}');
-              print(
-                  'Password saved in SharedPreferences: ${_passwordController.text}');
-              print('Profile URL saved in SharedPreferences: $profileUrl');
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Dashboard(rights: rights),
-                ),
-              );
+
+              print('Navigated with rights: $rights');
+
+              if (rights == 'CUSTOMER') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CustomerDashboard(),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Dashboard(rights: rights),
+                  ),
+                );
+              }
             } else {
               print('Error: Missing staffId or rights in response.');
               _showErrorDialog(

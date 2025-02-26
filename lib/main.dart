@@ -18,6 +18,7 @@ import 'package:chitfunds/screens/createcustomer.dart';
 import 'package:chitfunds/screens/createscheme.dart';
 import 'package:chitfunds/screens/createstaff.dart';
 import 'package:chitfunds/screens/customerlist.dart';
+import 'package:chitfunds/screens/customerlogindashboard.dart';
 import 'package:chitfunds/screens/customerreceipt.dart';
 import 'package:chitfunds/screens/dashboard.dart';
 import 'package:chitfunds/screens/editcenter.dart';
