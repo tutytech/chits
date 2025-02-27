@@ -9,7 +9,9 @@ import 'package:intl/intl.dart';
 
 class Dashboard extends StatefulWidget {
   final String? rights;
-  const Dashboard({Key? key, this.rights}) : super(key: key);
+  final int? customerCount;
+  const Dashboard({Key? key, this.rights, this.customerCount})
+      : super(key: key);
 
   @override
   _DashboardState createState() => _DashboardState();
@@ -34,6 +36,7 @@ class _DashboardState extends State<Dashboard> {
   double cashloan = 0.0;
   double chequeloan = 0.0;
   double cancelloan = 0.0;
+  double customerCount = 0.0;
   @override
   void initState() {
     super.initState();
@@ -86,6 +89,60 @@ class _DashboardState extends State<Dashboard> {
       mainAxisSpacing: 10,
       children: cards,
     );
+  }
+
+  Widget _buildGrid2(List<Widget> cards) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      children: cards,
+    );
+  }
+
+  Future<double> fetchCustomerCount() async {
+    const String _baseUrl = 'https://chits.tutytech.in/staff.php';
+    const Map<String, String> _headers = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    };
+
+    final Map<String, String> _body = {
+      'type': 'login',
+      'username': 'your_username', // Replace with actual username
+      'password': 'your_password' // Replace with actual password
+    };
+
+    try {
+      print('Sending login request to $_baseUrl');
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: _headers,
+        body: _body,
+      );
+
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        if (responseData['success'] == true) {
+          final customerCount = (responseData['customerCount'] ?? 0).toDouble();
+          print('Customer Count: $customerCount');
+          return customerCount;
+        } else {
+          throw Exception(responseData['error'] ?? 'Login failed');
+        }
+      } else {
+        throw Exception(
+            'Failed to fetch customer count. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      throw Exception('Error: $e');
+    }
   }
 
   Future<void> _fetchPaymentDetails() async {
@@ -245,7 +302,19 @@ class _DashboardState extends State<Dashboard> {
                       _buildCard('Total Loan', totalloan.toStringAsFixed(2)),
                     ],
                   ),
-                  SizedBox(height: 20), // Space between sections
+                  SizedBox(height: 20),
+                  Text(
+                    'Customer Details',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  _buildGrid2(
+                    [
+                      _buildCard('Total Customer',
+                          widget.customerCount?.toString() ?? '0'),
+                    ],
+                  )
+                  // Space between sections
                 ],
               ),
             ),

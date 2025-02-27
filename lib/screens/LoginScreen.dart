@@ -140,95 +140,47 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final responseData = json.decode(response.body);
 
-        if (response.statusCode == 200) {
-          if (responseData['success'] == true) {
-            final staffId = responseData['staffId'];
-            final rights = responseData['rights'];
-            final profileUrl = responseData['profileUrl'] ?? '';
-            final id = responseData['id'] ?? '';
+        if (response.statusCode == 200 && responseData['success'] == true) {
+          final staffId = responseData['staffId'];
+          final rights = responseData['rights'];
+          final profileUrl = responseData['profileUrl'] ?? '';
+          final id = responseData['id'] ?? '';
+          final customerCount = responseData['customerCount'] ?? '';
 
-            print('Received Staff ID: $staffId');
-            print('Received Rights: $rights');
-            print('Received Profile URL: $profileUrl');
-            print('Received ID: $id');
+          print('Received Staff ID: $staffId');
+          print('Received Rights: $rights');
+          print('Customer Count: $customerCount');
 
-            if (staffId != null && rights != null) {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('isLoggedIn', true);
-              await prefs.setString('lastScreen', 'Dashboard');
-              await prefs.setString('staffId', staffId.toString());
-              await prefs.setString('rights', rights);
-              await prefs.setString('userName', _emailController.text);
-              await prefs.setString('password', _passwordController.text);
-              await prefs.setString('profileUrl', profileUrl);
-              await prefs.setInt('id', id);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('isLoggedIn', true);
+          await prefs.setString('lastScreen', 'Dashboard');
+          await prefs.setString('staffId', staffId.toString());
+          await prefs.setString('rights', rights);
+          await prefs.setString('userName', _emailController.text);
+          await prefs.setString('password', _passwordController.text);
+          await prefs.setString('profileUrl', profileUrl);
+          await prefs.setInt('id', (id is int) ? id : 0);
+          await prefs.setInt(
+              'customerCount', (customerCount is int) ? customerCount : 0);
+          print('Navigating with rights: $rights');
 
-              print('Navigated with rights: $rights');
-
-              if (rights == 'CUSTOMER') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CustomerDashboard(),
-                  ),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Dashboard(rights: rights),
-                  ),
-                );
-              }
-            } else {
-              print('Error: Missing staffId or rights in response.');
-              _showErrorDialog(
-                  'Invalid response from server. Please try again.');
-            }
-          } else {
-            print('Error: ${responseData['message'] ?? 'Unknown error'}');
-            _showNoAccountDialog();
-          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Dashboard(
+                rights: rights,
+                customerCount: (customerCount is int) ? customerCount : 0,
+              ),
+            ),
+          );
         } else {
-          print('Error: Received non-200 status code from server.');
+          print('Error: ${responseData['error'] ?? 'Unknown error'}');
           _showNoAccountDialog();
         }
       } catch (e) {
         print('Error: $e');
         _showErrorDialog('An error occurred. Please check your connection.');
       }
-    }
-  }
-
-  Future<void> _customerLogin(String staffId) async {
-    final customerUrl = 'https://chits.tutytech.in/staff.php';
-    try {
-      final customerResponse = await http.post(
-        Uri.parse(customerUrl),
-        body: {
-          'type': 'customerLogin',
-          'userName': _emailController.text,
-          'password': _passwordController.text,
-        },
-      );
-
-      final customerData = json.decode(customerResponse.body);
-      print('Customer Login Response: $customerData');
-
-      if (customerResponse.statusCode == 200 &&
-          customerData['success'] == true) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('customerId', customerData['customerId']);
-        await prefs.setString('customerName', customerData['customerName']);
-        await prefs.setString(
-            'customerProfileUrl', customerData['profileUrl'] ?? '');
-
-        print('Customer login successful: ${customerData['customerId']}');
-      } else {
-        print('Customer login failed: ${customerData['error']}');
-      }
-    } catch (e) {
-      print('Error during customer login: $e');
     }
   }
 

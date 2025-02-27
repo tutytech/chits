@@ -152,6 +152,11 @@ class PreferencesUtils {
     await prefs.setInt('id', id);
   }
 
+  static Future<void> setcustomercount(int customercount) async {
+    final prefs = await _getPrefs();
+    await prefs.setInt('customerCount', customercount);
+  }
+
   static Future<void> setprofile(String profile) async {
     final prefs = await _getPrefs();
     await prefs.setString('profileUrl', profile);
