@@ -9,8 +9,9 @@ import 'package:intl/intl.dart';
 
 class Dashboard extends StatefulWidget {
   final String? rights;
-  final int? customerCount;
-  const Dashboard({Key? key, this.rights, this.customerCount})
+  final int? customerCount, assignedCustomerCount;
+  const Dashboard(
+      {Key? key, this.rights, this.customerCount, this.assignedCustomerCount})
       : super(key: key);
 
   @override
@@ -60,7 +61,7 @@ class _DashboardState extends State<Dashboard> {
             ),
             SizedBox(height: 8),
             Text(
-              "₹$amount",
+              "$amount",
               style: TextStyle(fontSize: 16, color: Colors.green),
             ),
           ],
