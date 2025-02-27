@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:chitfunds/screens/amountransfer.dart';
 import 'package:chitfunds/screens/branchlist.dart';
 import 'package:chitfunds/screens/createbranch.dart';
@@ -28,14 +30,13 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
   // Method to save company data to SharedPreferences and call the API
   Future<void> _saveCompanyData(BuildContext context) async {
     if (!_formKey.currentState!.validate()) {
-      // If the form is not valid, do not proceed
-      return;
+      return; // Stop if the form is invalid
     }
 
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Prepare data for the request
+      // Prepare data for company creation request
       final String companyName = _companyNameController.text;
       final String address = _gstinController.text;
       final String email = _emailController.text;
@@ -49,22 +50,19 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
         'address': address,
         'phoneno': phoneNumber,
         'mailid': email,
-        'entryid': staffId, // Replace this with the actual value
+        'entryid': staffId,
         'entrydate': DateTime.now().toIso8601String().split('T').first,
       };
 
-      // Print request details
       print('Request URL: $uri');
       print('Request Body: $requestBody');
 
-      // Make the API call
       final response = await http.post(
         uri,
         body: requestBody,
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       );
 
-      // Print response details
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
@@ -72,29 +70,28 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
         final List<dynamic> responseData = jsonDecode(response.body);
 
         if (responseData.isNotEmpty && responseData[0]['id'] != null) {
-          // Fetch the generated company ID (it's an integer)
           final int companyId = responseData[0]['id'];
 
-          // Save company data to SharedPreferences
           await prefs.setString('companyname', companyName);
           await prefs.setString('address', address);
           await prefs.setString('mailid', email);
           await prefs.setString('phoneno', phoneNumber);
           await prefs.setString('companyId', companyId.toString());
 
-          // Print confirmation of saved data
-          print('Saved Company Data:');
-          print('Company Name: $companyName');
-          print('Address: $address');
-          print('Email: $email');
-          print('Phone Number: $phoneNumber');
-          print('Company ID: ${companyId.toString()}');
+          print(
+              'Saved Company Data: $companyName, $address, $email, $phoneNumber, $companyId');
+
+          // Generate random password
+          final String randomPassword = _generateRandomPassword(8);
+
+          // Call _createStaff with company name as username and random password
+          await _createStaff(companyName, randomPassword);
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Company created successfully!')),
+            const SnackBar(
+                content: Text('Company and Staff created successfully!')),
           );
 
-          // Navigate to AmountTransfer after success, passing companyId
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -113,11 +110,56 @@ class _CompanyCreationScreenState extends State<CompanyCreationScreen> {
         );
       }
     } catch (e) {
-      print('Error: $e'); // Print error details
+      print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
     }
+  }
+
+  String _generateRandomPassword(int length) {
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#\$%^&*()';
+    final random = Random();
+    return List.generate(length, (index) => chars[random.nextInt(chars.length)])
+        .join();
+  }
+
+  Future<void> _createStaff(String companyName, String randomPassword) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? companyid = prefs.getString('companyId');
+
+    final String staffApiUrl = 'https://chits.tutytech.in/staff.php';
+
+    try {
+      var staffRequest = http.MultipartRequest('POST', Uri.parse(staffApiUrl));
+      staffRequest.fields.addAll({
+        'type': 'insert',
+        'userName': companyName,
+        'password': randomPassword,
+        'companyid': companyid ?? '',
+      });
+
+      final staffResponse = await staffRequest.send();
+      final staffResponseBody = await staffResponse.stream.bytesToString();
+      print('Staff response body: $staffResponseBody');
+
+      if (staffResponse.statusCode == 200) {
+        final Map<String, dynamic> staffData = json.decode(staffResponseBody);
+      } else {
+        _showSnackBar(
+            'Failed to create staff. Status code: ${staffResponse.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      _showSnackBar('An error occurred: $e');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   void _pickFileForLogo() async {
