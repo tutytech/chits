@@ -49,20 +49,17 @@ class _SmsSettingsState extends State<EditSmsSettings> {
   }
 
   void _updateBranchFields(Map<String, dynamic> branch) {
-    // Update text controllers
     presmsController.text = branch['presmslink']?.toString() ?? '';
     midsmsController.text = branch['midsmslink']?.toString() ?? '';
     postsmsController.text = branch['postsmslink']?.toString() ?? '';
 
-    // Update selectedBranchName and selectedBranch inside setState
     setState(() {
-      selectedBranchName = branch['branch']?.toString() ?? '';
-      selectedBranch =
-          selectedBranchName; // Sync selectedBranch with the dropdown
+      selectedBranchId = branch['id']?.toString() ?? ''; // Store branchId
+      selectedBranchName = branch['branch']?.toString() ?? ''; // Display name
     });
 
-    // Debugging output
-    print('Selected Branch Name: $selectedBranchName');
+    print('Updated Branch ID: $selectedBranchId');
+    print('Updated Branch Name: $selectedBranchName');
   }
 
   Future<void> fetchSms(String id) async {
@@ -70,45 +67,26 @@ class _SmsSettingsState extends State<EditSmsSettings> {
     final requestBody = {'type': 'select'};
 
     try {
-      // Print the request URL and body for debugging
-      print('Request URL: $_baseUrl');
-      print('Request Body: $requestBody');
-
+      print('Fetching SMS data...');
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: requestBody,
       );
 
-      // Print the response status code and body for debugging
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final List<dynamic> smsData = json.decode(response.body);
 
-        // Find the SMS entry with the matching ID
         final smsEntry = smsData.firstWhere(
           (sms) => sms['id'].toString() == id,
           orElse: () => null,
         );
 
         if (smsEntry != null) {
-          // Update the branch fields using the fetched SMS entry
           _updateBranchFields(smsEntry);
-
-          // Extract branch data from the SMS entry
-          final branchName = smsEntry['branch']?.toString();
-          if (branchName != null) {
-            // Set the branch in the dropdown
-            setState(() {
-              selectedBranch = branchName;
-              selectedBranchName = branchName;
-            });
-            print('Selected Branch: $selectedBranchName');
-          } else {
-            print('Branch not found in the SMS entry.');
-          }
         } else {
           _showError('No SMS entry found with ID $id.');
         }
@@ -117,7 +95,6 @@ class _SmsSettingsState extends State<EditSmsSettings> {
             'Failed to fetch SMS data. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      // Print the error for debugging
       print('Error occurred: $e');
       _showError('An error occurred: $e');
     }
@@ -371,22 +348,33 @@ class _SmsSettingsState extends State<EditSmsSettings> {
 
                       // Select Branch dropdown
                       DropdownButtonFormField<String>(
-                        value: selectedBranch,
+                        value: branchData.any((branch) =>
+                                branch['id'].toString() == selectedBranchId)
+                            ? selectedBranchId
+                            : null, // Ensure null if no match found
+
                         onChanged: (newValue) {
                           setState(() {
-                            selectedBranchId = newValue;
+                            selectedBranchId = newValue!;
                             selectedBranchName = branchData.firstWhere(
-                                (branch) => branch['id'] == newValue)['name'];
+                              (branch) => branch['id'].toString() == newValue,
+                              orElse: () => {'name': ''},
+                            )['name'];
                             print('Selected Branch ID: $selectedBranchId');
                             print('Selected Branch Name: $selectedBranchName');
                           });
                         },
-                        items: branchData
-                            .map((branch) => DropdownMenuItem<String>(
-                                  value: branch['name'],
-                                  child: Text(branch['name']!),
-                                ))
-                            .toList(),
+
+                        items: branchData.map((branch) {
+                          final branchId = branch['id'].toString();
+                          final branchName = branch['name'].toString();
+
+                          return DropdownMenuItem<String>(
+                            value: branchId, // Use branch ID as the value
+                            child: Text(branchName), // Display branch name
+                          );
+                        }).toList(),
+
                         decoration: InputDecoration(
                           labelText: 'Select Branch',
                           filled: true,
@@ -396,6 +384,7 @@ class _SmsSettingsState extends State<EditSmsSettings> {
                             borderSide: BorderSide.none,
                           ),
                         ),
+
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please select a branch';

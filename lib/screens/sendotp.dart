@@ -9,27 +9,56 @@ class SendOtpPage extends StatefulWidget {
 }
 
 class _SendOtpPageState extends State<SendOtpPage> {
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController mobileController = TextEditingController();
 
   void sendOtp() async {
-    final email = emailController.text.trim();
-    // Call your API to send OTP to email
-    final response = await http.post(
-      Uri.parse('https://yourapi.com/sendOtp'),
-      body: {'email': email},
-    );
-
-    if (response.statusCode == 200) {
-      // Navigate to OTP verification page
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => VerifyOtpPage(email: email),
+    final mobileNumber = mobileController.text.trim();
+    if (mobileNumber.isEmpty || mobileNumber.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid 10-digit mobile number'),
         ),
       );
-    } else {
+      return;
+    }
+
+    final Uri uri = Uri.parse(
+      'http://sms.tutytech.com/api/smsapi?key=32800508fc3a191ea2f7fcb92d1500b3&route=2&sender=varrav&number=$mobileNumber&templateid=DLT_Templateid&sms=Your OTP is 1234',
+    );
+
+    print('Request URL: $uri');
+
+    try {
+      final response = await http.get(uri);
+
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      final responseBody = response.body.toLowerCase();
+
+      if (response.statusCode == 200 && responseBody.contains('success')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('OTP sent successfully!')),
+        );
+
+        // Navigate to OTP verification page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerifyOtpPage(mobileNumber: mobileNumber),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send OTP: ${response.body}'),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to send OTP')),
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }
@@ -43,8 +72,8 @@ class _SendOtpPageState extends State<SendOtpPage> {
         child: Column(
           children: [
             TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              controller: mobileController,
+              decoration: const InputDecoration(labelText: 'PhoneNumber'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -59,8 +88,8 @@ class _SendOtpPageState extends State<SendOtpPage> {
 }
 
 class VerifyOtpPage extends StatefulWidget {
-  final String email;
-  const VerifyOtpPage({super.key, required this.email});
+  final String mobileNumber;
+  const VerifyOtpPage({super.key, required this.mobileNumber});
 
   @override
   State<VerifyOtpPage> createState() => _VerifyOtpPageState();
@@ -74,16 +103,16 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> {
 
     final response = await http.post(
       Uri.parse('https://yourapi.com/verifyOtp'),
-      body: {'email': widget.email, 'otp': otp},
+      body: {},
     );
 
     if (response.statusCode == 200) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResetPasswordPage(email: widget.email),
-        ),
-      );
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) => ResetPasswordPage(email: widget.email),
+      //   ),
+      // );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid OTP')),

@@ -211,7 +211,6 @@ class _ReceiptState extends State<Payment> {
           'mobileno': _mobileNoController.text,
           'loanamount': _loanamountController.text,
           'receivedamount': _receivedamountController.text,
-          'depositamount': _depositamountController.text,
           'paymenttype': selectedStaff1,
           'chequeno': _chequenoController.text,
           'chequedate': _chequedateController.text,
@@ -464,26 +463,6 @@ class _ReceiptState extends State<Payment> {
                     // Opening Date field
                     // Opening Date field
 
-                    TextFormField(
-                      controller: _depositamountController,
-                      decoration: InputDecoration(
-                        labelText: 'Deposit Amount',
-                        labelStyle: const TextStyle(color: Colors.black),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Deposit Amount cannot be empty';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 30),
                     DropdownButtonFormField<String>(
                       value: selectedStaff1,
                       decoration: InputDecoration(

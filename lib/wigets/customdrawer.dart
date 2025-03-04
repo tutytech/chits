@@ -26,6 +26,7 @@ import 'package:chitfunds/screens/loan.dart';
 import 'package:chitfunds/screens/loanlist.dart';
 import 'package:chitfunds/screens/receiptlist.dart';
 import 'package:chitfunds/screens/schemelist.dart';
+import 'package:chitfunds/screens/smssettings.dart';
 import 'package:chitfunds/screens/stafflist.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -371,7 +372,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  EditSmsSettings(rights: widget.rights),
+                                  SmsSettings(rights: widget.rights),
                             ),
                           );
                         },
@@ -514,7 +515,7 @@ class _SettingsPopupState extends State<SettingsPopup> {
         _selectedImage = File(pickedFile.path);
       });
 
-      await _uploadProfileImage(); // Upload after selecting
+      await _updateStaff(); // Automatically upload after selecting
     }
   }
 
@@ -629,58 +630,59 @@ class _SettingsPopupState extends State<SettingsPopup> {
     final String? finalProfileUrl =
         uploadedImageUrl ?? prefs.getString('profileUrl');
 
-    print('staff1');
-    print('---------------${widget.id}');
+    print('Starting update process...');
+    print('Staff ID: $id');
+
     try {
       final url = Uri.parse('https://chits.tutytech.in/staff.php');
 
-      final requestBody = {
-        'type':
-            'updateprofile', // ✅ Try changing 'type' to 'action' if API expects this
-        'id': id.toString(),
+      final request = http.MultipartRequest('POST', url);
 
-        'userName': _nameController.text.trim(),
-        'password': _passwordController.text.trim(),
-        'profile': finalProfileUrl,
-      };
+      // Add form fields
+      request.fields['type'] = 'updateprofile';
+      request.fields['id'] = id.toString();
+      request.fields['userName'] = _nameController.text.trim();
+      request.fields['password'] = _passwordController.text.trim();
+      request.fields['profile'] = finalProfileUrl ?? '';
 
-      print('staff3');
-      debugPrint('Request URL: $url');
-      debugPrint('Request Body: $requestBody');
+      // Add file if a new image was picked
+      if (_selectedImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('profile', _selectedImage!.path),
+        );
+      }
 
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: requestBody,
-      );
+      print('Request fields: ${request.fields}');
+      print('Uploading profile image...');
 
-      debugPrint('Response Code: ${response.statusCode}');
-      debugPrint('Response Body: ${response.body}');
+      // Send the request
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('Response Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        print('staff4');
-        final result =
-            json.decode(response.body); // result is a Map, not a List
+        final result = json.decode(response.body);
 
         if (result['status'] == 0) {
-          print('staff5');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Staff updated successfully!')),
+            const SnackBar(content: Text('Profile updated successfully!')),
           );
-          Navigator.pop(context, true);
+
+          // Save the updated profile URL to SharedPreferences
+          final updatedProfileUrl = result['profileUrl'];
+          prefs.setString('profileUrl', updatedProfileUrl);
+
+          Navigator.pop(context, true); // Close the screen with success flag
         } else {
-          print('staff5');
-          _showError(result['message'] ?? 'Failed to update staff.');
+          _showError(result['message'] ?? 'Failed to update profile.');
         }
       } else {
-        print('staff6');
-        _showError('Failed to update staff: ${response.body}');
+        _showError('Failed to update profile: ${response.body}');
       }
     } catch (error) {
-      print('staff7');
-      debugPrint('Error: $error');
+      print('Error: $error');
       _showError('An error occurred: $error');
     }
   }
@@ -793,34 +795,33 @@ class _SettingsPopupState extends State<SettingsPopup> {
                       radius: 60,
                       backgroundColor: Colors.grey[300],
                       child: ClipOval(
-                        child: profile != null && profile!.isNotEmpty
-                            ? Image.network(
-                                profile!,
+                        child: _selectedImage != null
+                            ? Image.file(
+                                _selectedImage!,
                                 width: 120,
                                 height: 120,
                                 fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return const Center(
-                                      child: CircularProgressIndicator());
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(Icons.person,
-                                      size: 60, color: Colors.grey);
-                                },
                               )
-                            : const Icon(Icons.person,
-                                size: 60, color: Colors.grey),
+                            : (profile != null && profile!.isNotEmpty
+                                ? Image.network(
+                                    profile!,
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(Icons.person,
+                                          size: 60, color: Colors.grey);
+                                    },
+                                  )
+                                : const Icon(Icons.person,
+                                    size: 60, color: Colors.grey)),
                       ),
                     ),
                     Positioned(
                       bottom: 0,
                       right: 0,
                       child: GestureDetector(
-                        onTap: () {
-                          _pickProfileImage();
-                        },
+                        onTap: _pickProfileImage,
                         child: Container(
                           padding: const EdgeInsets.all(5),
                           decoration: const BoxDecoration(

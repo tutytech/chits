@@ -46,15 +46,15 @@ class PreferencesUtils {
   }
 
   // Save company ID
-  static Future<void> saveCompanyId(String companyId) async {
+  static Future<void> saveCompanyId(String companyid) async {
     final prefs = await _getPrefs();
-    await prefs.setString('companyId', companyId);
+    await prefs.setString('companyid', companyid);
   }
 
   // Get company ID
   static Future<String?> getCompanyId() async {
     final prefs = await _getPrefs();
-    return prefs.getString('companyId');
+    return prefs.getString('companyid');
   }
 
   // Save company name

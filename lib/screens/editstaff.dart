@@ -45,15 +45,15 @@ class _CreateStaffState extends State<EditStaff> {
   final ImagePicker _picker = ImagePicker();
   File? _image;
   Uint8List? _imageBytes;
+  File? _selectedImage;
   @override
-  void initState() {
-    super.initState();
-    if (widget.id.isNotEmpty) {
-      fetchStaff(widget.id);
-    } else {
-      _showError('Invalid branch ID provided.');
-    }
-    _fetchBranches(); // Fetch branches when the widget dependencies change
+  void didChangeDependencies() {
+    print('editstaff1');
+    super.didChangeDependencies();
+    print('Widget ID: ${widget.id}'); // Check the widget.id
+
+    fetchStaff(widget.id); // No need for null check
+    _fetchBranches();
   }
 
   final List<String> branches = [
@@ -74,152 +74,88 @@ class _CreateStaffState extends State<EditStaff> {
     'Field Officer'
   ];
   Future<void> _updateBranchFields(Map<String, dynamic> branch) async {
-    final SharedPreferences prefs =
-        await SharedPreferences.getInstance(); // Use await to get the instance
-    final String? companyid = prefs.getString('companyId');
+    print('Updating branch fields...');
+    print('Branch data received: $branch');
 
-    _staffIdController.text = branch['staffId'] ?? '';
+    if (branch.isEmpty) {
+      print('Error: Received empty branch data.');
+      return;
+    }
+
+    _staffIdController.text = branch['staffId']?.toString() ?? '';
     _staffNameController.text = branch['staffName']?.toString() ?? '';
-    _addressController.text = branch['address'] ?? '';
-    _mobileNoController.text = branch['mobileNo'] ?? '';
-    _userNameController.text = branch['userName'] ?? '';
-    _passwordController.text = branch['password'] ?? '';
+    _addressController.text = branch['address']?.toString() ?? '';
+    _mobileNoController.text = branch['mobileNo']?.toString() ?? '';
+    _userNameController.text = branch['userName']?.toString() ?? '';
+    _passwordController.text = branch['password']?.toString() ?? '';
 
     setState(() {
       selectedBranchName = branch['branch']?.toString() ?? '';
-      selectedBranch =
-          selectedBranchName; // Sync selectedBranch with the dropdown
+      selectedBranch = selectedBranchName;
+      customerPhotoUrl = branch['profile']?.toString() ?? '';
     });
 
-    _branchCodeController.text = branch['branchCode'] ?? '';
-    _receiptNoController.text = branch['receiptNo'] ?? '';
-    selectedRights = branch['rights'] ?? '';
-    _emailController.text = branch['email'] ?? '';
-    _companyIdController.text = branch['companyid'] ?? '';
+    _branchCodeController.text = branch['branchCode']?.toString() ?? '';
+    _receiptNoController.text = branch['receiptNo']?.toString() ?? '';
+    selectedRights = branch['rights']?.toString() ?? '';
+    _emailController.text = branch['email']?.toString() ?? '';
+    _companyIdController.text = branch['companyid']?.toString() ?? '';
+
+    print('Branch fields updated successfully.');
   }
 
   Future<void> _updateStaff() async {
-    print('staff1');
-    print('---------------${widget.id}');
     try {
       final url = Uri.parse('https://chits.tutytech.in/staff.php');
 
-      final requestBody = {
-        'type':
-            'update', // ✅ Try changing 'type' to 'action' if API expects this
-        'id': widget.id.toString(),
-        'staffId': _staffIdController.text.trim(),
-        'staffName': _staffNameController.text.trim(),
-        'address': _addressController.text.trim(),
-        'mobileNo': _mobileNoController.text.trim(),
-        'userName': _userNameController.text.trim(),
-        'password': _passwordController.text.trim(),
-        'branch': selectedBranch,
-        'branchCode': _branchCodeController.text.trim(),
-        'receiptNo': _receiptNoController.text.trim(),
-        'rights': selectedRights,
-        'email': _emailController.text.trim(),
-        'companyid': _companyIdController.text.trim(),
-      };
+      var request = http.MultipartRequest('POST', url)
+        ..fields['type'] = 'update'
+        ..fields['id'] = widget.id.toString()
+        ..fields['staffId'] = _staffIdController.text.trim()
+        ..fields['staffName'] = _staffNameController.text.trim()
+        ..fields['address'] = _addressController.text.trim()
+        ..fields['mobileNo'] = _mobileNoController.text.trim()
+        ..fields['userName'] = _userNameController.text.trim()
+        ..fields['password'] = _passwordController.text.trim()
+        ..fields['branch'] = selectedBranch ?? ''
+        ..fields['branchCode'] = _branchCodeController.text.trim()
+        ..fields['receiptNo'] = _receiptNoController.text.trim()
+        ..fields['rights'] = selectedRights ?? ''
+        ..fields['email'] = _emailController.text.trim()
+        ..fields['companyid'] = _companyIdController.text.trim();
 
-      print('staff3');
-      debugPrint('Request URL: $url');
-      debugPrint('Request Body: $requestBody');
+      if (_selectedImage != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'profile',
+          _selectedImage!.path,
+        ));
+      }
 
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type':
-              'application/x-www-form-urlencoded', // ✅ Change to JSON
-        },
-        body: requestBody, // ✅ Send as JSON
-      );
-
-      debugPrint('Response Code: ${response.statusCode}');
-      debugPrint('Response Body: ${response.body}');
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 200) {
-        print('staff4');
-        final result =
-            json.decode(response.body); // result is a Map, not a List
-
+        final result = json.decode(responseBody);
         if (result['status'] == 0) {
-          print('staff5');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Staff updated successfully!')),
           );
           Navigator.pop(context, true);
         } else {
-          print('staff5');
           _showError(result['message'] ?? 'Failed to update staff.');
         }
       } else {
-        print('staff6');
-        _showError('Failed to update staff: ${response.body}');
+        _showError('Failed to update staff: $responseBody');
       }
     } catch (error) {
-      print('staff7');
-      debugPrint('Error: $error');
       _showError('An error occurred: $error');
     }
   }
 
-  // Future<void> _updateStaff() async {
-  //   print('---------------${widget.id}');
-  //   try {
-  //     final url = Uri.parse('https://chits.tutytech.in/staff.php');
-
-  //     final requestBody = {
-  //       'type': 'update',
-  //       'id': widget.id.toString(),
-  //       'staffId': _staffIdController.text.trim(),
-  //       'staffName': _staffNameController.text.trim(),
-  //       'address': _addressController.text.trim(),
-  //       'mobileNo': _mobileNoController.text.trim(),
-  //       'userName': _userNameController.text.trim(),
-  //       'password': _passwordController.text.trim(),
-  //       'branch': selectedBranch,
-  //       'branchCode': _branchCodeController.text.trim(),
-  //       'receiptNo':
-  //           _receiptNoController.text.trim(), // Ensure correct key name
-  //       'rights': selectedRights,
-  //       'email': _emailController.text.trim(),
-  //       'companyid': _companyIdController.text.trim(),
-  //     };
-
-  //     // Debugging prints
-  //     debugPrint('Request URL: $url');
-  //     debugPrint('Request Body: ${json.encode(requestBody)}');
-
-  //     final response = await http.post(
-  //       url,
-  //       headers: {
-  //         'Content-Type': 'application/x-www-form-urlencoded',
-  //       },
-  //       body: requestBody, // Correctly formatted form data
-  //     );
-
-  //     debugPrint('Response Code: ${response.statusCode}');
-  //     debugPrint('Response Body: ${response.body}');
-
-  //     if (response.statusCode == 200) {
-  //       final result = json.decode(response.body);
-
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text('Staff updated successfully!')),
-  //       );
-  //       Navigator.pop(context, true); // Return to the previous screen
-  //     } else {
-  //       _showError('Failed to update staff: ${response.body}');
-  //     }
-  //   } catch (error) {
-  //     debugPrint('Error: $error');
-  //     _showError('An error occurred: $error');
-  //   }
-  // }
-
   Future<void> fetchStaff(String id) async {
-    const String _baseUrl = 'https://chits.tutytech.in/staff.php';
+    print('Fetching staff with ID: $id');
+    String _baseUrl = 'https://chits.tutytech.in/staff.php';
+
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -228,25 +164,39 @@ class _CreateStaffState extends State<EditStaff> {
       );
 
       if (response.statusCode == 200) {
+        print('Response received.');
         final List<dynamic> branchData = json.decode(response.body);
 
-        final branch = branchData.firstWhereOrNull(
-          (branch) => branch['id'].toString() == id,
-        );
+        if (branchData.isNotEmpty) {
+          final branch = branchData.firstWhere(
+            (branch) => branch['id'].toString() == id,
+          );
 
-        if (branch != null) {
-          setState(() {
-            _updateBranchFields(branch);
-            isLoading = false;
-          });
+          if (branch.isNotEmpty) {
+            print('Branch found: $branch');
+            setState(() {
+              _updateBranchFields(branch);
+              isLoading = false;
+            });
+          } else {
+            print('No branch found with ID $id.');
+            _showError('No branch found with ID $id.');
+            setState(() => isLoading = false);
+          }
         } else {
-          _showError('No branch found with ID $id.');
+          print('Empty branch data.');
+          _showError('No branches available.');
+          setState(() => isLoading = false);
         }
       } else {
-        throw Exception('Failed to fetch branches');
+        print('Failed to fetch branches: ${response.statusCode}');
+        _showError('Failed to fetch branches: ${response.statusCode}');
+        setState(() => isLoading = false);
       }
     } catch (e) {
-      _showError('Error fetching staff: $e');
+      print('Error: $e');
+      _showError('Error: $e');
+      setState(() => isLoading = false);
     }
   }
 
@@ -384,28 +334,17 @@ class _CreateStaffState extends State<EditStaff> {
   }
 
   Future<void> _pickImage() async {
-    print('pick1');
     try {
-      print('pick2');
-      // Pick the image from the gallery
       final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
-        print('pick3');
-        final bytes = await pickedFile.readAsBytes(); // Convert image to bytes
         setState(() {
-          print('pick4');
-          _imageBytes = bytes; // Store the image bytes
-          _imageFileName = pickedFile.name;
-          _image = File(pickedFile.path);
-          print('$_imageFileName');
-          print('$_image');
+          _selectedImage = File(pickedFile.path); // Store selected image file
         });
+        print('Selected Image: ${pickedFile.path}');
       } else {
-        print('pick5');
         print("No image selected.");
       }
     } catch (e) {
-      print('pick6');
       print("Error picking image: $e");
     }
   }
@@ -445,42 +384,45 @@ class _CreateStaffState extends State<EditStaff> {
                       Center(
                         child: Stack(
                           children: [
-                            // CircleAvatar with border
                             Container(
                               width: 140,
                               height: 140,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.grey.withOpacity(
-                                      0.5), // Mild grey border color
-                                  width: 2, // Border width
+                                  color: Colors.grey.withOpacity(0.5),
+                                  width: 2,
                                 ),
                               ),
                               child: ClipOval(
-                                // Clip the image to make it perfectly circular
-                                child: CachedNetworkImage(
-                                  imageUrl: customerPhotoUrl!,
-                                  fit: BoxFit
-                                      .cover, // Fit image inside the circle
-                                  placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(
-                                    Icons.error,
-                                    color: Colors.grey,
-                                  ),
-                                ),
+                                child: customerPhotoUrl != null &&
+                                        customerPhotoUrl!.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: customerPhotoUrl!,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(
+                                          Icons.person,
+                                          size: 60,
+                                          color: Colors.grey,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color: Colors.grey,
+                                      ),
                               ),
                             ),
-
                             Positioned(
                               bottom: 0,
                               right: 0,
                               child: InkWell(
-                                onTap:
-                                    _pickImage, // Call the method to pick an image
+                                onTap: _pickImage,
                                 child: CircleAvatar(
                                   radius: 15,
                                   backgroundColor: Colors.blue,

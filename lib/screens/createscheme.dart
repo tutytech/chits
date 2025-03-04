@@ -44,27 +44,70 @@ class _CreateSchemeState extends State<CreateScheme> {
   }
 
   Future<void> _createScheme() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? staffId = prefs.getString('staffId');
-    final String? companyid = prefs.getString('companyId');
-    final String apiUrl = 'https://chits.tutytech.in/scheme.php';
+    print('--- Starting _createScheme ---');
 
     try {
-      // Transform `_tableData` to match expected field names in the API
+      // Step 1: Get shared preferences
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      print('SharedPreferences loaded.');
+
+      final String? staffId = prefs.getString('staffId');
+      final String? companyid = prefs.getString('companyid');
+
+      print('Staff ID: $staffId');
+      print('Company ID: $companyid');
+
+      if (staffId == null || companyid == null) {
+        print('Error: staffId or companyid is null.');
+      }
+
+      // Step 2: Define API URL
+      final String apiUrl = 'https://chits.tutytech.in/scheme.php';
+      print('API URL: $apiUrl');
+
+      // Step 3: Transform _tableData
+      print('Raw _tableData: $_tableData');
+
       final List<Map<String, dynamic>> transformedTableData =
           _tableData.map((entry) {
+        print('Processing entry: $entry');
+
+        final principalAmount = entry["principalAmount"] ?? 0.0;
+        final interestAmount = entry["interestAmount"] ?? 0.0;
+        final savingsAmount = entry["savingsAmount"] ?? 0.0;
+        final totalCollection = entry["totalCollection"] ?? 0.0;
+        final sNo = entry["sNo"] ?? "";
+
+        print(
+            'Transformed values - Principal: $principalAmount, Interest: $interestAmount, Savings: $savingsAmount, Total: $totalCollection, SNo: $sNo');
+
         return {
-          "principalamt": entry["principalAmount"],
-          "interestamt": entry["interestAmount"],
-          "savingsamt": entry["savingsAmount"],
-          "totalCollection": entry["totalCollection"],
+          "principalamt": principalAmount.toString(),
+          "interestamt": interestAmount.toString(),
+          "savingsamt": savingsAmount.toString(),
+          "totalCollection": totalCollection.toString(),
+          "sno": sNo.toString(),
         };
       }).toList();
 
-      // Encode the transformed data as JSON
-      final String schemeDetailsJson = jsonEncode(transformedTableData);
+      print('Transformed schemedetails: $transformedTableData');
 
-      print('Sending schemedetails: $schemeDetailsJson'); // Debug
+      // Step 4: Encode JSON
+      final String schemeDetailsJson = jsonEncode(transformedTableData);
+      print('Encoded schemedetails JSON: $schemeDetailsJson');
+
+      // Step 5: Collect form data
+      final schemeId = _schemeIdController.text;
+      final schemeName = _schemeNameController.text;
+      final loanAmount = _loanAmountController.text;
+      final collectionType = _selectedCollectionMode;
+      final weeksDays = _weeksDaysController.text;
+
+      print(
+          'Form data - schemeId: $schemeId, schemeName: $schemeName, loanAmount: $loanAmount, collectionType: $collectionType, weeksDays: $weeksDays');
+
+      // Step 6: Make HTTP request
+      print('Sending POST request...');
 
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -73,22 +116,25 @@ class _CreateSchemeState extends State<CreateScheme> {
         },
         body: {
           'type': 'insert',
-          'schemeid': _schemeIdController.text,
-          'schemename': _schemeNameController.text,
-          'amount': _loanAmountController.text,
-          'collectiontype': _selectedCollectionMode,
-          'noofweeks': _weeksDaysController.text,
+          'schemeid': schemeId,
+          'schemename': schemeName,
+          'amount': loanAmount,
+          'collectiontype': collectionType,
+          'noofweeks': weeksDays,
           'schemedetails': schemeDetailsJson,
           'entryid': staffId,
           'companyid': companyid,
         },
       );
-      print('Collection Type: $_selectedCollectionMode');
 
-      print('Response body: ${response.body}'); // Debug the response
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
+      // Step 7: Handle response
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
+        print('Decoded response data: $responseData');
+
         if (responseData['success']) {
           _showSnackBar('Scheme created successfully!');
         } else {
@@ -105,9 +151,11 @@ class _CreateSchemeState extends State<CreateScheme> {
             'Failed to create scheme. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
+      print('Caught error: $e');
       _showSnackBar('An error occurred: $e');
     }
+
+    print('--- _createScheme completed ---');
   }
 
   void _showSnackBar(String message) {
@@ -148,7 +196,7 @@ class _CreateSchemeState extends State<CreateScheme> {
     setState(() {
       _tableData = List.generate(rowCount, (index) {
         return {
-          'sNo': index + 1,
+          'sNo': (index + 1).toString(),
           'principalAmount': 0.0,
           'interestAmount': 0.0,
           'savingsAmount': 0.0,

@@ -216,6 +216,7 @@ class _CreateCustomerState extends State<EditCustomer> {
         'longitude': controller.longitude.value,
         'uploadBondSheet': selectedBondSheetFileName ?? '',
         'entryid': staffId.toString(),
+        'customerPhoto': customerPhotoUrl,
       };
 
       // Debugging prints
@@ -919,26 +920,29 @@ class _CreateCustomerState extends State<EditCustomer> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.grey.withOpacity(
-                                      0.5), // Mild grey border color
-                                  width: 2, // Border width
+                                  color: Colors.grey.withOpacity(0.5),
+                                  width: 2,
                                 ),
                               ),
                               child: ClipOval(
-                                // Clip the image to make it perfectly circular
-                                child: CachedNetworkImage(
-                                  imageUrl: customerPhotoUrl!,
-                                  fit: BoxFit
-                                      .cover, // Fit image inside the circle
-                                  placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(
-                                    Icons.error,
-                                    color: Colors.grey,
-                                  ),
-                                ),
+                                child: _image != null
+                                    ? Image.file(
+                                        _image!,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : CachedNetworkImage(
+                                        imageUrl: customerPhotoUrl ?? '',
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(
+                                          Icons.error,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
                               ),
                             ),
 
@@ -946,8 +950,7 @@ class _CreateCustomerState extends State<EditCustomer> {
                               bottom: 0,
                               right: 0,
                               child: InkWell(
-                                onTap:
-                                    _pickImage, // Call the method to pick an image
+                                onTap: _pickImage,
                                 child: CircleAvatar(
                                   radius: 15,
                                   backgroundColor: Colors.blue,
@@ -958,7 +961,7 @@ class _CreateCustomerState extends State<EditCustomer> {
                                   ),
                                 ),
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ),

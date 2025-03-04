@@ -146,9 +146,11 @@ class _LoginScreenState extends State<LoginScreen> {
           final profileUrl = responseData['profileUrl'] ?? '';
           final id = responseData['id'] ?? '';
           final customerCount = responseData['customerCount'] ?? '';
+          final companyid = responseData['companyid'] ?? ''; // Get companyId
 
           print('Received Staff ID: $staffId');
           print('Received Rights: $rights');
+          print('Received Company ID: $companyid');
           print('Customer Count: $customerCount');
 
           final prefs = await SharedPreferences.getInstance();
@@ -162,6 +164,9 @@ class _LoginScreenState extends State<LoginScreen> {
           await prefs.setInt('id', (id is int) ? id : 0);
           await prefs.setInt(
               'customerCount', (customerCount is int) ? customerCount : 0);
+          await prefs.setString(
+              'companyid', companyid.toString()); // Store companyId
+
           print('Navigating with rights: $rights');
 
           Navigator.push(

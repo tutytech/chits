@@ -26,6 +26,7 @@ import 'package:chitfunds/screens/editcomapnydetails.dart';
 import 'package:chitfunds/screens/editcompany.dart';
 import 'package:chitfunds/screens/loan.dart';
 import 'package:chitfunds/screens/loanlist.dart';
+import 'package:chitfunds/screens/payment.dart';
 import 'package:chitfunds/screens/receiptlist.dart';
 import 'package:chitfunds/screens/registration.dart';
 import 'package:chitfunds/screens/scan_screen.dart';
@@ -96,8 +97,8 @@ class _FlutterBlueAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      color: Colors.lightBlue,
-      home: CompanyCreationScreen(),
+      color: const Color.from(alpha: 1, red: 0.012, green: 0.663, blue: 0.957),
+      home: _getInitialScreen(),
       navigatorObservers: [BluetoothAdapterStateObserver()],
     );
   }

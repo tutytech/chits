@@ -433,32 +433,20 @@ class _BranchListPageState extends State<staffListPage> {
                                           MainAxisAlignment.start,
                                       children: [
                                         IconButton(
-                                          icon: const Icon(Icons.edit,
+                                          icon: Icon(Icons.edit,
                                               color: Colors.blue),
                                           onPressed: () {
-                                            if (branch['id'] != null) {
-                                              print(
-                                                  'Staff ID: ${branch['id']}');
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      EditStaff(
-                                                    id: branch['id'].toString(),
-                                                    rights: widget.rights,
-                                                  ),
-                                                ),
-                                              );
-                                            } else {
-                                              print(
-                                                  'Error: branch ID is null.');
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                    content: Text(
-                                                        'Invalid staff ID')),
-                                              );
-                                            }
+                                            print(
+                                                'Staff ID: ${branch['id']}'); // Print the staff ID before navigating
+
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => EditStaff(
+                                                    id: branch['id']
+                                                        .toString()), // Pass the staffId
+                                              ),
+                                            );
                                           },
                                         ),
                                         IconButton(

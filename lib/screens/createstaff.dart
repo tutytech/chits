@@ -156,7 +156,6 @@ class _CreateStaffState extends State<CreateStaff> {
         'userName': _userNameController.text,
         'password': _passwordController.text,
         'branch': selectedBranchName ?? '',
-        'branchCode': _branchCodeController.text,
         'receiptNo': _receiptNoController.text,
         'rights': selectedRights ?? '',
         'companyid': companyid ?? '',
@@ -502,26 +501,6 @@ class _CreateStaffState extends State<CreateStaff> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      TextFormField(
-                        controller: _branchCodeController,
-                        decoration: InputDecoration(
-                          labelText: 'Enter Branch Code',
-                          labelStyle: const TextStyle(color: Colors.black),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your branch code';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 30),
                       TextFormField(
                         controller: _receiptNoController,
                         decoration: InputDecoration(

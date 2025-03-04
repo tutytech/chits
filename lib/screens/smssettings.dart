@@ -50,7 +50,7 @@ class _SmsSettingsState extends State<SmsSettings> {
   Future<void> _createsms() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    final String? companyid = prefs.getString('companyId');
+    final String? companyid = prefs.getString('companyid');
     if (!(_formKey.currentState?.validate() ?? true)) {
       return; // Exit the method if validation fails
     }
@@ -63,7 +63,7 @@ class _SmsSettingsState extends State<SmsSettings> {
       'presmslink': presmsController.text,
       'midsmslink': midsmsController.text,
       'postsmslink': postsmsController.text,
-      'branch': selectedBranchName,
+      'branch': selectedBranchId,
       'companyid': companyid,
       'active': activeStatus,
     };

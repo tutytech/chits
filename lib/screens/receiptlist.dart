@@ -168,7 +168,6 @@ class _BranchListPageState extends State<receiptListPage> {
             'mobileno': branch['mobileno']?.toString() ?? '0',
             'loanamount': branch['loanamount'] ?? 'N/A',
             'receivedamount': branch['receivedamount'] ?? 'N/A',
-            'depositamount': branch['depositamount'] ?? 'N/A',
             'paymenttype': branch['paymenttype'] ?? 'N/A',
             'chequeno': branch['chequeno'] ?? 'N/A',
             'chequedate': branch['chequedate'] ?? 'N/A',
