@@ -295,6 +295,36 @@ class _CreateCustomerState extends State<CreateCustomer> {
       return;
     }
     try {
+      final String aadharNo = _aadharNoController.text.trim();
+
+      // Check Aadhaar existence using the same customer.php endpoint
+      final aadharResponse = await http.post(
+        Uri.parse(apiUrl),
+        body: {'type': 'checkAadhar', 'aadharNo': aadharNo},
+      );
+
+      if (aadharResponse.statusCode == 200) {
+        final responseBody = aadharResponse.body.trim();
+        if (responseBody.isNotEmpty) {
+          final aadharResponseBody = json.decode(responseBody);
+          print('Aadhar Check Response: $aadharResponseBody');
+
+          if (aadharResponseBody['exists'] == true) {
+            _showSnackBar('Aadhaar number already exists.');
+            return;
+          }
+        } else {
+          print('Empty JSON response from server.');
+          _showSnackBar('Invalid response from server.');
+          return;
+        }
+      } else {
+        print(
+            'Failed to check Aadhaar number. Status code: ${aadharResponse.statusCode}');
+        _showSnackBar('Failed to verify Aadhaar number.');
+        return;
+      }
+
       print('hello4');
       final request = http.MultipartRequest(
         'POST',
@@ -499,24 +529,30 @@ class _CreateCustomerState extends State<CreateCustomer> {
       final response = await request.send();
 
       // Handle response
+      final responseBody = await response.stream.bytesToString();
+      print("Raw Response: $responseBody");
+
       if (response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
-        print("Raw Response: $responseBody");
-
         if (responseBody.isNotEmpty) {
-          print("Customer created successfully: $responseBody");
-
-          _showSnackBar('Customer created successfully!');
-          await _createUser(username, password);
+          try {
+            final decodedResponse = json.decode(responseBody);
+            print("Customer created successfully: $decodedResponse");
+            _showSnackBar('Customer created successfully!');
+            await _createUser(username, password);
+          } catch (e) {
+            print('Failed to parse JSON: $e');
+            _showSnackBar('Unexpected response from server.');
+          }
         } else {
-          print(
-              "Customer created successfully, but no response body returned.");
-          _showSnackBar('Failed to create customer.');
+          print('Empty response from server.');
+          _showSnackBar(
+              'Customer creation succeeded but received empty response.');
         }
       } else {
         print("Error creating customer: ${response.reasonPhrase}");
         _showSnackBar('Failed to create customer.');
       }
+
       Navigator.push(
         context,
         MaterialPageRoute(
