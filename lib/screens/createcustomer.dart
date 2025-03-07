@@ -340,9 +340,9 @@ class _CreateCustomerState extends State<CreateCustomer> {
       request.fields['phoneNo'] = _phoneNoController.text.trim();
       request.fields['aadharNo'] =
           _aadharNoController.text.trim(); // Ensure this is passed as a string
-      request.fields['branch'] = selectedBranchName ?? '';
-      request.fields['center'] = selectedCenterName ?? '';
-      request.fields['collectionstaff'] = selectedStaffName ?? '';
+      request.fields['branch'] = selectedBranchId ?? '';
+      request.fields['center'] = selectedCenterId ?? '';
+      request.fields['collectionstaff'] = selectedStaffId ?? '';
       // Add file names for uploaded documents if available
       request.fields['uploadAadhar'] = selectedAadhaarFileName ?? '';
       request.fields['uploadVoterId'] = selectedVoterIdFileName ?? '';

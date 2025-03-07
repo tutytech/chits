@@ -130,57 +130,57 @@ class _SmsSettingsState extends State<EditSmsSettings> {
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        print('Processing response...');
-        final responseData = json.decode(response.body);
+        final List<dynamic> responseData = json.decode(response.body);
+        print('Raw Response Data: $responseData');
 
-        // Assuming responseData is a list of branches
-        List<Map<String, String>> branches = [];
+        // Ensure the response is a list of branches
+        if (responseData is List) {
+          List<Map<String, String>> branches = responseData
+              .map((branch) {
+                final id = branch['id']?.toString();
+                final name = branch['branchname']?.toString();
+                if (id != null && name != null) {
+                  return {'id': id, 'name': name};
+                }
+                return null; // Skip invalid branches
+              })
+              .where((branch) => branch != null)
+              .cast<Map<String, String>>()
+              .toList();
 
-        for (var branch in responseData) {
-          if (branch['id'] != null && branch['branchname'] != null) {
-            branches.add({
-              'id': branch['id'].toString(),
-              'name': branch['branchname'],
-            });
-          }
-        }
+          print('Parsed Branches: $branches');
 
-        print('Branches Parsed: $branches');
-
-        if (branches.isNotEmpty) {
-          print('Branches fetched successfully.');
-
+          // Load saved branch from SharedPreferences
           final SharedPreferences prefs = await SharedPreferences.getInstance();
-          final String? lastSavedBranchId = prefs.getString('branchId');
-          final String? lastSavedBranchName = prefs.getString('branchName');
-          print('--------------------$lastSavedBranchId');
-          print('--------------------$lastSavedBranchName');
+          final String? lastSavedBranchId = prefs.getString('branchid');
+          print('Last Saved Branch ID: $lastSavedBranchId');
 
           setState(() {
             branchData = branches;
 
             if (lastSavedBranchId != null &&
                 branches.any((branch) => branch['id'] == lastSavedBranchId)) {
-              selectedBranchId = lastSavedBranchId;
-              selectedBranchName = branches.firstWhere(
+              final matchedBranch = branches.firstWhere(
                 (branch) => branch['id'] == lastSavedBranchId,
-                orElse: () => {'id': '', 'name': ''},
-              )['name']!;
-            } else {
-              print('No saved branch found, defaulting to first branch...');
+              );
+
+              selectedBranchId = matchedBranch['id'];
+              selectedBranchName = matchedBranch['name'];
+            } else if (branches.isNotEmpty) {
               selectedBranchId = branches[0]['id'];
-              selectedBranchName = branches[0]['name']!;
+              selectedBranchName = branches[0]['name'];
+            } else {
+              selectedBranchId = null;
+              selectedBranchName = null;
             }
           });
 
           print(
               'Selected Branch: ID = $selectedBranchId, Name = $selectedBranchName');
         } else {
-          print('No branches available in the response.');
+          print('Unexpected response format.');
           setState(() {
             branchData = [];
-            selectedBranchId = null;
-            selectedBranchName = '';
           });
         }
       } else {

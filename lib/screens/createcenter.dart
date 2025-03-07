@@ -127,7 +127,7 @@ class _CreateCenterState extends State<CreateCenter> {
   Future<void> _createCenter() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = prefs.getString('staffId');
-    final String? companyid = prefs.getString('companyId');
+    final String? companyid = prefs.getString('companyid');
     if (!_formKey.currentState!.validate()) {
       return; // If form is not valid, exit early
     }
@@ -140,7 +140,7 @@ class _CreateCenterState extends State<CreateCenter> {
         'type': 'insert',
         'centername': _centerNameController.text,
         'centercode': _centeridController.text,
-        'branchname': selectedBranchName ?? '1',
+        'branchname': selectedBranchId ?? '1',
         'entryid': staffId,
         'companyid': companyid,
       };

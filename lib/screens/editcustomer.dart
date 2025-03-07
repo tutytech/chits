@@ -50,8 +50,11 @@ class _CreateCustomerState extends State<EditCustomer> {
   String? selectedDayOrder;
   String? selectedTiming;
   String? selectedFieldOfficer;
-
+  String? selectedStaffId;
+  String? selectedStaffName;
+  String? selectedStaff;
   String? selectedFileName = "No file chosen";
+  List<Map<String, dynamic>> staffData = [];
 
   String selectedAadhaarFileName = 'No file chosen';
   String selectedVoterIdFileName = 'No file chosen';
@@ -142,7 +145,8 @@ class _CreateCustomerState extends State<EditCustomer> {
       _showError('Invalid branch ID provided.');
     }
     _fetchBranches();
-    _fetchCenters(); // Fetch branches when the widget dependencies change
+    _fetchCenters();
+    _fetchStaffName(); // Fetch branches when the widget dependencies change
   }
 
   Future<void> _downloadFile(String fileUrl) async {
@@ -201,6 +205,7 @@ class _CreateCustomerState extends State<EditCustomer> {
         'aadharNo': _aadharNoController.text.trim(),
         'branch': selectedBranchId ?? '',
         'center': selectedCenterId ?? '',
+        'collectionstaff': selectedStaffId ?? '',
         'uploadAadhar': selectedAadhaarFileName ?? '',
         'uploadVoterId': selectedVoterIdFileName ?? '',
         'uploadPan': selectedPanFileName ?? '',
@@ -254,6 +259,55 @@ class _CreateCustomerState extends State<EditCustomer> {
     }
   }
 
+  Future<void> _fetchStaffName() async {
+    final String apiUrl = 'https://chits.tutytech.in/staff.php';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'type': 'select', // Type for listing centers
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Log response for debugging
+        print("Response Body: ${response.body}");
+
+        final responseData = json.decode(response.body);
+
+        // Parse centers from response
+        List<Map<String, String>> staffs = [];
+        for (var staff in responseData) {
+          if (staff['id'] != null && staff['staffName'] != null) {
+            staffs.add({
+              'id': staff['id'].toString(),
+              'name': staff['staffName'],
+            });
+          }
+        }
+
+        if (staffs.isEmpty) {
+          _showSnackBar('No staff were found in the response data.');
+        } else {
+          setState(() {
+            staffData = staffs; // Update the state with center data
+          });
+
+          print('Staff Data: $staffs');
+        }
+      } else {
+        _showSnackBar(
+            'Failed to fetch Staff. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showSnackBar('An error occurred: $e');
+    }
+  }
+
   Future<void> _updateBranchFields(Map<String, dynamic> response) async {
     // Populate fields with API response data
 
@@ -264,15 +318,19 @@ class _CreateCustomerState extends State<EditCustomer> {
     _aadharNoController.text = response['aadharNo']?.toString() ?? '';
 
     setState(() {
-      selectedBranchName = response['branch']?.toString() ?? '';
-      selectedBranch = selectedBranchName;
+      selectedBranchId = response['branch']?.toString() ?? '';
+      selectedBranch = selectedBranchId;
       customerPhotoUrl = response['customerPhoto']?.toString() ?? '';
     });
 
     setState(() {
-      selectedCenterName = response['center']?.toString() ?? '';
+      selectedCenterId = response['center']?.toString() ?? '';
       selectedCenter =
-          selectedCenterName; // Sync selectedBranch with the dropdown
+          selectedCenterId; // Sync selectedBranch with the dropdown
+    });
+    setState(() {
+      selectedStaffId = response['collectionstaff']?.toString() ?? '';
+      selectedStaff = selectedStaffId; // Sync selectedBranch with the dropdown
     });
     print('$selectedBranch');
     print('$selectedCenter');
@@ -914,54 +972,54 @@ class _CreateCustomerState extends State<EditCustomer> {
                         child: Stack(
                           children: [
                             // CircleAvatar with border
-                            Container(
-                              width: 140,
-                              height: 140,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  width: 2,
-                                ),
-                              ),
-                              child: ClipOval(
-                                child: _image != null
-                                    ? Image.file(
-                                        _image!,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : CachedNetworkImage(
-                                        imageUrl: customerPhotoUrl ?? '',
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) =>
-                                            const Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                        errorWidget: (context, url, error) =>
-                                            const Icon(
-                                          Icons.error,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                              ),
-                            ),
+                            // Container(
+                            //   width: 140,
+                            //   height: 140,
+                            //   decoration: BoxDecoration(
+                            //     shape: BoxShape.circle,
+                            //     border: Border.all(
+                            //       color: Colors.grey.withOpacity(0.5),
+                            //       width: 2,
+                            //     ),
+                            //   ),
+                            //   child: ClipOval(
+                            //     child: _image != null
+                            //         ? Image.file(
+                            //             _image!,
+                            //             fit: BoxFit.cover,
+                            //           )
+                            //         : CachedNetworkImage(
+                            //             imageUrl: customerPhotoUrl ?? '',
+                            //             fit: BoxFit.cover,
+                            //             placeholder: (context, url) =>
+                            //                 const Center(
+                            //               child: CircularProgressIndicator(),
+                            //             ),
+                            //             errorWidget: (context, url, error) =>
+                            //                 const Icon(
+                            //               Icons.error,
+                            //               color: Colors.grey,
+                            //             ),
+                            //           ),
+                            //   ),
+                            // ),
 
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: InkWell(
-                                onTap: _pickImage,
-                                child: CircleAvatar(
-                                  radius: 15,
-                                  backgroundColor: Colors.blue,
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                                ),
-                              ),
-                            )
+                            // Positioned(
+                            //   bottom: 0,
+                            //   right: 0,
+                            //   child: InkWell(
+                            //     onTap: _pickImage,
+                            //     child: CircleAvatar(
+                            //       radius: 15,
+                            //       backgroundColor: Colors.blue,
+                            //       child: const Icon(
+                            //         Icons.camera_alt,
+                            //         color: Colors.white,
+                            //         size: 18,
+                            //       ),
+                            //     ),
+                            //   ),
+                            // )
                           ],
                         ),
                       ),
@@ -1160,11 +1218,50 @@ class _CreateCustomerState extends State<EditCustomer> {
                         },
                       ),
                       const SizedBox(height: 20),
+                      DropdownButtonFormField<String>(
+                        value: staffData
+                                .any((staff) => staff['id'] == selectedStaffId)
+                            ? selectedStaffId
+                            : null,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedStaffId = newValue;
+                            selectedStaffName = staffData.firstWhere(
+                                (staff) => staff['id'] == newValue)['name'];
+                          });
+                        },
+                        items: staffData
+                            .map((staff) => DropdownMenuItem<String>(
+                                  value: staff['id'], // use id as value
+                                  child: Text(staff['name'] ?? ''),
+                                ))
+                            .toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Select Staff',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a staff';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
 
                       // Branch Dropdown validation
                       // Branch Dropdown
                       DropdownButtonFormField<String>(
-                        value: selectedBranch,
+                        value: branchData.any(
+                                (branch) => branch['id'] == selectedBranchId)
+                            ? selectedBranchId
+                            : null,
                         onChanged: (newValue) {
                           setState(() {
                             selectedBranchId = newValue;
@@ -1174,8 +1271,9 @@ class _CreateCustomerState extends State<EditCustomer> {
                         },
                         items: branchData
                             .map((branch) => DropdownMenuItem<String>(
-                                  value: branch['name'],
-                                  child: Text(branch['name']!),
+                                  value: branch[
+                                      'id'], // Ensure this is the id, not name
+                                  child: Text(branch['name'] ?? ''),
                                 ))
                             .toList(),
                         decoration: InputDecoration(
@@ -1199,18 +1297,21 @@ class _CreateCustomerState extends State<EditCustomer> {
 
 // Center Dropdown
                       DropdownButtonFormField<String>(
-                        value: selectedCenter,
-                        // Ensure the value matches or is null
+                        value: centerData.any(
+                                (center) => center['id'] == selectedCenterId)
+                            ? selectedCenterId
+                            : null,
                         onChanged: (newValue) {
                           setState(() {
                             selectedCenterId = newValue;
-                            selectedBranchName = centerData.firstWhere(
+                            selectedCenterName = centerData.firstWhere(
                                 (center) => center['id'] == newValue)['name'];
                           });
                         },
                         items: centerData
                             .map((center) => DropdownMenuItem<String>(
-                                  value: center['name'],
+                                  value:
+                                      center['id'], // Match with id, not name
                                   child: Text(center['name'] ?? ''),
                                 ))
                             .toList(),
@@ -1230,6 +1331,7 @@ class _CreateCustomerState extends State<EditCustomer> {
                           return null;
                         },
                       ),
+
                       const SizedBox(height: 20),
                       // Upload Aadhaar Field
                       Row(

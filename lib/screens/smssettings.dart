@@ -97,6 +97,7 @@ class _SmsSettingsState extends State<SmsSettings> {
           await prefs.setString('midsmslink', midsmsController.text);
           await prefs.setString('postsmslink', postsmsController.text);
           await prefs.setString('branchName', selectedBranchName.toString());
+          await prefs.setString('branchid', selectedBranchId.toString());
 
           // Print saved values for debugging
           final savedSmsId = prefs.getString('smsId');
@@ -104,12 +105,14 @@ class _SmsSettingsState extends State<SmsSettings> {
           final savedMidsmsLink = prefs.getString('midsmslink');
           final savedPostsmsLink = prefs.getString('postsmslink');
           final savedBranch = prefs.getString('branchName');
+          final savedBranchid = prefs.getString('branchid');
 
           print('Saved SMS ID: $savedSmsId');
           print('Saved Pre-SMS Link: $savedPresmsLink');
           print('Saved Mid-SMS Link: $savedMidsmsLink');
           print('Saved Post-SMS Link: $savedPostsmsLink');
           print('Saved Branch Name: $savedBranch');
+          print('Saved Branch Id: $savedBranchid');
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('SMS created successfully!')),

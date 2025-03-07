@@ -51,10 +51,20 @@ class PreferencesUtils {
     await prefs.setString('companyid', companyid);
   }
 
+  static Future<void> saveBranchId(String branchid) async {
+    final prefs = await _getPrefs();
+    await prefs.setString('branchid', branchid);
+  }
+
   // Get company ID
   static Future<String?> getCompanyId() async {
     final prefs = await _getPrefs();
     return prefs.getString('companyid');
+  }
+
+  static Future<String?> getbranchId() async {
+    final prefs = await _getPrefs();
+    return prefs.getString('branchid');
   }
 
   // Save company name
