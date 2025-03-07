@@ -38,43 +38,60 @@ class _CreateBranchState extends State<Loan> {
       TextEditingController();
   String? selectedBranch;
   List<String> branchName = ['15000scheme', '20000scheme', '25000scheme'];
-  // Future<void> _selectMarriage(BuildContext context, String label) async {
-  //   final DateTime? picked = await showDatePicker(
-  //     context: context,
-  //     initialDate: label == "DOB"
-  //         ? dobController.text.isNotEmpty
-  //             ? DateFormat('yyyy-MM-dd').parse(dobController.text)
-  //             : DateTime.now()
-  //         : label == "DOJ"
-  //             ? dojController.text.isNotEmpty
-  //                 ? DateFormat('yyyy-MM-dd').parse(dojController.text)
-  //                 : DateTime.now()
-  //             : DateTime.now(),
-  //     firstDate: DateTime(2000),
-  //     lastDate: DateTime(2101),
-  //   );
+  List<Map<String, dynamic>> _schemes = [];
+  String? selectedScheme;
+  bool _isLoading = true;
 
-  //   if (picked != null) {
-  //     setState(() {
-  //       String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
-
-  //       // Update the correct controller based on the label
-  //       if (label == "DOB") {
-  //         dobController.text = formattedDate;
-  //       } else if (label == "DOJ") {
-  //         dojController.text = formattedDate;
-  //       } else if (label == "DOM") {
-  //         domController.text = formattedDate;
-  //       } else if (label == "EntryDate") {
-  //         entrydateController.text = formattedDate;
-  //       }
-  //     });
-  //   }
-  // }
   @override
   void initState() {
     super.initState();
     _loadCustomers();
+    _loadSchemes();
+  }
+
+  Future<void> _loadSchemes() async {
+    try {
+      final schemes = await fetchSchemes();
+      setState(() {
+        _schemes = schemes;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Failed to load schemes: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchSchemes() async {
+    const String _baseUrl = 'https://chits.tutytech.in/scheme.php';
+    try {
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'type': 'select'},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body) as List<dynamic>;
+
+        // Handle missing keys safely
+        return responseData.map((branch) {
+          return {
+            'id': branch['id'] ?? '',
+            'schemeid': branch['schemeid'] ?? 'Unknown code',
+            'schemename': branch['schemename'] ?? 'Unknown center',
+            'amount': branch['amount']?.toString() ?? '0',
+            'collectiontype': branch['collectiontype'] ?? 'N/A',
+          };
+        }).toList();
+      } else {
+        throw Exception('Failed to fetch branches');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
   }
 
   Future<void> _loadCustomers() async {
@@ -533,20 +550,21 @@ class _CreateBranchState extends State<Loan> {
                       ),
                       const SizedBox(height: 20),
                       DropdownButtonFormField<String>(
-                        value: branchName.contains(selectedBranch)
-                            ? selectedBranch
+                        value: _schemes.any((scheme) =>
+                                scheme['schemename'] == selectedScheme)
+                            ? selectedScheme
                             : null,
                         onChanged: (newValue) {
                           setState(() {
-                            selectedBranch = newValue;
+                            selectedScheme = newValue;
                           });
                         },
-                        items: branchName
-                            .map((branchName) => DropdownMenuItem<String>(
-                                  value: branchName,
-                                  child: Text(branchName),
-                                ))
-                            .toList(),
+                        items: _schemes.map((scheme) {
+                          return DropdownMenuItem<String>(
+                            value: scheme['schemename'].toString(),
+                            child: Text(scheme['schemename'].toString()),
+                          );
+                        }).toList(),
                         decoration: InputDecoration(
                           labelText: 'Scheme',
                           labelStyle: const TextStyle(color: Colors.black),
