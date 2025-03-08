@@ -99,10 +99,7 @@ class _BranchListPageState extends State<LoanListPage> {
   Future<List<Map<String, dynamic>>> fetchLoans() async {
     const String _baseUrl = 'https://chits.tutytech.in/loan.php';
     try {
-      // Print the request URL
       print('Request URL: $_baseUrl');
-
-      // Print the request body
       print('Request Body: type=list');
 
       final response = await http.post(
@@ -111,31 +108,14 @@ class _BranchListPageState extends State<LoanListPage> {
         body: {'type': 'list'},
       );
 
-      // Print response status and body
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
 
-        // Check if the response is a List or a Map
-        if (responseData is List) {
-          return responseData.map((branch) {
-            return {
-              'id': branch['id'] ?? '',
-              'customerId': branch['customerId'] ?? '',
-              'customerName': branch['customerName'] ?? 'Unknown',
-              'accountNo': branch['accountNo']?.toString() ?? '0',
-              'date': branch['date'] ?? 'N/A',
-              'firstCollectionDate': branch['firstCollectionDate'] ?? 'N/A',
-              'amount': branch['amount'] ?? 'N/A',
-              'scheme': branch['scheme'] ?? 'N/A',
-              'remarks': branch['remarks'] ?? 'N/A',
-            };
-          }).toList();
-        } else if (responseData is Map) {
-          // If the API wraps data inside an object, extract the list
-          final List<dynamic> loans = responseData['data'] ?? [];
+        if (responseData is Map && responseData['data'] is List) {
+          final List<dynamic> loans = responseData['data'];
 
           return loans.map((branch) {
             return {
@@ -146,7 +126,9 @@ class _BranchListPageState extends State<LoanListPage> {
               'date': branch['date'] ?? 'N/A',
               'firstCollectionDate': branch['firstCollectionDate'] ?? 'N/A',
               'amount': branch['amount'] ?? 'N/A',
-              'scheme': branch['scheme'] ?? 'N/A',
+              'scheme': branch['scheme'] != null && branch['scheme'].isNotEmpty
+                  ? branch['scheme']
+                  : 'Unknown Scheme',
               'remarks': branch['remarks'] ?? 'N/A',
             };
           }).toList();

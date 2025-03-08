@@ -37,6 +37,7 @@ class _CreateBranchState extends State<Loan> {
   final TextEditingController firstcollectiondateController =
       TextEditingController();
   String? selectedBranch;
+  String? selectedSchemeId;
   List<String> branchName = ['15000scheme', '20000scheme', '25000scheme'];
   List<Map<String, dynamic>> _schemes = [];
   String? selectedScheme;
@@ -163,7 +164,7 @@ class _CreateBranchState extends State<Loan> {
   Future<void> _submitLoanForm() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = prefs.getString('staffId');
-    final String? companyid = prefs.getString('companyId');
+    final String? companyid = prefs.getString('companyid');
     // Validate the form first
     if (_formKey.currentState?.validate() != true) {
       // If the form is invalid, stop further execution
@@ -176,12 +177,12 @@ class _CreateBranchState extends State<Loan> {
     final Map<String, String> loanData = {
       'type': 'insert',
       'customerId': customeridController.text,
-      'customerName': customernameController.text,
-      'accountNo': accountnoController.text,
+      'customername': customernameController.text,
+      'accountno': accountnoController.text,
       'date': dobController.text,
-      'firstCollectionDate': firstcollectiondateController.text,
+      'firstcollectiondate': firstcollectiondateController.text,
       'amount': amountController.text,
-      'scheme': selectedBranch ?? '',
+      'scheme': selectedSchemeId ?? '',
       'remarks': remarksController.text,
       'entryid': staffId.toString(),
       'companyid': companyid.toString(),
@@ -550,18 +551,18 @@ class _CreateBranchState extends State<Loan> {
                       ),
                       const SizedBox(height: 20),
                       DropdownButtonFormField<String>(
-                        value: _schemes.any((scheme) =>
-                                scheme['schemename'] == selectedScheme)
-                            ? selectedScheme
+                        value: _schemes.any(
+                                (scheme) => scheme['id'] == selectedSchemeId)
+                            ? selectedSchemeId
                             : null,
                         onChanged: (newValue) {
                           setState(() {
-                            selectedScheme = newValue;
+                            selectedSchemeId = newValue;
                           });
                         },
                         items: _schemes.map((scheme) {
                           return DropdownMenuItem<String>(
-                            value: scheme['schemename'].toString(),
+                            value: scheme['id'].toString(),
                             child: Text(scheme['schemename'].toString()),
                           );
                         }).toList(),

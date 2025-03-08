@@ -23,12 +23,13 @@ class EditLoan extends StatefulWidget {
 class _CreateBranchState extends State<EditLoan> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> branchNames = [];
-
+  List<Map<String, dynamic>> schemes = [];
   bool? isActive;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _customerNameController = TextEditingController();
   final TextEditingController _mobileNoController = TextEditingController();
   List<Map<String, dynamic>> _customers = [];
+  List<Map<String, dynamic>> _schemes = [];
   final TextEditingController _detailsController = TextEditingController();
   final TextEditingController customeridController = TextEditingController();
   final TextEditingController customernameController = TextEditingController();
@@ -81,6 +82,8 @@ class _CreateBranchState extends State<EditLoan> {
     super.initState();
     isActive = false;
     _loadCustomers();
+    loadSchemes();
+
     if (widget.id != null) {
       fetchLoans(widget.id!);
     } else {
@@ -88,11 +91,41 @@ class _CreateBranchState extends State<EditLoan> {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchSchemes() async {
+    print('scheme2');
+    const String _baseUrl = 'https://chits.tutytech.in/scheme.php';
+    try {
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'type': 'select'},
+      );
+
+      if (response.statusCode == 200) {
+        print('scheme3');
+        final responseData = json.decode(response.body) as List<dynamic>;
+
+        return responseData.map((branch) {
+          return {
+            'id': branch['id']?.toString() ?? '', // Ensure ID is a string
+
+            'schemename': branch['schemename'] ?? 'Unknown scheme',
+          };
+        }).toList();
+      } else {
+        print('scheme4');
+        throw Exception('Failed to fetch schemes');
+      }
+    } catch (e) {
+      print('scheme5');
+      throw Exception('Error: $e');
+    }
+  }
+
   Future<void> fetchLoans(String id) async {
-    print('loan1');
+    print('Fetching loans...');
     const String _baseUrl = 'https://chits.tutytech.in/loan.php';
     try {
-      print('loan2');
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -100,36 +133,40 @@ class _CreateBranchState extends State<EditLoan> {
       );
 
       if (response.statusCode == 200) {
-        print('loan3');
-        print('API Response Body: ${response.body}');
         final Map<String, dynamic> decodedResponse = json.decode(response.body);
 
-        // Extract loan data from 'data' key
+        // Populate schemes list (remove schemeId, only using scheme names)
+        if (decodedResponse['data'] is List) {
+          schemes = decodedResponse['data']
+              .map<Map<String, dynamic>>((scheme) => {
+                    'id': scheme['id'].toString(), // Use scheme name as id
+                    'name': scheme['scheme'].toString(),
+                  })
+              .toSet() // Remove duplicates
+              .toList();
+          print('Schemes: $schemes');
+        }
+
+        // Extract loan data
         final List<dynamic> branchData = decodedResponse['data'];
 
-        print('Branch Data List: $branchData');
         final branch = branchData.firstWhere(
           (branch) => branch['id'].toString() == id,
           orElse: () => null,
         );
 
         if (branch != null) {
-          print('loan4');
-          print('Branch Found: $branch');
           setState(() {
             _updateBranchFields(branch);
             isLoading = false;
           });
         } else {
-          print('loan5');
           _showError('No branch found with ID $id.');
         }
       } else {
-        print('loan6');
         throw Exception('Failed to fetch branches');
       }
     } catch (e) {
-      print('loan7');
       print('Error: $e');
       throw Exception('Error: $e');
     }
@@ -138,18 +175,23 @@ class _CreateBranchState extends State<EditLoan> {
   void _updateBranchFields(Map<String, dynamic> branch) {
     print('Updating fields with branch data: $branch');
 
-    customeridController.text =
-        branch['customerId'] ?? ''; // Ensure correct key
-    customernameController.text =
-        branch['customerName']?.toString() ?? ''; // Ensure correct key
-    accountnoController.text =
-        branch['customerName'] ?? ''; // Ensure correct key
-    dobController.text = branch['date'] ?? ''; // Ensure correct key
-    firstcollectiondateController.text =
-        branch['firstCollectionDate'] ?? ''; // Ensure correct key
+    customeridController.text = branch['customerId'] ?? '';
+    customernameController.text = branch['customerName']?.toString() ?? '';
+    accountnoController.text = branch['accountNo'] ?? '';
+    dobController.text = branch['date'] ?? '';
+    firstcollectiondateController.text = branch['firstCollectionDate'] ?? '';
     amountController.text = branch['amount'] ?? '';
-    selectedBranch = branch['scheme'] ?? '';
     remarksController.text = branch['remarks'] ?? '';
+
+    // Ensure correct scheme mapping
+    final schemeName = branch['scheme']?.toString() ?? '';
+    final matchingScheme = schemes.firstWhere(
+      (scheme) => scheme['name'] == schemeName,
+    );
+
+    setState(() {
+      selectedBranch = matchingScheme != null ? matchingScheme['id'] : null;
+    });
   }
 
   void _showError(String message) {
@@ -166,6 +208,23 @@ class _CreateBranchState extends State<EditLoan> {
       });
     } catch (e) {
       print('Error loading customers: $e');
+    }
+  }
+
+  Future<void> loadSchemes() async {
+    print('scheme1');
+    try {
+      final fetchedSchemes = await fetchSchemes();
+      setState(() {
+        schemes = fetchedSchemes.map((scheme) {
+          return {
+            'id': scheme['id'] ?? '',
+            'name': scheme['schemename'] ?? 'Unknown scheme',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      print('Failed to load schemes: $e');
     }
   }
 
@@ -646,38 +705,42 @@ class _CreateBranchState extends State<EditLoan> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      DropdownButtonFormField<String>(
-                        value: branchName.contains(selectedBranch)
-                            ? selectedBranch
-                            : null,
-                        onChanged: (newValue) {
-                          setState(() {
-                            selectedBranch = newValue;
-                          });
-                        },
-                        items: branchName
-                            .map((branchName) => DropdownMenuItem<String>(
-                                  value: branchName,
-                                  child: Text(branchName),
-                                ))
-                            .toList(),
-                        decoration: InputDecoration(
-                          labelText: 'Scheme',
-                          labelStyle: const TextStyle(color: Colors.black),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Scheme is required';
-                          }
-                          return null;
-                        },
-                      ),
+                      schemes.isEmpty
+                          ? const CircularProgressIndicator()
+                          : DropdownButtonFormField<String>(
+                              value: schemes.any((scheme) =>
+                                      scheme['id'] == selectedBranch)
+                                  ? selectedBranch
+                                  : null,
+                              onChanged: (newValue) {
+                                setState(() {
+                                  selectedBranch = newValue!;
+                                });
+                              },
+                              items: schemes.map((scheme) {
+                                return DropdownMenuItem<String>(
+                                  value: scheme['id'], // scheme name as id
+                                  child: Text(scheme['name']),
+                                );
+                              }).toList(),
+                              decoration: InputDecoration(
+                                labelText: 'Scheme',
+                                labelStyle:
+                                    const TextStyle(color: Colors.black),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Scheme is required';
+                                }
+                                return null;
+                              },
+                            ),
 
                       const SizedBox(height: 20),
                       TextFormField(
