@@ -147,11 +147,10 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future<void> _fetchPaymentDetails() async {
-    const String _baseUrl =
-        'https://chits.tutytech.in/receipt.php'; // Replace with your API
+    const String _baseUrl = 'https://chits.tutytech.in/receipt.php';
 
     try {
-      print('Request URL: $_baseUrl');
+      print('Requesting data from: $_baseUrl');
       print('Request Body: type=select');
 
       final response = await http.post(
@@ -160,43 +159,58 @@ class _DashboardState extends State<Dashboard> {
         body: {'type': 'select'},
       );
 
-      // Debug: Print the response
       print('Response Status Code: ${response.statusCode}');
-      // print('Response Body: ${response.body}');
+      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        // Try parsing JSON
-        final List<dynamic> data = json.decode(response.body);
+        final data = json.decode(response.body);
 
-        double cashTotal = 0.0;
-        double chequeTotal = 0.0;
-        double cancelTotal = 0.0;
+        if (data is List) {
+          double cashTotal = 0.0;
+          double chequeTotal = 0.0;
+          double cancelTotal = 0.0;
 
-        for (var item in data) {
-          double amount =
-              double.tryParse(item['receivedamount'].toString()) ?? 0.0;
-          String type = item['paymenttype'].toString().toLowerCase();
+          for (var item in data) {
+            double receivedAmount =
+                double.tryParse(item['receivedamount']?.toString() ?? '0') ??
+                    0.0;
+            String paymentType =
+                item['paymenttype']?.toString().toLowerCase() ?? '';
 
-          if (type == 'cash') {
-            cashTotal += amount;
-          } else if (type == 'cheque') {
-            chequeTotal += amount;
-          } else if (type == 'cancel') {
-            cancelTotal += amount;
+            switch (paymentType) {
+              case 'cash':
+                cashTotal += receivedAmount;
+                break;
+              case 'cheque':
+                chequeTotal += receivedAmount;
+                break;
+              case 'cancel':
+                cancelTotal += receivedAmount;
+                break;
+            }
           }
-        }
 
-        setState(() {
-          cashCollection = cashTotal;
-          chequeCollection = chequeTotal;
-          cancelAmount = cancelTotal;
-          totalCollection = cashTotal + chequeTotal;
-        });
+          setState(() {
+            cashCollection = cashTotal;
+            chequeCollection = chequeTotal;
+            cancelAmount = cancelTotal;
+            totalCollection = cashTotal + chequeTotal;
+          });
+
+          print('Cash Collection: $cashCollection');
+          print('Cheque Collection: $chequeCollection');
+          print('Cancel Amount: $cancelAmount');
+          print('Total Collection: $totalCollection');
+        } else if (data is Map && data.containsKey('error')) {
+          print('Server Error: ${data['error']}');
+        } else {
+          print('Unexpected response format: $data');
+        }
       } else {
-        print("Failed to load data: HTTP ${response.statusCode}");
+        print('Failed to load data: HTTP ${response.statusCode}');
       }
     } catch (e) {
-      print("Error fetching data: $e");
+      print('Error fetching data: $e');
     }
   }
 

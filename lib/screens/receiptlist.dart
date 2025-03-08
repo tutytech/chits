@@ -385,27 +385,7 @@ class _BranchListPageState extends State<receiptListPage> {
                               ),
                               DataColumn(
                                 label: Text(
-                                  'Loan Amount',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Color(0xFF4A90E2),
-                                  ),
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
                                   'Received Amount',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Color(0xFF4A90E2),
-                                  ),
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Deposit Amount',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -477,20 +457,26 @@ class _BranchListPageState extends State<receiptListPage> {
                             rows: _filteredBranches.map((branch) {
                               return DataRow(
                                 cells: [
-                                  DataCell(
-                                      Text(branch['customername'] ?? 'N/A')),
-                                  DataCell(Text(branch['mobileno'] ?? '0')),
-                                  DataCell(Text(branch['loanamount'] ?? 'N/A')),
-                                  DataCell(
-                                      Text(branch['receivedamount'] ?? 'N/A')),
-                                  DataCell(
-                                      Text(branch['depositamount'] ?? 'N/A')),
-                                  DataCell(
-                                      Text(branch['paymenttype'] ?? 'N/A')),
-                                  DataCell(Text(branch['chequeno'] ?? 'N/A')),
-                                  DataCell(Text(branch['chequedate'] ?? 'N/A')),
-                                  DataCell(Text(branch['bankname'] ?? 'N/A')),
-                                  DataCell(Text(branch['remarks'] ?? 'N/A')),
+                                  DataCell(Text(
+                                      branch['customername']?.toString() ??
+                                          'N/A')),
+                                  DataCell(Text(
+                                      branch['mobileno']?.toString() ?? '0')),
+                                  DataCell(Text(
+                                      branch['receivedamount']?.toString() ??
+                                          'N/A')),
+                                  DataCell(Text(
+                                      branch['paymenttype']?.toString() ??
+                                          'N/A')),
+                                  DataCell(Text(
+                                      branch['chequeno']?.toString() ?? 'N/A')),
+                                  DataCell(Text(
+                                      branch['chequedate']?.toString() ??
+                                          'N/A')),
+                                  DataCell(Text(
+                                      branch['bankname']?.toString() ?? 'N/A')),
+                                  DataCell(Text(
+                                      branch['remarks']?.toString() ?? 'N/A')),
                                   DataCell(
                                     Row(
                                       mainAxisAlignment:
@@ -506,7 +492,6 @@ class _BranchListPageState extends State<receiptListPage> {
                                                   builder: (context) =>
                                                       ScanScreen()),
                                             );
-                                            // Add your print logic here
                                             print(
                                                 "Print button pressed for branch ID: ${branch['id']}");
                                           },
@@ -527,26 +512,21 @@ class _BranchListPageState extends State<receiptListPage> {
                                                     TextButton(
                                                       onPressed: () {
                                                         Navigator.of(context)
-                                                            .pop(); // Close the dialog
+                                                            .pop();
                                                       },
                                                       child: const Text("No"),
                                                     ),
                                                     TextButton(
                                                       onPressed: () async {
                                                         Navigator.of(context)
-                                                            .pop(); // Close the dialog
-
-                                                        // Call the function to update paymenttype in the database
+                                                            .pop();
                                                         await _updatePaymentType(
                                                             branch['id'],
                                                             "CANCEL");
-
-                                                        // Update the local state to reflect the change
                                                         setState(() {
                                                           branch['paymenttype'] =
                                                               "CANCEL";
                                                         });
-
                                                         print(
                                                             "Receipt canceled for branch ID: ${branch['id']}");
                                                       },
