@@ -14,7 +14,9 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:ui' as ui;
 
 class CreateCustomer extends StatefulWidget {
   final String? rights;
@@ -283,7 +285,7 @@ class _CreateCustomerState extends State<CreateCustomer> {
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? staffId = await prefs.getString('staffId');
-    final String? companyid = prefs.getString('companyId');
+    final String? companyid = prefs.getString('companyid');
     print('-------------$staffId');
 
     final String apiUrl = 'https://chits.tutytech.in/customer.php';
