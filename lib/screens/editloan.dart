@@ -242,7 +242,7 @@ class _CreateBranchState extends State<EditLoan> {
         'accountno': accountnoController.text.trim(),
         'firstcollectiondate': dobController.text.trim(),
         'amount': firstcollectiondateController.text.trim(),
-        'scheme': amountController.text.trim(),
+        'scheme': selectedBranch,
         'remarks': remarksController.text.trim(),
         'closedaccounts': activeStatus // Updated here
       };

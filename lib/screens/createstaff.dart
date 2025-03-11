@@ -29,6 +29,7 @@ class _CreateStaffState extends State<CreateStaff> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _branchCodeController = TextEditingController();
   final TextEditingController _receiptNoController = TextEditingController();
+  final TextEditingController _prereceiptNoController = TextEditingController();
   final TextEditingController _companyIdController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -157,6 +158,7 @@ class _CreateStaffState extends State<CreateStaff> {
         'password': _passwordController.text,
         'branch': selectedBranchName ?? '',
         'receiptNo': _receiptNoController.text,
+        'prereceiptNo': _prereceiptNoController.text,
         'rights': selectedRights ?? '',
         'companyid': companyid ?? '',
         'email': _emailController.text,
@@ -516,6 +518,26 @@ class _CreateStaffState extends State<CreateStaff> {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your receiptno';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 30),
+                      TextFormField(
+                        controller: _prereceiptNoController,
+                        decoration: InputDecoration(
+                          labelText: 'Enter Prereceipt No:',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your prereceiptno';
                           }
                           return null;
                         },
