@@ -1,3 +1,7 @@
 {
-    "cmake.sourceDirectory": "D:/Flutter/chitfunds/linux"
+    "cmake.sourceDirectory": "D:/Flutter/chitfunds/linux",
+    "flutterTools.displayGetxContextMenu": true,
+    "flutterTools.displayMobxContextMenu": false,
+    "flutterTools.displayRiverpodContextMenu": false,
+    "flutterTools.displayModularContextMenu": false
 }
